@@ -1,10 +1,10 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Edit2, MessageSquare, Send, CheckCircle2, Clock, Upload, Download, Eye } from "lucide-react";
+import { Edit2, MessageSquare, Send, CheckCircle2, Clock, Upload, Download, Eye, Trash2, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
+import { format } from "date-fns";
 
 interface CustomerDetailsDialogProps {
   open: boolean;
@@ -37,9 +37,24 @@ export const CustomerDetailsDialog = ({
 
   const conversations = [
     {
-      text: "Send to Maker reason: testing reason",
-      timestamp: "05 February 2025, 11:50 AM",
+      text: "asdfasdf",
+      timestamp: "05 February 2025, 1:28 PM",
       author: "checker"
+    },
+    {
+      text: "Return reason: To validate photo again",
+      timestamp: "31 January 2025, 2:17 PM",
+      author: "checker"
+    },
+    {
+      text: "Return by checker",
+      timestamp: "31 January 2025, 2:17 PM",
+      author: "checker"
+    },
+    {
+      text: "Reject for photo",
+      timestamp: "31 January 2025, 2:16 PM",
+      author: "maker"
     }
   ];
 
@@ -151,37 +166,61 @@ export const CustomerDetailsDialog = ({
 
         {/* Conversation Section */}
         <div className="space-y-6 mt-8">
-          <div className="flex items-center gap-2 mb-4 border-b pb-2">
-            <h2 className="text-lg font-semibold text-gray-800">Conversation</h2>
-            <Upload className="h-5 w-5 text-blue-500" />
+          <div className="flex items-center justify-between mb-4 border-b pb-2">
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-gray-800">Notes</h2>
+              <MessageSquare className="h-5 w-5 text-blue-500" />
+            </div>
           </div>
+          
           <div className="space-y-4 bg-gray-50/50 p-6 rounded-xl">
-            <div className="space-y-4 mb-4">
+            <div className="space-y-4 mb-4 max-h-[400px] overflow-y-auto">
               {conversations.map((conversation, index) => (
-                <div key={index} className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                    <MessageSquare className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="bg-white rounded-lg p-3 shadow-sm">
-                      <p className="text-sm text-gray-700">{conversation.text}</p>
+                <div 
+                  key={index} 
+                  className={`flex gap-3 ${conversation.author === 'checker' ? 'justify-start' : 'justify-end'}`}
+                >
+                  <div className={`flex gap-3 max-w-[80%] ${conversation.author === 'maker' ? 'flex-row-reverse' : ''}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      conversation.author === 'checker' ? 'bg-blue-100' : 'bg-green-100'
+                    }`}>
+                      <User className={`h-4 w-4 ${
+                        conversation.author === 'checker' ? 'text-blue-600' : 'text-green-600'
+                      }`} />
                     </div>
-                    <span className="text-xs text-gray-500 mt-1 block">
-                      {conversation.author} | {conversation.timestamp}
-                    </span>
+                    <div className="flex-1">
+                      <div className={`rounded-lg p-3 shadow-sm ${
+                        conversation.author === 'checker' 
+                          ? 'bg-white border-l-4 border-l-blue-500' 
+                          : 'bg-green-50 border-r-4 border-r-green-500'
+                      }`}>
+                        <p className="text-sm text-gray-700">{conversation.text}</p>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-gray-500">
+                          {conversation.author} | {conversation.timestamp}
+                        </span>
+                        <button className="text-gray-400 hover:text-red-500 transition-colors">
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="flex gap-2 bg-white p-2 rounded-lg shadow-sm">
+            <div className="flex gap-2 bg-white p-3 rounded-lg shadow-sm border border-gray-100">
               <Input
                 placeholder="Add a note..."
                 value={newNote}
                 onChange={(e) => setNewNote(e.target.value)}
-                className="bg-gray-50"
+                className="bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-400"
               />
-              <Button size="icon" className="bg-blue-600 hover:bg-blue-700">
+              <Button 
+                size="icon" 
+                className="bg-blue-600 hover:bg-blue-700 rounded-full h-8 w-8"
+              >
                 <Send className="h-4 w-4" />
               </Button>
             </div>
