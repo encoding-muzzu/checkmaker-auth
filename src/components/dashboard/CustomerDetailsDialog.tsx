@@ -66,7 +66,7 @@ export const CustomerDetailsDialog = ({
         timestamp: format(new Date(), "dd MMMM yyyy, h:mm a"),
         author: "maker" // Changed to maker since user is logged in as maker
       };
-      setConversations(prev => [newMessage, ...prev]);
+      setConversations(prev => [...prev, newMessage]); // Changed to append at the end
       setNewNote("");
     }
   };
@@ -202,7 +202,8 @@ export const CustomerDetailsDialog = ({
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4">
               <div className="space-y-4 bg-gray-50/50 p-6 rounded-xl">
-                <div className="space-y-4 mb-4 h-[300px] overflow-y-auto custom-scrollbar">
+                {/* Added flex-col-reverse to show latest messages at bottom */}
+                <div className="flex flex-col-reverse space-y-reverse space-y-4 mb-4 h-[300px] overflow-y-auto custom-scrollbar">
                   {conversations.map((conversation, index) => (
                     <div 
                       key={index} 
