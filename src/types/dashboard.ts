@@ -10,4 +10,11 @@ export interface ApplicationData {
   assignedTo: string;
   createdAt: string;
   updatedAt: string;
+  documents?: {
+    name: string;
+    status: string;
+    type: string;
+    uploadedAt: string;
+  }[];
 }
+
