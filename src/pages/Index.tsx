@@ -48,60 +48,81 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-900 to-gray-800">
-      <div className="w-full max-w-[1200px] grid md:grid-cols-2 gap-8">
-        <div className="hidden md:flex flex-col justify-center text-white p-8">
-          <h1 className="text-5xl font-bold mb-4">M2P Connect</h1>
-          <p className="text-gray-300 text-lg">
-            Welcome to the next generation of secure authentication and authorization.
-          </p>
+    <div className="min-h-screen flex items-center justify-center bg-[#F7F9FC] p-4">
+      <div className="w-full max-w-[1200px] grid md:grid-cols-2 gap-8 items-center">
+        <div className="hidden md:flex flex-col justify-center p-12 bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl h-[600px] shadow-2xl">
+          <div className="space-y-6 animate-fade-in">
+            <h1 className="text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">
+              M2P Connect
+            </h1>
+            <p className="text-gray-300 text-lg leading-relaxed">
+              Welcome to the next generation of secure authentication and authorization.
+              Experience banking made simple and secure.
+            </p>
+            <div className="flex flex-col gap-4 mt-8">
+              <div className="flex items-center gap-3 text-gray-300">
+                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                  <Lock className="w-5 h-5" />
+                </div>
+                <p>Enhanced Security Protocols</p>
+              </div>
+              <div className="flex items-center gap-3 text-gray-300">
+                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                  <User className="w-5 h-5" />
+                </div>
+                <p>Role-Based Access Control</p>
+              </div>
+            </div>
+          </div>
         </div>
         
-        <div className="flex items-center justify-center">
-          <Card className="w-full max-w-md shadow-2xl">
+        <div className="flex items-center justify-center w-full">
+          <Card className="w-full max-w-md shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl text-center">M2P Connect Admin Portal</CardTitle>
-              <CardDescription className="text-center">
+              <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                M2P Connect Admin Portal
+              </CardTitle>
+              <CardDescription className="text-center text-gray-600">
                 Sign in to your account
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
+                  <Label htmlFor="username" className="text-sm font-medium text-gray-700">Username</Label>
                   <div className="relative">
                     <Input
                       id="username"
                       type="text"
                       placeholder="Enter your username"
-                      className="pl-10"
+                      className="pl-10 h-11 border-gray-200 focus:border-gray-400 focus:ring-gray-400"
                       value={formData.username}
                       onChange={(e) =>
                         setFormData({ ...formData, username: e.target.value })
                       }
                     />
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-4 w-4" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password</Label>
                   <div className="relative">
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
-                      className="pl-10"
+                      className="pl-10 h-11 border-gray-200 focus:border-gray-400 focus:ring-gray-400"
                       value={formData.password}
                       onChange={(e) =>
                         setFormData({ ...formData, password: e.target.value })
                       }
                     />
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-4 w-4" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />
@@ -113,13 +134,13 @@ const Index = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="role">Role</Label>
+                  <Label htmlFor="role" className="text-sm font-medium text-gray-700">Role</Label>
                   <Select
                     onValueChange={(value) =>
                       setFormData({ ...formData, role: value })
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-11 border-gray-200 focus:border-gray-400 focus:ring-gray-400">
                       <SelectValue placeholder="Select your role" />
                     </SelectTrigger>
                     <SelectContent>
@@ -129,7 +150,10 @@ const Index = () => {
                   </Select>
                 </div>
 
-                <Button type="submit" className="w-full bg-black hover:bg-gray-800">
+                <Button 
+                  type="submit" 
+                  className="w-full h-11 bg-gradient-to-r from-gray-900 to-gray-700 hover:from-gray-800 hover:to-gray-600 text-white transition-all duration-300"
+                >
                   Sign in
                 </Button>
               </form>
