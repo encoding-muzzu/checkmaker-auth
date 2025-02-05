@@ -42,8 +42,8 @@ function Index() {
       return;
     }
 
-    // Check dummy credentials for maker
-    if (formData.role === "maker" && formData.username === "maker" && formData.password === "password123") {
+    // Check dummy credentials for muzzu
+    if (formData.role === "muzzu" && formData.username === "muzzu" && formData.password === "password123") {
       toast({
         title: "Login successful",
         description: "Welcome to the dashboard",
@@ -64,11 +64,10 @@ function Index() {
         <div className="hidden md:flex flex-col justify-center p-12 bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl h-[600px] shadow-2xl">
           <div className="space-y-6 animate-fade-in">
             <h1 className="text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">
-              M2P Connect
+              M2P Forex DB Ops
             </h1>
             <p className="text-gray-300 text-lg leading-relaxed">
-              Welcome to the next generation of secure authentication and authorization.
-              Experience banking made simple and secure.
+              The DB Ops Portal streamlines card issuance with detailed review processes for Makers and Checkers, integrating with Prepaid systems for automated updates and notifications.
             </p>
             <div className="flex flex-col gap-4 mt-8">
               <div className="flex items-center gap-3 text-gray-300">
@@ -91,7 +90,7 @@ function Index() {
           <Card className="w-full max-w-md shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader className="space-y-1">
               <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                M2P Connect Admin Portal
+                M2P Forex DB Ops Admin Portal
               </CardTitle>
               <CardDescription className="text-center text-gray-600">
                 Sign in to your account
@@ -155,8 +154,8 @@ function Index() {
                       <SelectValue placeholder="Select your role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="maker">Maker</SelectItem>
-                      <SelectItem value="checker">Checker</SelectItem>
+                      <SelectItem value="muzzu">Muzzu</SelectItem>
+                      <SelectItem value="dinesh">Dinesh</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

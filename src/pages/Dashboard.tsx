@@ -1,9 +1,7 @@
-
 import { useState } from "react";
 import { TabButton } from "@/components/dashboard/TabButton";
 import { SearchControls } from "@/components/dashboard/SearchControls";
 import { DashboardTable } from "@/components/dashboard/DashboardTable";
-import { DenseControl } from "@/components/dashboard/DenseControl";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { ApplicationData } from "@/types/dashboard";
@@ -113,7 +111,6 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("pending");
   const [searchColumn, setSearchColumn] = useState("workflow");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isDense, setIsDense] = useState(false);
   const [entriesPerPage, setEntriesPerPage] = useState("10");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -148,7 +145,7 @@ const Dashboard = () => {
 
   return (
     <div className="p-8 max-w-[1400px] mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Maker Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-6">Muzzu Dashboard</h1>
 
       {/* Tabs */}
       <div className="border-b mb-8">
@@ -196,7 +193,6 @@ const Dashboard = () => {
                 </SelectContent>
               </Select>
             </div>
-            <DenseControl isDense={isDense} onDenseChange={setIsDense} />
           </div>
 
           <SearchControls
@@ -210,8 +206,8 @@ const Dashboard = () => {
       </div>
 
       <DashboardTable 
-        data={currentData} 
-        isDense={isDense}
+        data={currentData}
+        isDense={false}
         currentPage={currentPage}
         totalPages={totalPages}
         onNextPage={handleNextPage}
