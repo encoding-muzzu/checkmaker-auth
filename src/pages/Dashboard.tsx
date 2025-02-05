@@ -187,31 +187,25 @@ const Dashboard = () => {
       <div className="border-b mb-8">
         <div className="flex gap-8">
           <button
-            className={`pb-4 px-1 relative ${
-              activeTab === "pending"
-                ? "text-black font-medium before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-black"
-                : "text-gray-500 hover:text-gray-800 transition-colors"
-            }`}
+            className={activeTab === "pending"
+              ? "pb-4 px-1 relative text-black font-medium before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-black"
+              : "pb-4 px-1 relative text-gray-500 hover:text-gray-800 transition-colors"}
             onClick={() => setActiveTab("pending")}
           >
             Pending (12)
           </button>
           <button
-            className={`pb-4 px-1 relative ${
-              activeTab === "completed"
-                ? "text-black font-medium before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-black"
-                : "text-gray-500 hover:text-gray-800 transition-colors"
-            }`}
+            className={activeTab === "completed"
+              ? "pb-4 px-1 relative text-black font-medium before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-black"
+              : "pb-4 px-1 relative text-gray-500 hover:text-gray-800 transition-colors"}
             onClick={() => setActiveTab("completed")}
           >
             Completed (11)
           </button>
           <button
-            className={`pb-4 px-1 relative ${
-              activeTab === "reopened"
-                ? "text-black font-medium before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-black"
-                : "text-gray-500 hover:text-gray-800 transition-colors"
-            }`}
+            className={activeTab === "reopened"
+              ? "pb-4 px-1 relative text-black font-medium before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-black"
+              : "pb-4 px-1 relative text-gray-500 hover:text-gray-800 transition-colors"}
             onClick={() => setActiveTab("reopened")}
           >
             Re-Opened (0)
