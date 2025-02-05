@@ -1,14 +1,14 @@
 ```typescript
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import { Eye, Search, SlidersHorizontal } from "lucide-react";
+import { TabButton } from "@/components/dashboard/TabButton";
+import { SearchControls } from "@/components/dashboard/SearchControls";
+import { DashboardTable } from "@/components/dashboard/DashboardTable";
+import { DenseControl } from "@/components/dashboard/DenseControl";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { ApplicationData } from "@/types/dashboard";
 
-const DUMMY_DATA = [
+const DUMMY_DATA: ApplicationData[] = [
   {
     workflow: "kycform",
     applicationId: "20250203114417182GT",
@@ -176,7 +176,6 @@ const Dashboard = () => {
 
   const handleSearch = () => {
     console.log("Searching in column:", searchColumn, "for query:", searchQuery);
-    // Implement search logic here
   };
 
   return (
@@ -186,30 +185,24 @@ const Dashboard = () => {
       {/* Tabs */}
       <div className="border-b mb-8">
         <div className="flex gap-8">
-          <button
-            className={activeTab === "pending"
-              ? "pb-4 px-1 relative text-black font-medium before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-black"
-              : "pb-4 px-1 relative text-gray-500 hover:text-gray-800 transition-colors"}
+          <TabButton
+            isActive={activeTab === "pending"}
+            label="Pending"
+            count={12}
             onClick={() => setActiveTab("pending")}
-          >
-            Pending (12)
-          </button>
-          <button
-            className={activeTab === "completed"
-              ? "pb-4 px-1 relative text-black font-medium before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-black"
-              : "pb-4 px-1 relative text-gray-500 hover:text-gray-800 transition-colors"}
+          />
+          <TabButton
+            isActive={activeTab === "completed"}
+            label="Completed"
+            count={11}
             onClick={() => setActiveTab("completed")}
-          >
-            Completed (11)
-          </button>
-          <button
-            className={activeTab === "reopened"
-              ? "pb-4 px-1 relative text-black font-medium before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-black"
-              : "pb-4 px-1 relative text-gray-500 hover:text-gray-800 transition-colors"}
+          />
+          <TabButton
+            isActive={activeTab === "reopened"}
+            label="Re-Opened"
+            count={0}
             onClick={() => setActiveTab("reopened")}
-          >
-            Re-Opened (0)
-          </button>
+          />
         </div>
       </div>
 
@@ -235,111 +228,20 @@ const Dashboard = () => {
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="flex items-center gap-2 ml-6">
-              <Label htmlFor="dense-mode" className="text-sm text-gray-600 whitespace-nowrap">
-                Dense Padding
-              </Label>
-              <Switch
-                id="dense-mode"
-                checked={isDense}
-                onCheckedChange={setIsDense}
-              />
-            </div>
+            <DenseControl isDense={isDense} onDenseChange={setIsDense} />
           </div>
 
-          {/* Search Section */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="flex items-center gap-2">
-              <SlidersHorizontal className="w-4 h-4 text-gray-500" />
-              <Select value={searchColumn} onValueChange={setSearchColumn}>
-                <SelectTrigger className="w-[180px] bg-white border-gray-200">
-                  <SelectValue placeholder="Select column" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="workflow">Workflow</SelectItem>
-                  <SelectItem value="applicationId">Application ID</SelectItem>
-                  <SelectItem value="status">Status</SelectItem>
-                  <SelectItem value="currentActivity">Current Activity</SelectItem>
-                  <SelectItem value="assignedTo">Assigned To</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <div className="relative flex-1 sm:flex-initial">
-                <Input
-                  type="search"
-                  placeholder="Search..."
-                  className="pl-9 pr-4 py-2 bg-white border-gray-200 w-full sm:w-[240px]"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              </div>
-              <Button 
-                onClick={handleSearch}
-                className="bg-black text-white hover:bg-black/90 px-4"
-              >
-                Search
-              </Button>
-            </div>
-          </div>
+          <SearchControls
+            searchColumn={searchColumn}
+            searchQuery={searchQuery}
+            onSearchColumnChange={setSearchColumn}
+            onSearchQueryChange={setSearchQuery}
+            onSearch={handleSearch}
+          />
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-lg shadow">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Created At</TableHead>
-              <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Workflow</TableHead>
-              <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Application ID</TableHead>
-              <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Status</TableHead>
-              <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Current Activity</TableHead>
-              <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Updated At</TableHead>
-              <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {DUMMY_DATA.map((row, index) => (
-              <TableRow key={index} className={`border-b border-[rgb(224,224,224)] ${isDense ? 'py-6' : 'py-2'}`}>
-                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.createdAt}</TableCell>
-                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.workflow}</TableCell>
-                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.applicationId}</TableCell>
-                <TableCell className={`text-[0.8125rem] leading-[1.43] text-blue-500 ${isDense ? 'py-6' : 'py-4'}`}>{row.status}</TableCell>
-                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>
-                  {row.currentActivity.name}
-                  <br />
-                  <span className="text-gray-500">Status: {row.currentActivity.status}</span>
-                </TableCell>
-                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.updatedAt}</TableCell>
-                <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex items-center gap-1 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                  >
-                    <Eye className="h-4 w-4" />
-                    View
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-          <TableFooter>
-            <TableRow>
-              <TableCell colSpan={8}>
-                <div className="flex items-center justify-center gap-4 py-2">
-                  <button className="text-gray-500 hover:text-gray-700">Previous</button>
-                  <span className="px-3 py-1 bg-gray-100 rounded">1</span>
-                  <button className="text-gray-500 hover:text-gray-700">Next</button>
-                </div>
-              </TableCell>
-            </TableRow>
-          </TableFooter>
-        </Table>
-      </div>
+      <DashboardTable data={DUMMY_DATA} isDense={isDense} />
     </div>
   );
 };
