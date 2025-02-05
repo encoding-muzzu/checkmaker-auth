@@ -1,4 +1,4 @@
-
+```lov-code
 import { useState } from "react";
 import { Eye, EyeOff, User, Lock } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -28,6 +29,7 @@ const Index = () => {
     role: "",
   });
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,12 +41,21 @@ const Index = () => {
       });
       return;
     }
-    // Handle login logic here
-    console.log("Form submitted:", formData);
-    toast({
-      title: "Signing in...",
-      description: "Processing your login request",
-    });
+
+    // Check dummy credentials for maker
+    if (formData.role === "maker" && formData.username === "maker" && formData.password === "password123") {
+      toast({
+        title: "Login successful",
+        description: "Welcome to the dashboard",
+      });
+      navigate("/dashboard");
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Invalid credentials",
+        description: "Please check your username and password",
+      });
+    }
   };
 
   return (
@@ -166,3 +177,4 @@ const Index = () => {
 };
 
 export default Index;
+```
