@@ -1,4 +1,4 @@
-```lov-code
+
 import { useState } from "react";
 import { Eye, EyeOff, User, Lock } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
@@ -21,7 +21,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 
-const Index = () => {
+function Index() {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
@@ -174,7 +174,6 @@ const Index = () => {
       </div>
     </div>
   );
-};
+}
 
-export default Index;
-```
+export { Index };
