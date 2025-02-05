@@ -28,11 +28,8 @@ export const SearchControls = ({
             <SelectValue placeholder="Select column" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="workflow">Workflow</SelectItem>
             <SelectItem value="applicationId">Application ID</SelectItem>
             <SelectItem value="status">Status</SelectItem>
-            <SelectItem value="currentActivity">Current Activity</SelectItem>
-            <SelectItem value="assignedTo">Assigned To</SelectItem>
           </SelectContent>
         </Select>
       </div>

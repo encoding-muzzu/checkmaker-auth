@@ -17,9 +17,14 @@ export const RejectDialog = ({
   setRejectMessage,
   onConfirm
 }: RejectDialogProps) => {
+  const handleCancel = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onOpenChange(false);
+  };
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent onClick={(e) => e.stopPropagation()}>
         <AlertDialogHeader>
           <AlertDialogTitle>Reject Application</AlertDialogTitle>
           <AlertDialogDescription>
@@ -33,7 +38,7 @@ export const RejectDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => onOpenChange(false)}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel onClick={handleCancel}>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={onConfirm} className="bg-red-600 hover:bg-red-700">
             Confirm Reject
           </AlertDialogAction>

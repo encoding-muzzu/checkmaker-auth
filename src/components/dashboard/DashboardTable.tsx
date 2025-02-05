@@ -15,6 +15,20 @@ interface DashboardTableProps {
   onPreviousPage: () => void;
 }
 
+const getStatusColor = (status: string) => {
+  const statusColors: Record<string, string> = {
+    "New": "bg-[#E5DEFF] text-[#8B5CF6]",
+    "Initiated by maker": "bg-[#D3E4FD] text-[#0EA5E9]",
+    "Pending checker approval": "bg-[#FEF7CD] text-[#F97316]",
+    "Completed": "bg-[#F2FCE2] text-green-600",
+    "Rejected by Maker": "bg-[#FFDEE2] text-red-600",
+    "Returned by Checker": "bg-[#FDE1D3] text-orange-600",
+    "Rejected by Checker": "bg-[#FFDEE2] text-red-600",
+    "Resubmitted to Checker": "bg-[#D3E4FD] text-[#0EA5E9]"
+  };
+  return statusColors[status] || "";
+};
+
 export const DashboardTable = ({ 
   data, 
   isDense,
@@ -42,7 +56,11 @@ export const DashboardTable = ({
             <TableRow key={index} className={`border-b border-[rgb(224,224,224)] ${isDense ? 'py-6' : 'py-2'}`}>
               <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.createdAt}</TableCell>
               <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.applicationId}</TableCell>
-              <TableCell className={`text-[0.8125rem] leading-[1.43] text-blue-500 ${isDense ? 'py-6' : 'py-4'}`}>{row.status}</TableCell>
+              <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
+                <span className={`px-2 py-1 rounded-sm ${getStatusColor(row.status)}`}>
+                  {row.status}
+                </span>
+              </TableCell>
               <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
                 <Button 
                   variant="outline" 
