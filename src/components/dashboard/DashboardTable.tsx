@@ -1,4 +1,3 @@
-
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
@@ -57,7 +56,7 @@ export const DashboardTable = ({
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex items-center gap-1 bg-white text-black hover:bg-gray-100 rounded-full border border-black px-2 py-1 text-xs"
+                  className="flex items-center gap-1 bg-transparent text-black hover:bg-transparent px-0 py-1 text-xs border-0"
                   onClick={() => {
                     setSelectedRow(row);
                     setDialogOpen(true);
@@ -105,4 +104,3 @@ export const DashboardTable = ({
     </div>
   );
 };
-

@@ -106,7 +106,8 @@
   button, 
   input,
   [role="combobox"],
-  [role="dialog"] {
+  [role="dialog"],
+  [role="radio"] {
     border-radius: 4px !important;
   }
 }
