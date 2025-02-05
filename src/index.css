@@ -113,6 +113,10 @@
   [role="radio"] {
     border-radius: 50% !important;
   }
+
+  [role="switch"] {
+    border-radius: 15px !important;
+  }
 }
 
 @layer components {
