@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { Eye, EyeOff, User, Lock } from "lucide-react";
+import { Eye, EyeOff, User, Lock, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import {
   Card,
@@ -22,6 +23,7 @@ import { useNavigate } from "react-router-dom";
 
 function Index() {
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -30,7 +32,7 @@ function Index() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.username || !formData.password || !formData.role) {
       toast({
@@ -40,6 +42,11 @@ function Index() {
       });
       return;
     }
+
+    setIsLoading(true);
+
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
     // Updated credential check
     if (formData.role === "maker" && formData.username === "maker" && formData.password === "password123") {
@@ -55,6 +62,8 @@ function Index() {
         description: "Please check your username and password",
       });
     }
+
+    setIsLoading(false);
   };
 
   return (
@@ -109,6 +118,7 @@ function Index() {
                       onChange={(e) =>
                         setFormData({ ...formData, username: e.target.value })
                       }
+                      disabled={isLoading}
                     />
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                   </div>
@@ -126,12 +136,14 @@ function Index() {
                       onChange={(e) =>
                         setFormData({ ...formData, password: e.target.value })
                       }
+                      disabled={isLoading}
                     />
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      disabled={isLoading}
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />
@@ -148,6 +160,7 @@ function Index() {
                     onValueChange={(value) =>
                       setFormData({ ...formData, role: value })
                     }
+                    disabled={isLoading}
                   >
                     <SelectTrigger className="h-11 border-gray-200 focus:border-gray-400 focus:ring-gray-400">
                       <SelectValue placeholder="Select your role" />
@@ -162,8 +175,16 @@ function Index() {
                 <Button 
                   type="submit" 
                   className="w-full h-11 bg-gradient-to-r from-gray-900 to-gray-700 hover:from-gray-800 hover:to-gray-600 text-white transition-all duration-300"
+                  disabled={isLoading}
                 >
-                  Sign in
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    'Sign in'
+                  )}
                 </Button>
               </form>
             </CardContent>
