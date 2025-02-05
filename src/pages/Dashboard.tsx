@@ -44,6 +44,90 @@ const DUMMY_DATA = [
     assignedTo: "maker",
     createdAt: "Jan 28, 2025, 1:53:36 PM",
     updatedAt: "Feb 5, 2025, 11:50:54 AM"
+  },
+  {
+    workflow: "Credit Card Application",
+    applicationId: "CC789456123",
+    status: "Initiated (2 Steps Done)",
+    currentActivity: {
+      name: "Income Verification",
+      status: "Pending"
+    },
+    assignedTo: "verifier",
+    createdAt: "Feb 1, 2025, 9:30:00 AM",
+    updatedAt: "Feb 5, 2025, 3:15:00 PM"
+  },
+  {
+    workflow: "Personal Loan",
+    applicationId: "PL456789012",
+    status: "Initiated (1 Step Done)",
+    currentActivity: {
+      name: "Document Upload",
+      status: "In Progress"
+    },
+    assignedTo: "processor",
+    createdAt: "Feb 2, 2025, 2:45:00 PM",
+    updatedAt: "Feb 5, 2025, 10:30:00 AM"
+  },
+  {
+    workflow: "Home Loan",
+    applicationId: "HL123456789",
+    status: "Initiated (3 Steps Done)",
+    currentActivity: {
+      name: "Property Valuation",
+      status: "Scheduled"
+    },
+    assignedTo: "evaluator",
+    createdAt: "Jan 29, 2025, 11:20:00 AM",
+    updatedAt: "Feb 5, 2025, 9:45:00 AM"
+  },
+  {
+    workflow: "Auto Loan",
+    applicationId: "AL987654321",
+    status: "Initiated (2 Steps Done)",
+    currentActivity: {
+      name: "Vehicle Inspection",
+      status: "Pending"
+    },
+    assignedTo: "inspector",
+    createdAt: "Feb 4, 2025, 3:30:00 PM",
+    updatedAt: "Feb 5, 2025, 4:20:00 PM"
+  },
+  {
+    workflow: "Business Loan",
+    applicationId: "BL234567890",
+    status: "Initiated (1 Step Done)",
+    currentActivity: {
+      name: "Business Verification",
+      status: "Under Review"
+    },
+    assignedTo: "analyst",
+    createdAt: "Feb 3, 2025, 1:15:00 PM",
+    updatedAt: "Feb 5, 2025, 2:00:00 PM"
+  },
+  {
+    workflow: "Education Loan",
+    applicationId: "EL345678901",
+    status: "Initiated (2 Steps Done)",
+    currentActivity: {
+      name: "Institution Verification",
+      status: "In Progress"
+    },
+    assignedTo: "verifier",
+    createdAt: "Feb 2, 2025, 10:00:00 AM",
+    updatedAt: "Feb 5, 2025, 11:30:00 AM"
+  },
+  {
+    workflow: "Gold Loan",
+    applicationId: "GL456789012",
+    status: "Initiated (1 Step Done)",
+    currentActivity: {
+      name: "Gold Evaluation",
+      status: "Scheduled"
+    },
+    assignedTo: "appraiser",
+    createdAt: "Feb 1, 2025, 4:45:00 PM",
+    updatedAt: "Feb 5, 2025, 1:15:00 PM"
   }
 ];
 
@@ -100,8 +184,8 @@ const Dashboard = () => {
       </div>
 
       {/* Controls Section */}
-      <div className="bg-white rounded-lg p-6 shadow-sm mb-6">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="bg-white rounded-lg shadow-sm mb-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 p-6">
           {/* Show Entries Section */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
