@@ -55,22 +55,22 @@ export const DashboardTable = ({
     {
       text: "asdfasdf",
       timestamp: "05 February 2025, 1:28 PM",
-      author: "checker"
+      author: "dinesh"
     },
     {
       text: "Return reason: To validate photo again",
       timestamp: "31 January 2025, 2:17 PM",
-      author: "checker"
+      author: "dinesh"
     },
     {
-      text: "Return by checker",
+      text: "Return by dinesh",
       timestamp: "31 January 2025, 2:17 PM",
-      author: "checker"
+      author: "dinesh"
     },
     {
       text: "Reject for photo",
       timestamp: "31 January 2025, 2:16 PM",
-      author: "maker"
+      author: "muzzu"
     }
   ]);
 
