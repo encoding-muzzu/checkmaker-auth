@@ -154,7 +154,7 @@ export const CustomerDetailsDialog = ({
                 ))}
                 {/* Editable Fields */}
                 <div className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
-                  <span className="text-gray-600">ITR Flag</span>
+                  <span className="text-gray-600 my-auto">ITR Flag</span>
                   <div className="flex items-center gap-2">
                     <Input 
                       value={itrFlag}
@@ -167,7 +167,7 @@ export const CustomerDetailsDialog = ({
                   </div>
                 </div>
                 <div className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
-                  <span className="text-gray-600">LRS Amount Consumed(USD)</span>
+                  <span className="text-gray-600 my-auto">LRS Amount Consumed(USD)</span>
                   <div className="flex items-center gap-2">
                     <Input 
                       value={lrsAmount}
@@ -180,7 +180,7 @@ export const CustomerDetailsDialog = ({
                   </div>
                 </div>
                 <div className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
-                  <span className="text-gray-600">Decision</span>
+                  <span className="text-gray-600 my-auto">Decision</span>
                   <div className="flex items-center gap-2">
                     <Select value={decision} onValueChange={setDecision}>
                       <SelectTrigger className="w-32 bg-gray-50 rounded-[4px]">
@@ -242,7 +242,7 @@ export const CustomerDetailsDialog = ({
                   <div ref={messagesEndRef} />
                 </div>
 
-                <div className="flex gap-2 bg-white p-3 rounded-lg shadow-sm border border-gray-100">
+                <div className="flex items-center gap-2 bg-white p-3 rounded-lg shadow-sm border border-gray-100">
                   <Input
                     placeholder="Add a note..."
                     value={newNote}
@@ -252,7 +252,7 @@ export const CustomerDetailsDialog = ({
                   />
                   <Button 
                     size="icon" 
-                    className="bg-blue-600 hover:bg-blue-700 rounded-full h-8 w-8"
+                    className="bg-black hover:bg-gray-900 rounded-full h-8 w-8"
                     onClick={handleSubmitMessage}
                   >
                     <Send className="h-4 w-4" />
