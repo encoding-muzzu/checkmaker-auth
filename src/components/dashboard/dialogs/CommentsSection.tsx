@@ -28,7 +28,7 @@ export const CommentsSection = ({ conversations, messagesEndRef }: CommentsSecti
             {conversations.map((conversation, index) => (
               <div 
                 key={index} 
-                className={`flex gap-3 ${conversation.author === 'dinesh' ? 'justify-start' : 'justify-end'}`}
+                className={`flex ${conversation.author === 'dinesh' ? 'justify-start' : 'justify-end'}`}
               >
                 <div className={`flex gap-3 max-w-[80%] ${conversation.author === 'muzzu' ? 'flex-row-reverse' : ''}`}>
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
