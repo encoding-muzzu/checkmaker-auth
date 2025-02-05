@@ -64,7 +64,7 @@ export const CustomerDetailsDialog = ({
       const newMessage = {
         text: newNote,
         timestamp: format(new Date(), "dd MMMM yyyy, h:mm a"),
-        author: "checker" // You can make this dynamic based on user role
+        author: "maker" // Changed to maker since user is logged in as maker
       };
       setConversations(prev => [newMessage, ...prev]);
       setNewNote("");
