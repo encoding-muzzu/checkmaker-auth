@@ -235,7 +235,7 @@ const Dashboard = () => {
       <div className="bg-white border-b border-[#e0e0e0] mb-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 py-6">
           {/* Show Entries Section */}
-          <div className="flex items-center gap-3 px-6">
+          <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <Label htmlFor="entries-per-page" className="text-sm text-gray-600 whitespace-nowrap">
                 Show entries
