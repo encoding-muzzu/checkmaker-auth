@@ -7,9 +7,20 @@ import { ApplicationData } from "@/types/dashboard";
 interface DashboardTableProps {
   data: ApplicationData[];
   isDense: boolean;
+  currentPage: number;
+  totalPages: number;
+  onNextPage: () => void;
+  onPreviousPage: () => void;
 }
 
-export const DashboardTable = ({ data, isDense }: DashboardTableProps) => {
+export const DashboardTable = ({ 
+  data, 
+  isDense,
+  currentPage,
+  totalPages,
+  onNextPage,
+  onPreviousPage
+}: DashboardTableProps) => {
   return (
     <div className="bg-white rounded-lg shadow">
       <Table>
@@ -54,9 +65,23 @@ export const DashboardTable = ({ data, isDense }: DashboardTableProps) => {
           <TableRow>
             <TableCell colSpan={8}>
               <div className="flex items-center justify-center gap-4 py-2">
-                <button className="text-gray-500 hover:text-gray-700">Previous</button>
-                <span className="px-3 py-1 bg-gray-100 rounded">1</span>
-                <button className="text-gray-500 hover:text-gray-700">Next</button>
+                <button 
+                  className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                  onClick={onPreviousPage}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </button>
+                <span className="px-3 py-1 bg-gray-100 rounded">
+                  {currentPage} of {totalPages}
+                </span>
+                <button 
+                  className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                  onClick={onNextPage}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </button>
               </div>
             </TableCell>
           </TableRow>

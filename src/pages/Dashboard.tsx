@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { TabButton } from "@/components/dashboard/TabButton";
 import { SearchControls } from "@/components/dashboard/SearchControls";
@@ -172,9 +173,35 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDense, setIsDense] = useState(false);
   const [entriesPerPage, setEntriesPerPage] = useState("10");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handleSearch = () => {
     console.log("Searching in column:", searchColumn, "for query:", searchQuery);
+  };
+
+  // Calculate pagination
+  const pageSize = parseInt(entriesPerPage);
+  const totalPages = Math.ceil(DUMMY_DATA.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const currentData = DUMMY_DATA.slice(startIndex, endIndex);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prev => prev - 1);
+    }
+  };
+
+  // Reset to first page when entries per page changes
+  const handleEntriesPerPageChange = (value: string) => {
+    setEntriesPerPage(value);
+    setCurrentPage(1);
   };
 
   return (
@@ -214,7 +241,7 @@ const Dashboard = () => {
               <Label htmlFor="entries-per-page" className="text-sm text-gray-600 whitespace-nowrap">
                 Show entries
               </Label>
-              <Select value={entriesPerPage} onValueChange={setEntriesPerPage}>
+              <Select value={entriesPerPage} onValueChange={handleEntriesPerPageChange}>
                 <SelectTrigger className="w-[100px] bg-white border-gray-200">
                   <SelectValue placeholder="10" />
                 </SelectTrigger>
@@ -240,7 +267,14 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <DashboardTable data={DUMMY_DATA} isDense={isDense} />
+      <DashboardTable 
+        data={currentData} 
+        isDense={isDense}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onNextPage={handleNextPage}
+        onPreviousPage={handlePreviousPage}
+      />
     </div>
   );
 };
