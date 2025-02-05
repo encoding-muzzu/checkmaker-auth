@@ -28,19 +28,19 @@ export const CommentsSection = ({ conversations, messagesEndRef }: CommentsSecti
             {conversations.map((conversation, index) => (
               <div 
                 key={index} 
-                className={`flex gap-3 ${conversation.author === 'checker' ? 'justify-start' : 'justify-end'}`}
+                className={`flex gap-3 ${conversation.author === 'dinesh' ? 'justify-start' : 'justify-end'}`}
               >
-                <div className={`flex gap-3 max-w-[80%] ${conversation.author === 'maker' ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex gap-3 max-w-[80%] ${conversation.author === 'muzzu' ? 'flex-row-reverse' : ''}`}>
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    conversation.author === 'checker' ? 'bg-blue-100' : 'bg-green-100'
+                    conversation.author === 'dinesh' ? 'bg-blue-100' : 'bg-green-100'
                   }`}>
                     <User className={`h-4 w-4 ${
-                      conversation.author === 'checker' ? 'text-blue-600' : 'text-green-600'
+                      conversation.author === 'dinesh' ? 'text-blue-600' : 'text-green-600'
                     }`} />
                   </div>
                   <div className="flex-1">
                     <div className={`rounded-lg p-3 shadow-sm ${
-                      conversation.author === 'checker' 
+                      conversation.author === 'dinesh' 
                         ? 'bg-white border-l-4 border-l-blue-500' 
                         : 'bg-green-50 border-r-4 border-r-green-500'
                     }`}>
