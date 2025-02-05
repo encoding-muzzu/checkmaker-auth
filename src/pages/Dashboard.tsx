@@ -1,4 +1,3 @@
-```typescript
 import { useState } from "react";
 import { TabButton } from "@/components/dashboard/TabButton";
 import { SearchControls } from "@/components/dashboard/SearchControls";
@@ -247,4 +246,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-```
