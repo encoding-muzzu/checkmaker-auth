@@ -52,7 +52,7 @@ export const DashboardTable = ({
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex items-center gap-1 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                  className="flex items-center gap-1 bg-black text-white hover:bg-gray-800 rounded-full border-none"
                 >
                   <Eye className="h-4 w-4" />
                   View
@@ -90,3 +90,4 @@ export const DashboardTable = ({
     </div>
   );
 };
+
