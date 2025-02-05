@@ -40,6 +40,28 @@ export const DashboardTable = ({
   const [selectedRow, setSelectedRow] = useState<ApplicationData | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  // Update the status randomly for demo purposes
+  const statuses = [
+    "New",
+    "Initiated by maker",
+    "Pending checker approval",
+    "Completed",
+    "Rejected by Maker",
+    "Returned by Checker",
+    "Rejected by Checker",
+    "Resubmitted to Checker"
+  ];
+
+  const getRandomStatus = () => {
+    const randomIndex = Math.floor(Math.random() * statuses.length);
+    return statuses[randomIndex];
+  };
+
+  const dataWithRandomStatus = data.map(row => ({
+    ...row,
+    status: getRandomStatus()
+  }));
+
   return (
     <div className="bg-white">
       <Table>
@@ -52,7 +74,7 @@ export const DashboardTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((row, index) => (
+          {dataWithRandomStatus.map((row, index) => (
             <TableRow key={index} className={`border-b border-[rgb(224,224,224)] ${isDense ? 'py-6' : 'py-2'}`}>
               <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.createdAt}</TableCell>
               <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.applicationId}</TableCell>

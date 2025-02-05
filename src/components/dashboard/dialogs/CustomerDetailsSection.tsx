@@ -1,6 +1,7 @@
 
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { CheckCircle2, Edit2 } from "lucide-react";
 
 interface CustomerDetailsSectionProps {
@@ -42,14 +43,12 @@ export const CustomerDetailsSection = ({
           <div className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
             <span className="text-gray-600 my-auto">ITR Flag</span>
             <div className="flex items-center gap-2">
-              <Input 
-                value={itrFlag}
-                onChange={(e) => setItrFlag(e.target.value)}
-                className="w-32 h-8 bg-gray-50 rounded-[4px]"
+              <span className="text-sm text-gray-600">{itrFlag === "true" ? "Yes" : "No"}</span>
+              <Switch 
+                checked={itrFlag === "true"}
+                onCheckedChange={(checked) => setItrFlag(checked ? "true" : "false")}
+                className="data-[state=checked]:bg-black"
               />
-              <button onClick={() => setIsEditing(true)} className="text-black hover:text-gray-700">
-                <Edit2 className="h-4 w-4" />
-              </button>
             </div>
           </div>
           <div className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
