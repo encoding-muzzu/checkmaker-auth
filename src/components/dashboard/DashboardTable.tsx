@@ -79,7 +79,7 @@ export const DashboardTable = ({
               <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.createdAt}</TableCell>
               <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.applicationId}</TableCell>
               <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
-                <span className={`px-2 py-1 rounded-sm ${getStatusColor(row.status)}`}>
+                <span className={`px-[33px] py-[5px] rounded-[10px] ${getStatusColor(row.status)}`}>
                   {row.status}
                 </span>
               </TableCell>
