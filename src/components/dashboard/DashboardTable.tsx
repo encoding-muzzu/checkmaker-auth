@@ -52,9 +52,9 @@ export const DashboardTable = ({
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex items-center gap-1 bg-black text-white hover:bg-gray-800 rounded-full border-none"
+                  className="flex items-center gap-1 bg-white text-black hover:bg-gray-100 rounded-full border border-black px-2 py-1 text-xs"
                 >
-                  <Eye className="h-4 w-4" />
+                  <Eye className="h-3 w-3" />
                   View
                 </Button>
               </TableCell>
