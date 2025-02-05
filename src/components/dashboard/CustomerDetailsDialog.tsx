@@ -1,10 +1,9 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Edit2, MessageSquare, Send, CheckCircle2, Clock, Upload, Download, Eye, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
@@ -24,6 +23,7 @@ export const CustomerDetailsDialog = ({
   const [itrFlag, setItrFlag] = useState("true");
   const [lrsAmount, setLrsAmount] = useState("2345");
   const [decision, setDecision] = useState("Approve");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [conversations, setConversations] = useState([
     {
       text: "asdfasdf",
@@ -47,6 +47,32 @@ export const CustomerDetailsDialog = ({
     }
   ]);
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [conversations]);
+
+  const handleSubmitMessage = () => {
+    if (newNote.trim()) {
+      const newMessage = {
+        text: newNote,
+        timestamp: format(new Date(), "dd MMMM yyyy, h:mm a"),
+        author: "maker"
+      };
+      setConversations(prev => [...prev, newMessage]);
+      setNewNote("");
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSubmitMessage();
+    }
+  };
+
   const customerDetails = [
     { label: "ARN", value: "1895637456" },
     { label: "Kit No", value: "6670000033" },
@@ -58,24 +84,6 @@ export const CustomerDetailsDialog = ({
     { label: "Card Type", value: "Perso" },
     { label: "Processing Type", value: "Online" }
   ];
-
-  const handleSubmitMessage = () => {
-    if (newNote.trim()) {
-      const newMessage = {
-        text: newNote,
-        timestamp: format(new Date(), "dd MMMM yyyy, h:mm a"),
-        author: "maker" // Changed to maker since user is logged in as maker
-      };
-      setConversations(prev => [...prev, newMessage]); // Changed to append at the end
-      setNewNote("");
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSubmitMessage();
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -202,8 +210,7 @@ export const CustomerDetailsDialog = ({
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4">
               <div className="space-y-4 bg-gray-50/50 p-6 rounded-xl">
-                {/* Added flex-col-reverse to show latest messages at bottom */}
-                <div className="flex flex-col-reverse space-y-reverse space-y-4 mb-4 h-[300px] overflow-y-auto custom-scrollbar">
+                <div className="flex flex-col space-y-4 mb-4 h-[300px] overflow-y-auto custom-scrollbar">
                   {conversations.map((conversation, index) => (
                     <div 
                       key={index} 
@@ -232,6 +239,7 @@ export const CustomerDetailsDialog = ({
                       </div>
                     </div>
                   ))}
+                  <div ref={messagesEndRef} />
                 </div>
 
                 <div className="flex gap-2 bg-white p-3 rounded-lg shadow-sm border border-gray-100">
