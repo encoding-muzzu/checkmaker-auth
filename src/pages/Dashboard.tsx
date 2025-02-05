@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { TabButton } from "@/components/dashboard/TabButton";
 import { SearchControls } from "@/components/dashboard/SearchControls";
@@ -109,7 +110,7 @@ const DUMMY_DATA: ApplicationData[] = [
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("pending");
-  const [searchColumn, setSearchColumn] = useState("workflow");
+  const [searchColumn, setSearchColumn] = useState("applicationId"); // Changed default value to applicationId
   const [searchQuery, setSearchQuery] = useState("");
   const [entriesPerPage, setEntriesPerPage] = useState("10");
   const [currentPage, setCurrentPage] = useState(1);
