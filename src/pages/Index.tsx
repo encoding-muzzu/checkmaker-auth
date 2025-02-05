@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Eye, EyeOff, User, Lock } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
@@ -42,8 +41,8 @@ function Index() {
       return;
     }
 
-    // Check dummy credentials for muzzu
-    if (formData.role === "maker" && formData.username === "muzzu" && formData.password === "password123") {
+    // Updated credential check
+    if (formData.role === "maker" && formData.username === "maker" && formData.password === "password123") {
       toast({
         title: "Login successful",
         description: "Welcome to the dashboard",
