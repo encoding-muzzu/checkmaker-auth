@@ -25,7 +25,7 @@ export const SearchControls = ({
         <SlidersHorizontal className="w-4 h-4 text-gray-500" />
         <Select value={searchColumn} onValueChange={onSearchColumnChange}>
           <SelectTrigger className="w-[180px] bg-white border-gray-200">
-            <SelectValue placeholder="Select column" />
+            <SelectValue placeholder="Filter by column" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="applicationId">Application ID</SelectItem>
@@ -54,3 +54,4 @@ export const SearchControls = ({
     </div>
   );
 };
+
