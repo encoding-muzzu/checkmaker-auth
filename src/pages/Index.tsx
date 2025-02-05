@@ -55,13 +55,6 @@ const Index = () => {
           <p className="text-gray-300 text-lg">
             Welcome to the next generation of secure authentication and authorization.
           </p>
-          <div className="mt-8">
-            <img
-              src="/lovable-uploads/b7ce3acf-3fec-4727-bc1b-c361a466e4de.png"
-              alt="Technology"
-              className="rounded-lg w-full max-w-md opacity-80"
-            />
-          </div>
         </div>
         
         <div className="flex items-center justify-center">
