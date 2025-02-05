@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { TabButton } from "@/components/dashboard/TabButton";
 import { SearchControls } from "@/components/dashboard/SearchControls";
@@ -11,7 +12,7 @@ const DUMMY_DATA: ApplicationData[] = [
   {
     workflow: "kycform",
     applicationId: "20250203114417182GT",
-    status: "Initiated (0 Steps Done)",
+    status: "New",
     currentActivity: {
       name: "Form Task",
       status: "Initiated"
@@ -23,7 +24,7 @@ const DUMMY_DATA: ApplicationData[] = [
   {
     workflow: "HDFC DBOPS",
     applicationId: "871307",
-    status: "Initiated (1 Step Done)",
+    status: "Initiated by maker",
     currentActivity: {
       name: "Customer Details",
       status: "Under Approval"
@@ -35,7 +36,7 @@ const DUMMY_DATA: ApplicationData[] = [
   {
     workflow: "HDFC DBOPS",
     applicationId: "1895637456",
-    status: "Initiated (1 Step Done)",
+    status: "Pending checker approval",
     currentActivity: {
       name: "Customer Details",
       status: "Initiated"
@@ -47,7 +48,7 @@ const DUMMY_DATA: ApplicationData[] = [
   {
     workflow: "Credit Card Application",
     applicationId: "CC789456123",
-    status: "Initiated (2 Steps Done)",
+    status: "Completed",
     currentActivity: {
       name: "Income Verification",
       status: "Pending"
@@ -59,7 +60,7 @@ const DUMMY_DATA: ApplicationData[] = [
   {
     workflow: "Personal Loan",
     applicationId: "PL456789012",
-    status: "Initiated (1 Step Done)",
+    status: "Rejected by Maker",
     currentActivity: {
       name: "Document Upload",
       status: "In Progress"
@@ -71,7 +72,7 @@ const DUMMY_DATA: ApplicationData[] = [
   {
     workflow: "Home Loan",
     applicationId: "HL123456789",
-    status: "Initiated (3 Steps Done)",
+    status: "Returned by Checker",
     currentActivity: {
       name: "Property Valuation",
       status: "Scheduled"
@@ -83,7 +84,7 @@ const DUMMY_DATA: ApplicationData[] = [
   {
     workflow: "Auto Loan",
     applicationId: "AL987654321",
-    status: "Initiated (2 Steps Done)",
+    status: "Rejected by Checker",
     currentActivity: {
       name: "Vehicle Inspection",
       status: "Pending"
@@ -95,7 +96,7 @@ const DUMMY_DATA: ApplicationData[] = [
   {
     workflow: "Business Loan",
     applicationId: "BL234567890",
-    status: "Initiated (1 Step Done)",
+    status: "Resubmitted to Checker",
     currentActivity: {
       name: "Business Verification",
       status: "Under Review"

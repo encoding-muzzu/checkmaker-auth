@@ -3,8 +3,9 @@ import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { ApplicationData } from "@/types/dashboard";
-import { CustomerDetailsDialog } from "./CustomerDetailsDialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useState } from "react";
+import { CustomerDetailsDialog } from "./CustomerDetailsDialog";
 
 interface DashboardTableProps {
   data: ApplicationData[];
@@ -38,7 +39,7 @@ export const DashboardTable = ({
   onPreviousPage
 }: DashboardTableProps) => {
   const [selectedRow, setSelectedRow] = useState<ApplicationData | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   return (
     <div className="bg-white">
@@ -68,7 +69,7 @@ export const DashboardTable = ({
                   className="flex items-center gap-1 bg-transparent text-black hover:bg-transparent px-0 py-1 text-xs border-0"
                   onClick={() => {
                     setSelectedRow(row);
-                    setDialogOpen(true);
+                    setSheetOpen(true);
                   }}
                 >
                   <Eye className="h-3 w-3" />
@@ -105,11 +106,18 @@ export const DashboardTable = ({
         </TableFooter>
       </Table>
 
-      <CustomerDetailsDialog 
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        customerData={selectedRow}
-      />
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Application Details</SheetTitle>
+          </SheetHeader>
+          <CustomerDetailsDialog 
+            open={true}
+            onOpenChange={() => setSheetOpen(false)}
+            customerData={selectedRow}
+          />
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
