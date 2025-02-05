@@ -43,7 +43,7 @@ function Index() {
     }
 
     // Check dummy credentials for muzzu
-    if (formData.role === "muzzu" && formData.username === "muzzu" && formData.password === "password123") {
+    if (formData.role === "maker" && formData.username === "muzzu" && formData.password === "password123") {
       toast({
         title: "Login successful",
         description: "Welcome to the dashboard",
@@ -154,8 +154,8 @@ function Index() {
                       <SelectValue placeholder="Select your role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="muzzu">Muzzu</SelectItem>
-                      <SelectItem value="dinesh">Dinesh</SelectItem>
+                      <SelectItem value="maker">Maker</SelectItem>
+                      <SelectItem value="checker">Checker</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
