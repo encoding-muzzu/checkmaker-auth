@@ -171,7 +171,7 @@ export const DashboardTable = ({
       </Table>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="!w-[70%] !max-w-[70%] h-[96vh] overflow-hidden flex flex-col border-l mt-[2%] mr-[2%] rounded-[10px]">
+        <SheetContent className="!w-[70%] !max-w-[70%] h-[94vh] !rounded-[10px] overflow-hidden flex flex-col border-l mt-[2%] mr-[2%]">
           <SheetHeader>
             <SheetTitle>Application Details</SheetTitle>
           </SheetHeader>
