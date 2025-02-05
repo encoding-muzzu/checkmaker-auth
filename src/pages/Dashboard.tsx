@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { TabButton } from "@/components/dashboard/TabButton";
 import { SearchControls } from "@/components/dashboard/SearchControls";
@@ -30,7 +31,33 @@ const DUMMY_DATA: ApplicationData[] = [
     },
     assignedTo: "verifier",
     createdAt: "Feb 1, 2025, 9:30:00 AM",
-    updatedAt: "Feb 5, 2025, 3:15:00 PM"
+    updatedAt: "Feb 5, 2025, 3:15:00 PM",
+    documents: [
+      {
+        name: "Photo ID",
+        status: "Approved",
+        type: "image/jpeg",
+        uploadedAt: "Feb 1, 2025, 9:35:00 AM"
+      },
+      {
+        name: "Proof of Income",
+        status: "Pending Review",
+        type: "application/pdf",
+        uploadedAt: "Feb 1, 2025, 9:40:00 AM"
+      },
+      {
+        name: "Bank Statements",
+        status: "Approved",
+        type: "application/pdf",
+        uploadedAt: "Feb 1, 2025, 9:45:00 AM"
+      },
+      {
+        name: "Employment Letter",
+        status: "Rejected",
+        type: "application/pdf",
+        uploadedAt: "Feb 2, 2025, 10:15:00 AM"
+      }
+    ]
   },
   {
     workflow: "Personal Loan",
