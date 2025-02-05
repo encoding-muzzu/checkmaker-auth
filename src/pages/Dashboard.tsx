@@ -1,4 +1,4 @@
-
+```typescript
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
@@ -128,6 +128,42 @@ const DUMMY_DATA = [
     assignedTo: "appraiser",
     createdAt: "Feb 1, 2025, 4:45:00 PM",
     updatedAt: "Feb 5, 2025, 1:15:00 PM"
+  },
+  {
+    workflow: "Small Business Loan",
+    applicationId: "SB567890123",
+    status: "Initiated (2 Steps Done)",
+    currentActivity: {
+      name: "Financial Assessment",
+      status: "Under Review"
+    },
+    assignedTo: "analyst",
+    createdAt: "Feb 5, 2025, 8:30:00 AM",
+    updatedAt: "Feb 5, 2025, 5:15:00 PM"
+  },
+  {
+    workflow: "Mortgage Refinance",
+    applicationId: "MR678901234",
+    status: "Initiated (1 Step Done)",
+    currentActivity: {
+      name: "Property Assessment",
+      status: "Scheduled"
+    },
+    assignedTo: "evaluator",
+    createdAt: "Feb 4, 2025, 11:45:00 AM",
+    updatedAt: "Feb 5, 2025, 6:30:00 PM"
+  },
+  {
+    workflow: "Vehicle Leasing",
+    applicationId: "VL789012345",
+    status: "Initiated (3 Steps Done)",
+    currentActivity: {
+      name: "Vehicle Verification",
+      status: "In Progress"
+    },
+    assignedTo: "inspector",
+    createdAt: "Feb 3, 2025, 2:15:00 PM",
+    updatedAt: "Feb 5, 2025, 7:45:00 PM"
   }
 ];
 
@@ -262,12 +298,11 @@ const Dashboard = () => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Created At</TableHead>
               <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Workflow</TableHead>
               <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Application ID</TableHead>
               <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Status</TableHead>
               <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Current Activity</TableHead>
-              <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Assigned To</TableHead>
-              <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Created At</TableHead>
               <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Updated At</TableHead>
               <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Action</TableHead>
             </TableRow>
@@ -275,6 +310,7 @@ const Dashboard = () => {
           <TableBody>
             {DUMMY_DATA.map((row, index) => (
               <TableRow key={index} className={`border-b border-[rgb(224,224,224)] ${isDense ? 'py-6' : 'py-2'}`}>
+                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.createdAt}</TableCell>
                 <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.workflow}</TableCell>
                 <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.applicationId}</TableCell>
                 <TableCell className={`text-[0.8125rem] leading-[1.43] text-blue-500 ${isDense ? 'py-6' : 'py-4'}`}>{row.status}</TableCell>
@@ -283,14 +319,16 @@ const Dashboard = () => {
                   <br />
                   <span className="text-gray-500">Status: {row.currentActivity.status}</span>
                 </TableCell>
-                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.assignedTo}</TableCell>
-                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.createdAt}</TableCell>
                 <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.updatedAt}</TableCell>
                 <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
-                  <button className="flex items-center gap-1 text-blue-500 hover:text-blue-700">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex items-center gap-1 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                  >
                     <Eye className="h-4 w-4" />
                     View
-                  </button>
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -313,3 +351,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+```
