@@ -1,7 +1,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Edit2, MessageSquare, Send, CheckCircle2, Clock, Upload, Download, Eye, Trash2, User } from "lucide-react";
+import { Edit2, MessageSquare, Send, CheckCircle2, Clock, Upload, Download, Eye, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
@@ -24,20 +24,7 @@ export const CustomerDetailsDialog = ({
   const [itrFlag, setItrFlag] = useState("true");
   const [lrsAmount, setLrsAmount] = useState("2345");
   const [decision, setDecision] = useState("Approve");
-
-  const customerDetails = [
-    { label: "ARN", value: "1895637456" },
-    { label: "Kit No", value: "6670000033" },
-    { label: "Customer Name", value: "GrupoHoteleroCubanacan" },
-    { label: "PAN", value: "QDDBW1536A" },
-    { label: "Total Amount Loaded (USD)", value: "6441.00" },
-    { label: "Customer Type", value: "ETB" },
-    { label: "Product Variant", value: "PRD8001" },
-    { label: "Card Type", value: "Perso" },
-    { label: "Processing Type", value: "Online" }
-  ];
-
-  const conversations = [
+  const [conversations, setConversations] = useState([
     {
       text: "asdfasdf",
       timestamp: "05 February 2025, 1:28 PM",
@@ -58,7 +45,37 @@ export const CustomerDetailsDialog = ({
       timestamp: "31 January 2025, 2:16 PM",
       author: "maker"
     }
+  ]);
+
+  const customerDetails = [
+    { label: "ARN", value: "1895637456" },
+    { label: "Kit No", value: "6670000033" },
+    { label: "Customer Name", value: "GrupoHoteleroCubanacan" },
+    { label: "PAN", value: "QDDBW1536A" },
+    { label: "Total Amount Loaded (USD)", value: "6441.00" },
+    { label: "Customer Type", value: "ETB" },
+    { label: "Product Variant", value: "PRD8001" },
+    { label: "Card Type", value: "Perso" },
+    { label: "Processing Type", value: "Online" }
   ];
+
+  const handleSubmitMessage = () => {
+    if (newNote.trim()) {
+      const newMessage = {
+        text: newNote,
+        timestamp: format(new Date(), "dd MMMM yyyy, h:mm a"),
+        author: "checker" // You can make this dynamic based on user role
+      };
+      setConversations(prev => [newMessage, ...prev]);
+      setNewNote("");
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSubmitMessage();
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -207,14 +224,9 @@ export const CustomerDetailsDialog = ({
                           }`}>
                             <p className="text-sm text-gray-700">{conversation.text}</p>
                           </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs text-gray-500">
-                              {conversation.author} | {conversation.timestamp}
-                            </span>
-                            <button className="text-gray-400 hover:text-red-500 transition-colors">
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                          </div>
+                          <span className="text-xs text-gray-500 mt-1 block">
+                            {conversation.author} | {conversation.timestamp}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -226,11 +238,13 @@ export const CustomerDetailsDialog = ({
                     placeholder="Add a note..."
                     value={newNote}
                     onChange={(e) => setNewNote(e.target.value)}
+                    onKeyDown={handleKeyPress}
                     className="bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-400"
                   />
                   <Button 
                     size="icon" 
                     className="bg-blue-600 hover:bg-blue-700 rounded-full h-8 w-8"
+                    onClick={handleSubmitMessage}
                   >
                     <Send className="h-4 w-4" />
                   </Button>
