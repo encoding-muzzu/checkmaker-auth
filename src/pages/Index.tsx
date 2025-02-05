@@ -74,13 +74,13 @@ function Index() {
                 <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
                   <Lock className="w-5 h-5" />
                 </div>
-                <p>Enhanced Security Protocols</p>
+                <p>Streamlined Card Issuance</p>
               </div>
               <div className="flex items-center gap-3 text-gray-300">
                 <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
                   <User className="w-5 h-5" />
                 </div>
-                <p>Role-Based Access Control</p>
+                <p>Automated System Updates</p>
               </div>
             </div>
           </div>
