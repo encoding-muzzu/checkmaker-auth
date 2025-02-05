@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import { Eye } from "lucide-react";
+import { Eye, Search, SlidersHorizontal } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -63,13 +64,13 @@ const Dashboard = () => {
       <h1 className="text-2xl font-bold mb-6">Maker Dashboard</h1>
 
       {/* Tabs */}
-      <div className="border-b mb-6">
+      <div className="border-b mb-8">
         <div className="flex gap-8">
           <button
             className={`pb-4 px-1 relative ${
               activeTab === "pending"
                 ? "text-black font-medium before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-black"
-                : "text-gray-500"
+                : "text-gray-500 hover:text-gray-800 transition-colors"
             }`}
             onClick={() => setActiveTab("pending")}
           >
@@ -79,7 +80,7 @@ const Dashboard = () => {
             className={`pb-4 px-1 relative ${
               activeTab === "completed"
                 ? "text-black font-medium before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-black"
-                : "text-gray-500"
+                : "text-gray-500 hover:text-gray-800 transition-colors"
             }`}
             onClick={() => setActiveTab("completed")}
           >
@@ -89,7 +90,7 @@ const Dashboard = () => {
             className={`pb-4 px-1 relative ${
               activeTab === "reopened"
                 ? "text-black font-medium before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-black"
-                : "text-gray-500"
+                : "text-gray-500 hover:text-gray-800 transition-colors"
             }`}
             onClick={() => setActiveTab("reopened")}
           >
@@ -98,64 +99,77 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Controls Row */}
-      <div className="flex justify-between items-center mb-6">
-        {/* Show Entries Dropdown */}
-        <div className="flex items-center gap-2">
-          <Label htmlFor="entries-per-page" className="text-sm text-gray-600">Show entries</Label>
-          <Select value={entriesPerPage} onValueChange={setEntriesPerPage}>
-            <SelectTrigger className="w-[100px] bg-white">
-              <SelectValue placeholder="10" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="20">20</SelectItem>
-              <SelectItem value="30">30</SelectItem>
-              <SelectItem value="40">40</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      {/* Controls Section */}
+      <div className="bg-white rounded-lg p-6 shadow-sm mb-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          {/* Show Entries Section */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="entries-per-page" className="text-sm text-gray-600 whitespace-nowrap">
+                Show entries
+              </Label>
+              <Select value={entriesPerPage} onValueChange={setEntriesPerPage}>
+                <SelectTrigger className="w-[100px] bg-white border-gray-200">
+                  <SelectValue placeholder="10" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="30">30</SelectItem>
+                  <SelectItem value="40">40</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-        {/* Search Controls */}
-        <div className="flex items-center gap-4 max-w-md">
-          <Select value={searchColumn} onValueChange={setSearchColumn}>
-            <SelectTrigger className="w-[180px] bg-white">
-              <SelectValue placeholder="Select column" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="workflow">Workflow</SelectItem>
-              <SelectItem value="applicationId">Application ID</SelectItem>
-              <SelectItem value="status">Status</SelectItem>
-              <SelectItem value="currentActivity">Current Activity</SelectItem>
-              <SelectItem value="assignedTo">Assigned To</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="flex gap-2">
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="bg-white"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <Button 
-              onClick={handleSearch}
-              className="bg-black text-white hover:bg-black/90"
-            >
-              Search
-            </Button>
+            <div className="flex items-center gap-2 ml-6">
+              <Label htmlFor="dense-mode" className="text-sm text-gray-600 whitespace-nowrap">
+                Dense Padding
+              </Label>
+              <Switch
+                id="dense-mode"
+                checked={isDense}
+                onCheckedChange={setIsDense}
+              />
+            </div>
           </div>
-        </div>
 
-        {/* Dense Toggle */}
-        <div className="flex items-center gap-2">
-          <Label htmlFor="dense-mode" className="text-sm text-gray-600">Dense Padding</Label>
-          <Switch
-            id="dense-mode"
-            checked={isDense}
-            onCheckedChange={setIsDense}
-          />
+          {/* Search Section */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4 text-gray-500" />
+              <Select value={searchColumn} onValueChange={setSearchColumn}>
+                <SelectTrigger className="w-[180px] bg-white border-gray-200">
+                  <SelectValue placeholder="Select column" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="workflow">Workflow</SelectItem>
+                  <SelectItem value="applicationId">Application ID</SelectItem>
+                  <SelectItem value="status">Status</SelectItem>
+                  <SelectItem value="currentActivity">Current Activity</SelectItem>
+                  <SelectItem value="assignedTo">Assigned To</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="relative flex-1 sm:flex-initial">
+                <Input
+                  type="search"
+                  placeholder="Search..."
+                  className="pl-9 pr-4 py-2 bg-white border-gray-200 w-full sm:w-[240px]"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              </div>
+              <Button 
+                onClick={handleSearch}
+                className="bg-black text-white hover:bg-black/90 px-4"
+              >
+                Search
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
