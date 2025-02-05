@@ -130,7 +130,7 @@ const Dashboard = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Label htmlFor="dense-mode" className="text-sm text-gray-600">Dense</Label>
+          <Label htmlFor="dense-mode" className="text-sm text-gray-600">Dense Padding</Label>
           <Switch
             id="dense-mode"
             checked={isDense}
@@ -156,19 +156,19 @@ const Dashboard = () => {
           </TableHeader>
           <TableBody>
             {DUMMY_DATA.map((row, index) => (
-              <TableRow key={index} className={`border-b border-[rgb(224,224,224)] ${isDense ? 'h-10' : ''}`}>
-                <TableCell className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">{row.workflow}</TableCell>
-                <TableCell className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">{row.applicationId}</TableCell>
-                <TableCell className="text-[0.8125rem] leading-[1.43] text-blue-500">{row.status}</TableCell>
-                <TableCell className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">
+              <TableRow key={index} className={`border-b border-[rgb(224,224,224)] ${isDense ? 'py-6' : 'py-2'}`}>
+                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.workflow}</TableCell>
+                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.applicationId}</TableCell>
+                <TableCell className={`text-[0.8125rem] leading-[1.43] text-blue-500 ${isDense ? 'py-6' : 'py-4'}`}>{row.status}</TableCell>
+                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>
                   {row.currentActivity.name}
                   <br />
                   <span className="text-gray-500">Status: {row.currentActivity.status}</span>
                 </TableCell>
-                <TableCell className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">{row.assignedTo}</TableCell>
-                <TableCell className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">{row.createdAt}</TableCell>
-                <TableCell className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">{row.updatedAt}</TableCell>
-                <TableCell className="text-[0.8125rem] leading-[1.43]">
+                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.assignedTo}</TableCell>
+                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.createdAt}</TableCell>
+                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.updatedAt}</TableCell>
+                <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
                   <button className="flex items-center gap-1 text-blue-500 hover:text-blue-700">
                     <Eye className="h-4 w-4" />
                     View
@@ -195,3 +195,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
