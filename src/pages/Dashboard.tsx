@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { TabButton } from "@/components/dashboard/TabButton";
 import { SearchControls } from "@/components/dashboard/SearchControls";
@@ -20,30 +19,6 @@ const DUMMY_DATA: ApplicationData[] = [
     assignedTo: "superuser",
     createdAt: "Feb 3, 2025, 11:44:17 AM",
     updatedAt: "Feb 3, 2025, 11:44:17 AM"
-  },
-  {
-    workflow: "HDFC DBOPS",
-    applicationId: "871307",
-    status: "Initiated by maker",
-    currentActivity: {
-      name: "Customer Details",
-      status: "Under Approval"
-    },
-    assignedTo: "maker",
-    createdAt: "Jan 30, 2025, 7:11:08 PM",
-    updatedAt: "Feb 5, 2025, 12:06:14 PM"
-  },
-  {
-    workflow: "HDFC DBOPS",
-    applicationId: "1895637456",
-    status: "Pending checker approval",
-    currentActivity: {
-      name: "Customer Details",
-      status: "Initiated"
-    },
-    assignedTo: "maker",
-    createdAt: "Jan 28, 2025, 1:53:36 PM",
-    updatedAt: "Feb 5, 2025, 11:50:54 AM"
   },
   {
     workflow: "Credit Card Application",
@@ -104,66 +79,6 @@ const DUMMY_DATA: ApplicationData[] = [
     assignedTo: "analyst",
     createdAt: "Feb 3, 2025, 1:15:00 PM",
     updatedAt: "Feb 5, 2025, 2:00:00 PM"
-  },
-  {
-    workflow: "Education Loan",
-    applicationId: "EL345678901",
-    status: "Initiated (2 Steps Done)",
-    currentActivity: {
-      name: "Institution Verification",
-      status: "In Progress"
-    },
-    assignedTo: "verifier",
-    createdAt: "Feb 2, 2025, 10:00:00 AM",
-    updatedAt: "Feb 5, 2025, 11:30:00 AM"
-  },
-  {
-    workflow: "Gold Loan",
-    applicationId: "GL456789012",
-    status: "Initiated (1 Step Done)",
-    currentActivity: {
-      name: "Gold Evaluation",
-      status: "Scheduled"
-    },
-    assignedTo: "appraiser",
-    createdAt: "Feb 1, 2025, 4:45:00 PM",
-    updatedAt: "Feb 5, 2025, 1:15:00 PM"
-  },
-  {
-    workflow: "Small Business Loan",
-    applicationId: "SB567890123",
-    status: "Initiated (2 Steps Done)",
-    currentActivity: {
-      name: "Financial Assessment",
-      status: "Under Review"
-    },
-    assignedTo: "analyst",
-    createdAt: "Feb 5, 2025, 8:30:00 AM",
-    updatedAt: "Feb 5, 2025, 5:15:00 PM"
-  },
-  {
-    workflow: "Mortgage Refinance",
-    applicationId: "MR678901234",
-    status: "Initiated (1 Step Done)",
-    currentActivity: {
-      name: "Property Assessment",
-      status: "Scheduled"
-    },
-    assignedTo: "evaluator",
-    createdAt: "Feb 4, 2025, 11:45:00 AM",
-    updatedAt: "Feb 5, 2025, 6:30:00 PM"
-  },
-  {
-    workflow: "Vehicle Leasing",
-    applicationId: "VL789012345",
-    status: "Initiated (3 Steps Done)",
-    currentActivity: {
-      name: "Vehicle Verification",
-      status: "In Progress"
-    },
-    assignedTo: "inspector",
-    createdAt: "Feb 3, 2025, 2:15:00 PM",
-    updatedAt: "Feb 5, 2025, 7:45:00 PM"
   }
 ];
 
