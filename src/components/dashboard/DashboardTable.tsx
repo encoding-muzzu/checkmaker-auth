@@ -171,28 +171,30 @@ export const DashboardTable = ({
       </Table>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-[60%] h-screen max-h-screen overflow-y-auto border-l">
+        <SheetContent className="w-[50%] h-screen overflow-hidden flex flex-col border-l">
           <SheetHeader>
             <SheetTitle>Application Details</SheetTitle>
           </SheetHeader>
           
-          <Accordion type="multiple" defaultValue={["documents", "details", "notes"]} className="space-y-4">
-            <DocumentsSection />
-            <CustomerDetailsSection 
-              customerDetails={customerDetails}
-              itrFlag={itrFlag}
-              setItrFlag={setItrFlag}
-              lrsAmount={lrsAmount}
-              setLrsAmount={setLrsAmount}
-              setIsEditing={setIsEditing}
-            />
-            <CommentsSection 
-              conversations={conversations}
-              messagesEndRef={messagesEndRef}
-            />
-          </Accordion>
+          <div className="flex-1 overflow-y-auto">
+            <Accordion type="multiple" defaultValue={["documents", "details", "notes"]} className="space-y-4">
+              <DocumentsSection />
+              <CustomerDetailsSection 
+                customerDetails={customerDetails}
+                itrFlag={itrFlag}
+                setItrFlag={setItrFlag}
+                lrsAmount={lrsAmount}
+                setLrsAmount={setLrsAmount}
+                setIsEditing={setIsEditing}
+              />
+              <CommentsSection 
+                conversations={conversations}
+                messagesEndRef={messagesEndRef}
+              />
+            </Accordion>
+          </div>
 
-          <div className="flex justify-end gap-2 mt-8 pt-4 border-t">
+          <div className="flex justify-end gap-2 py-4 px-6 border-t bg-white mt-auto sticky bottom-0">
             {!shouldHideApprove && (
               <ShadcnButton 
                 onClick={handleApprove}
