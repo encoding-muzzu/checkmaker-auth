@@ -53,13 +53,16 @@ export const CustomerDetailsSection = ({
           </div>
           <div className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
             <span className="text-gray-600 my-auto">LRS Amount Consumed(USD)</span>
-            <div className="flex items-center gap-2">
+            <div className="relative flex items-center">
               <Input 
                 value={lrsAmount}
                 onChange={(e) => setLrsAmount(e.target.value)}
-                className="w-32 h-8 bg-gray-50 rounded-[4px]"
+                className="w-32 h-8 bg-gray-50 rounded-[4px] pr-8"
               />
-              <button onClick={() => setIsEditing(true)} className="text-black hover:text-gray-700">
+              <button 
+                onClick={() => setIsEditing(true)} 
+                className="absolute right-2 text-black hover:text-gray-700"
+              >
                 <Edit2 className="h-4 w-4" />
               </button>
             </div>
