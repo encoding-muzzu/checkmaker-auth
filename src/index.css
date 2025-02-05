@@ -106,9 +106,12 @@
   button, 
   input,
   [role="combobox"],
-  [role="dialog"],
-  [role="radio"] {
+  [role="dialog"] {
     border-radius: 4px !important;
+  }
+
+  [role="radio"] {
+    border-radius: 50% !important;
   }
 }
 

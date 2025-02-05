@@ -35,7 +35,6 @@ export const DashboardTable = ({
             <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Application ID</TableHead>
             <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Status</TableHead>
             <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Current Activity</TableHead>
-            <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Updated At</TableHead>
             <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Action</TableHead>
           </TableRow>
         </TableHeader>
@@ -51,7 +50,6 @@ export const DashboardTable = ({
                 <br />
                 <span className="text-gray-500">Status: {row.currentActivity.status}</span>
               </TableCell>
-              <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.updatedAt}</TableCell>
               <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
                 <Button 
                   variant="outline" 
