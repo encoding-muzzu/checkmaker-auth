@@ -87,34 +87,34 @@ export const CustomerDetailsDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-xl">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-[4px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <DialogTitle className="text-2xl font-bold text-black">
             Application Details
           </DialogTitle>
         </DialogHeader>
 
         <Accordion type="multiple" defaultValue={["documents", "details", "notes"]} className="space-y-4">
           {/* Documents Section */}
-          <AccordionItem value="documents" className="border rounded-lg shadow-sm">
+          <AccordionItem value="documents" className="border rounded-[4px] shadow-sm">
             <AccordionTrigger className="px-4 hover:no-underline">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold text-gray-800">Customer Documents</h2>
+                <h2 className="text-lg font-semibold text-black">Customer Documents</h2>
                 <Clock className="h-5 w-5 text-amber-500" />
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4">
-              <div className="p-6 border rounded-xl bg-gray-50/50 shadow-sm hover:shadow-md transition-shadow duration-200">
+              <div className="p-6 border rounded-[4px] bg-gray-50/50 shadow-sm hover:shadow-md transition-shadow duration-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-gray-700">CustomerImage</h3>
+                    <h3 className="font-semibold text-black">CustomerImage</h3>
                     <p className="text-sm text-gray-500">Customer Document</p>
                   </div>
                   <div className="flex gap-2">
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="flex items-center gap-1 hover:bg-gray-100"
+                      className="flex items-center gap-1 hover:bg-gray-100 rounded-[4px] border-black text-black"
                     >
                       <Download className="h-4 w-4" />
                       Download
@@ -122,7 +122,7 @@ export const CustomerDetailsDialog = ({
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="flex items-center gap-1 hover:bg-gray-100"
+                      className="flex items-center gap-1 hover:bg-gray-100 rounded-[4px] border-black text-black"
                     >
                       <Eye className="h-4 w-4" />
                       View
@@ -134,10 +134,10 @@ export const CustomerDetailsDialog = ({
           </AccordionItem>
 
           {/* Customer Details Section */}
-          <AccordionItem value="details" className="border rounded-lg shadow-sm">
+          <AccordionItem value="details" className="border rounded-[4px] shadow-sm">
             <AccordionTrigger className="px-4 hover:no-underline">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold text-gray-800">Customer Details</h2>
+                <h2 className="text-lg font-semibold text-black">Customer Details</h2>
                 <CheckCircle2 className="h-5 w-5 text-emerald-500" />
               </div>
             </AccordionTrigger>
@@ -146,44 +146,44 @@ export const CustomerDetailsDialog = ({
                 {customerDetails.map((detail, index) => (
                   <div 
                     key={index} 
-                    className="flex justify-between p-4 border rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
+                    className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
                   >
                     <span className="text-gray-600">{detail.label}</span>
-                    <span className="font-medium text-gray-900">{detail.value}</span>
+                    <span className="font-medium text-black">{detail.value}</span>
                   </div>
                 ))}
                 {/* Editable Fields */}
-                <div className="flex justify-between p-4 border rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
                   <span className="text-gray-600">ITR Flag</span>
                   <div className="flex items-center gap-2">
                     <Input 
                       value={itrFlag}
                       onChange={(e) => setItrFlag(e.target.value)}
-                      className="w-32 h-8 bg-gray-50"
+                      className="w-32 h-8 bg-gray-50 rounded-[4px]"
                     />
-                    <button onClick={() => setIsEditing(true)} className="text-blue-600 hover:text-blue-800">
+                    <button onClick={() => setIsEditing(true)} className="text-black hover:text-gray-700">
                       <Edit2 className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
-                <div className="flex justify-between p-4 border rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
                   <span className="text-gray-600">LRS Amount Consumed(USD)</span>
                   <div className="flex items-center gap-2">
                     <Input 
                       value={lrsAmount}
                       onChange={(e) => setLrsAmount(e.target.value)}
-                      className="w-32 h-8 bg-gray-50"
+                      className="w-32 h-8 bg-gray-50 rounded-[4px]"
                     />
-                    <button onClick={() => setIsEditing(true)} className="text-blue-600 hover:text-blue-800">
+                    <button onClick={() => setIsEditing(true)} className="text-black hover:text-gray-700">
                       <Edit2 className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
-                <div className="flex justify-between p-4 border rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
                   <span className="text-gray-600">Decision</span>
                   <div className="flex items-center gap-2">
                     <Select value={decision} onValueChange={setDecision}>
-                      <SelectTrigger className="w-32 bg-gray-50">
+                      <SelectTrigger className="w-32 bg-gray-50 rounded-[4px]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -191,7 +191,7 @@ export const CustomerDetailsDialog = ({
                         <SelectItem value="Reject">Reject</SelectItem>
                       </SelectContent>
                     </Select>
-                    <button onClick={() => setIsEditing(true)} className="text-blue-600 hover:text-blue-800">
+                    <button onClick={() => setIsEditing(true)} className="text-black hover:text-gray-700">
                       <Edit2 className="h-4 w-4" />
                     </button>
                   </div>
@@ -201,7 +201,7 @@ export const CustomerDetailsDialog = ({
           </AccordionItem>
 
           {/* Notes Section */}
-          <AccordionItem value="notes" className="border rounded-lg shadow-sm">
+          <AccordionItem value="notes" className="border rounded-[4px] shadow-sm">
             <AccordionTrigger className="px-4 hover:no-underline">
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-semibold text-gray-800">Notes</h2>
@@ -267,13 +267,13 @@ export const CustomerDetailsDialog = ({
           <Button 
             onClick={() => onOpenChange(false)}
             variant="outline"
-            className="hover:bg-gray-100"
+            className="hover:bg-gray-100 rounded-[4px] border-black text-black"
           >
             Close
           </Button>
           <Button 
             variant="default"
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-black hover:bg-gray-900 rounded-[4px]"
           >
             Submit
           </Button>

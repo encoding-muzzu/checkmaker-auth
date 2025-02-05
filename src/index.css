@@ -93,15 +93,21 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Global styles for buttons and inputs */
+  button, 
+  input,
+  [role="combobox"],
+  [role="dialog"] {
+    border-radius: 4px !important;
   }
 }
 
