@@ -3,6 +3,8 @@ import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { ApplicationData } from "@/types/dashboard";
+import { CustomerDetailsDialog } from "./CustomerDetailsDialog";
+import { useState } from "react";
 
 interface DashboardTableProps {
   data: ApplicationData[];
@@ -21,6 +23,9 @@ export const DashboardTable = ({
   onNextPage,
   onPreviousPage
 }: DashboardTableProps) => {
+  const [selectedRow, setSelectedRow] = useState<ApplicationData | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   return (
     <div className="bg-white rounded-lg shadow">
       <Table>
@@ -53,6 +58,10 @@ export const DashboardTable = ({
                   variant="outline" 
                   size="sm" 
                   className="flex items-center gap-1 bg-white text-black hover:bg-gray-100 rounded-full border border-black px-2 py-1 text-xs"
+                  onClick={() => {
+                    setSelectedRow(row);
+                    setDialogOpen(true);
+                  }}
                 >
                   <Eye className="h-3 w-3" />
                   View
@@ -87,6 +96,12 @@ export const DashboardTable = ({
           </TableRow>
         </TableFooter>
       </Table>
+
+      <CustomerDetailsDialog 
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        customerData={selectedRow}
+      />
     </div>
   );
 };
