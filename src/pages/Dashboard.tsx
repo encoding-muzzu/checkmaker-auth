@@ -3,6 +3,10 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Eye } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 const DUMMY_DATA = [
   {
@@ -45,6 +49,14 @@ const DUMMY_DATA = [
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("pending");
+  const [searchColumn, setSearchColumn] = useState("workflow");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDense, setIsDense] = useState(false);
+
+  const handleSearch = () => {
+    console.log("Searching in column:", searchColumn, "for query:", searchQuery);
+    // Implement search logic here
+  };
 
   return (
     <div className="p-8 max-w-[1400px] mx-auto">
@@ -88,12 +100,43 @@ const Dashboard = () => {
 
       {/* Search and Dense Toggle */}
       <div className="flex justify-between items-center mb-6">
-        <Input
-          type="search"
-          placeholder="Search..."
-          className="max-w-md bg-white"
-        />
-        <span className="text-sm text-gray-600">Dense</span>
+        <div className="flex items-center gap-4 max-w-md">
+          <Select value={searchColumn} onValueChange={setSearchColumn}>
+            <SelectTrigger className="w-[180px] bg-white">
+              <SelectValue placeholder="Select column" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="workflow">Workflow</SelectItem>
+              <SelectItem value="applicationId">Application ID</SelectItem>
+              <SelectItem value="status">Status</SelectItem>
+              <SelectItem value="currentActivity">Current Activity</SelectItem>
+              <SelectItem value="assignedTo">Assigned To</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="flex gap-2">
+            <Input
+              type="search"
+              placeholder="Search..."
+              className="bg-white"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <Button 
+              onClick={handleSearch}
+              className="bg-black text-white hover:bg-black/90"
+            >
+              Search
+            </Button>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="dense-mode" className="text-sm text-gray-600">Dense</Label>
+          <Switch
+            id="dense-mode"
+            checked={isDense}
+            onCheckedChange={setIsDense}
+          />
+        </div>
       </div>
 
       {/* Table */}
@@ -113,7 +156,7 @@ const Dashboard = () => {
           </TableHeader>
           <TableBody>
             {DUMMY_DATA.map((row, index) => (
-              <TableRow key={index} className="border-b border-[rgb(224,224,224)]">
+              <TableRow key={index} className={`border-b border-[rgb(224,224,224)] ${isDense ? 'h-10' : ''}`}>
                 <TableCell className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">{row.workflow}</TableCell>
                 <TableCell className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">{row.applicationId}</TableCell>
                 <TableCell className="text-[0.8125rem] leading-[1.43] text-blue-500">{row.status}</TableCell>
