@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
@@ -52,6 +51,7 @@ const Dashboard = () => {
   const [searchColumn, setSearchColumn] = useState("workflow");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDense, setIsDense] = useState(false);
+  const [entriesPerPage, setEntriesPerPage] = useState("10");
 
   const handleSearch = () => {
     console.log("Searching in column:", searchColumn, "for query:", searchQuery);
@@ -98,8 +98,26 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Search and Dense Toggle */}
+      {/* Controls Row */}
       <div className="flex justify-between items-center mb-6">
+        {/* Show Entries Dropdown */}
+        <div className="flex items-center gap-2">
+          <Label htmlFor="entries-per-page" className="text-sm text-gray-600">Show entries</Label>
+          <Select value={entriesPerPage} onValueChange={setEntriesPerPage}>
+            <SelectTrigger className="w-[100px] bg-white">
+              <SelectValue placeholder="10" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="20">20</SelectItem>
+              <SelectItem value="30">30</SelectItem>
+              <SelectItem value="40">40</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Search Controls */}
         <div className="flex items-center gap-4 max-w-md">
           <Select value={searchColumn} onValueChange={setSearchColumn}>
             <SelectTrigger className="w-[180px] bg-white">
@@ -129,6 +147,8 @@ const Dashboard = () => {
             </Button>
           </div>
         </div>
+
+        {/* Dense Toggle */}
         <div className="flex items-center gap-2">
           <Label htmlFor="dense-mode" className="text-sm text-gray-600">Dense Padding</Label>
           <Switch
@@ -195,4 +215,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
