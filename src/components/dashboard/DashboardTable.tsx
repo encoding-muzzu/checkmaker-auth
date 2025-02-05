@@ -4,8 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { ApplicationData } from "@/types/dashboard";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useState } from "react";
-import { CustomerDetailsDialog } from "./CustomerDetailsDialog";
+import { useState, useRef } from "react";
+import { Button as ShadcnButton } from "@/components/ui/button";
+import { Accordion } from "@/components/ui/accordion";
+import { DocumentsSection } from "./dialogs/DocumentsSection";
+import { CustomerDetailsSection } from "./dialogs/CustomerDetailsSection";
+import { CommentsSection } from "./dialogs/CommentsSection";
+import { RejectDialog } from "./dialogs/RejectDialog";
 
 interface DashboardTableProps {
   data: ApplicationData[];
@@ -40,6 +45,65 @@ export const DashboardTable = ({
 }: DashboardTableProps) => {
   const [selectedRow, setSelectedRow] = useState<ApplicationData | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [rejectMessage, setRejectMessage] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [itrFlag, setItrFlag] = useState("true");
+  const [lrsAmount, setLrsAmount] = useState("2345");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [conversations, setConversations] = useState([
+    {
+      text: "asdfasdf",
+      timestamp: "05 February 2025, 1:28 PM",
+      author: "checker"
+    },
+    {
+      text: "Return reason: To validate photo again",
+      timestamp: "31 January 2025, 2:17 PM",
+      author: "checker"
+    },
+    {
+      text: "Return by checker",
+      timestamp: "31 January 2025, 2:17 PM",
+      author: "checker"
+    },
+    {
+      text: "Reject for photo",
+      timestamp: "31 January 2025, 2:16 PM",
+      author: "maker"
+    }
+  ]);
+
+  const customerDetails = [
+    { label: "ARN", value: "1895637456" },
+    { label: "Kit No", value: "6670000033" },
+    { label: "Customer Name", value: "GrupoHoteleroCubanacan" },
+    { label: "PAN", value: "QDDBW1536A" },
+    { label: "Total Amount Loaded (USD)", value: "200000.00" },
+    { label: "Customer Type", value: "ETB" },
+    { label: "Product Variant", value: "PRD8001" },
+    { label: "Card Type", value: "Perso" },
+    { label: "Processing Type", value: "Online" }
+  ];
+
+  const handleApprove = () => {
+    console.log("Application approved");
+    setSheetOpen(false);
+  };
+
+  const handleReject = () => {
+    setShowRejectDialog(true);
+  };
+
+  const confirmReject = () => {
+    console.log("Application rejected with message:", rejectMessage);
+    setShowRejectDialog(false);
+    setSheetOpen(false);
+  };
+
+  const totalAmount = parseFloat(customerDetails.find(detail => detail.label === "Total Amount Loaded (USD)")?.value || "0");
+  const lrsAmountValue = parseFloat(lrsAmount);
+  const shouldHideApprove = totalAmount + lrsAmountValue > 250000;
 
   return (
     <div className="bg-white">
@@ -107,17 +171,60 @@ export const DashboardTable = ({
       </Table>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent>
+        <SheetContent className="max-h-[90vh] overflow-y-auto">
           <SheetHeader>
             <SheetTitle>Application Details</SheetTitle>
           </SheetHeader>
-          <CustomerDetailsDialog 
-            open={true}
-            onOpenChange={() => setSheetOpen(false)}
-            customerData={selectedRow}
-          />
+          
+          <Accordion type="multiple" defaultValue={["documents", "details", "notes"]} className="space-y-4">
+            <DocumentsSection />
+            <CustomerDetailsSection 
+              customerDetails={customerDetails}
+              itrFlag={itrFlag}
+              setItrFlag={setItrFlag}
+              lrsAmount={lrsAmount}
+              setLrsAmount={setLrsAmount}
+              setIsEditing={setIsEditing}
+            />
+            <CommentsSection 
+              conversations={conversations}
+              messagesEndRef={messagesEndRef}
+            />
+          </Accordion>
+
+          <div className="flex justify-end gap-2 mt-8 pt-4 border-t">
+            {!shouldHideApprove && (
+              <ShadcnButton 
+                onClick={handleApprove}
+                className="bg-green-600 hover:bg-green-700 text-white rounded-[4px]"
+              >
+                Approve
+              </ShadcnButton>
+            )}
+            <ShadcnButton 
+              onClick={handleReject}
+              className="bg-red-600 hover:bg-red-700 text-white rounded-[4px]"
+            >
+              Reject
+            </ShadcnButton>
+            <ShadcnButton 
+              onClick={() => setSheetOpen(false)}
+              variant="outline"
+              className="hover:bg-gray-100 rounded-[4px] border-black text-black"
+            >
+              Close
+            </ShadcnButton>
+          </div>
         </SheetContent>
       </Sheet>
+
+      <RejectDialog 
+        open={showRejectDialog}
+        onOpenChange={setShowRejectDialog}
+        rejectMessage={rejectMessage}
+        setRejectMessage={setRejectMessage}
+        onConfirm={confirmReject}
+      />
     </div>
   );
 };
