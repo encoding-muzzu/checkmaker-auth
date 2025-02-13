@@ -3,9 +3,12 @@ import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { ApplicationData } from "@/types/dashboard";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { useState } from "react";
-import { Label } from "@/components/ui/label";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useState, useRef } from "react";
+import { DocumentsSection } from "./dialogs/DocumentsSection";
+import { CustomerDetailsSection } from "./dialogs/CustomerDetailsSection";
+import { CommentsSection } from "./dialogs/CommentsSection";
+import { Accordion } from "@/components/ui/accordion";
 import { format } from "date-fns";
 
 interface DashboardTableProps {
@@ -41,10 +44,45 @@ export const DashboardTable = ({
 }: DashboardTableProps) => {
   const [selectedRow, setSelectedRow] = useState<ApplicationData | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [itrFlag, setItrFlag] = useState("false");
+  const [lrsAmount, setLrsAmount] = useState("0");
+  const [isEditing, setIsEditing] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'MMM d, yyyy, h:mm a');
   };
+
+  // Sample conversations for demo
+  const conversations = [
+    {
+      text: "Return reason: To validate photo again",
+      timestamp: "31 January 2025, 2:17 PM",
+      author: "dinesh"
+    },
+    {
+      text: "Return by dinesh",
+      timestamp: "31 January 2025, 2:17 PM",
+      author: "dinesh"
+    },
+    {
+      text: "Reject for photo",
+      timestamp: "31 January 2025, 2:17 PM",
+      author: "muzzu"
+    }
+  ];
+
+  const customerDetails = selectedRow ? [
+    { label: "ARN", value: selectedRow.arn },
+    { label: "Kit No", value: selectedRow.kit_no },
+    { label: "Customer Name", value: selectedRow.customer_name },
+    { label: "PAN", value: selectedRow.pan_number },
+    { label: "Total Amount Loaded (USD)", value: selectedRow.total_amount_loaded.toFixed(2) },
+    { label: "Customer Type", value: selectedRow.customer_type },
+    { label: "Product Variant", value: selectedRow.product_variant },
+    { label: "Card Type", value: selectedRow.card_type },
+    { label: "Processing Type", value: selectedRow.processing_type }
+  ] : [];
 
   return (
     <div className="bg-white">
@@ -79,6 +117,8 @@ export const DashboardTable = ({
                   onClick={() => {
                     setSelectedRow(row);
                     setSheetOpen(true);
+                    setItrFlag(row.itr_flag ? "true" : "false");
+                    setLrsAmount(row.lrs_amount_consumed.toString());
                   }}
                 >
                   <Eye className="h-3 w-3" />
@@ -116,62 +156,53 @@ export const DashboardTable = ({
       </Table>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-[400px] sm:w-[540px]">
-          <SheetHeader>
-            <SheetTitle>Application Details</SheetTitle>
-            <SheetDescription>
-              View information about this application
-            </SheetDescription>
-          </SheetHeader>
-          <div className="mt-6 space-y-4">
-            {selectedRow && (
-              <>
-                <div className="grid grid-cols-3 gap-4">
-                  <Label className="text-sm font-medium text-gray-500">ARN</Label>
-                  <div className="col-span-2 text-sm">{selectedRow.arn}</div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <Label className="text-sm font-medium text-gray-500">Kit No</Label>
-                  <div className="col-span-2 text-sm">{selectedRow.kit_no}</div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <Label className="text-sm font-medium text-gray-500">Customer Name</Label>
-                  <div className="col-span-2 text-sm">{selectedRow.customer_name}</div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <Label className="text-sm font-medium text-gray-500">PAN</Label>
-                  <div className="col-span-2 text-sm">{selectedRow.pan_number}</div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <Label className="text-sm font-medium text-gray-500">Total Amount Loaded (USD)</Label>
-                  <div className="col-span-2 text-sm">{selectedRow.total_amount_loaded.toFixed(2)}</div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <Label className="text-sm font-medium text-gray-500">Customer Type</Label>
-                  <div className="col-span-2 text-sm">{selectedRow.customer_type}</div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <Label className="text-sm font-medium text-gray-500">Product Variant</Label>
-                  <div className="col-span-2 text-sm">{selectedRow.product_variant}</div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <Label className="text-sm font-medium text-gray-500">Card Type</Label>
-                  <div className="col-span-2 text-sm">{selectedRow.card_type}</div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <Label className="text-sm font-medium text-gray-500">Processing Type</Label>
-                  <div className="col-span-2 text-sm">{selectedRow.processing_type}</div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <Label className="text-sm font-medium text-gray-500">ITR Flag</Label>
-                  <div className="col-span-2 text-sm">{selectedRow.itr_flag ? "Yes" : "No"}</div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <Label className="text-sm font-medium text-gray-500">LRS Amount Consumed</Label>
-                  <div className="col-span-2 text-sm">{selectedRow.lrs_amount_consumed.toFixed(2)}</div>
-                </div>
-              </>
-            )}
+        <SheetContent className="w-[400px] sm:w-[600px] p-0 overflow-y-auto">
+          <div className="flex flex-col h-full">
+            <div className="p-6 border-b">
+              <h2 className="text-xl font-semibold text-black">Application Details</h2>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              <Accordion type="single" collapsible defaultValue="details" className="space-y-4">
+                <DocumentsSection />
+                <CustomerDetailsSection 
+                  customerDetails={customerDetails}
+                  itrFlag={itrFlag}
+                  setItrFlag={setItrFlag}
+                  lrsAmount={lrsAmount}
+                  setLrsAmount={setLrsAmount}
+                  setIsEditing={setIsEditing}
+                />
+                <CommentsSection 
+                  conversations={conversations}
+                  messagesEndRef={messagesEndRef}
+                />
+              </Accordion>
+            </div>
+
+            <div className="p-6 border-t bg-white mt-auto">
+              <div className="flex justify-end gap-3">
+                <Button
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px]"
+                  onClick={() => setSheetOpen(false)}
+                >
+                  Approve
+                </Button>
+                <Button
+                  className="bg-red-600 hover:bg-red-700 text-white rounded-[4px]"
+                  onClick={() => setSheetOpen(false)}
+                >
+                  Reject
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-black text-black hover:bg-gray-100 rounded-[4px]"
+                  onClick={() => setSheetOpen(false)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
           </div>
         </SheetContent>
       </Sheet>
