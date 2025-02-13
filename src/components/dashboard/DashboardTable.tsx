@@ -1,4 +1,3 @@
-
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
@@ -9,6 +8,9 @@ import { DocumentsSection } from "./dialogs/DocumentsSection";
 import { CustomerDetailsSection } from "./dialogs/CustomerDetailsSection";
 import { CommentsSection } from "./dialogs/CommentsSection";
 import { Accordion } from "@/components/ui/accordion";
+import { RejectDialog } from "./dialogs/RejectDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
 
 interface DashboardTableProps {
@@ -47,13 +49,15 @@ export const DashboardTable = ({
   const [itrFlag, setItrFlag] = useState("false");
   const [lrsAmount, setLrsAmount] = useState("0");
   const [isEditing, setIsEditing] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectMessage, setRejectMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'MMM d, yyyy, h:mm a');
   };
 
-  // Sample conversations for demo
   const conversations = [
     {
       text: "Return reason: To validate photo again",
@@ -83,6 +87,81 @@ export const DashboardTable = ({
     { label: "Card Type", value: selectedRow.card_type },
     { label: "Processing Type", value: selectedRow.processing_type }
   ] : [];
+
+  const handleApprove = async () => {
+    if (!selectedRow) return;
+
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .update({
+          itr_flag: itrFlag === "true",
+          lrs_amount_consumed: parseFloat(lrsAmount),
+          status: 'Initiated by maker'
+        })
+        .eq('id', selectedRow.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Application has been approved",
+      });
+
+      setSheetOpen(false);
+    } catch (error) {
+      console.error('Error updating application:', error);
+      toast({
+        title: "Error",
+        description: "Failed to approve application",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleReject = async () => {
+    if (!selectedRow) return;
+
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .update({
+          itr_flag: itrFlag === "true",
+          lrs_amount_consumed: parseFloat(lrsAmount),
+          status: 'Rejected by Maker'
+        })
+        .eq('id', selectedRow.id);
+
+      if (error) throw error;
+
+      // Add rejection comment
+      const { error: commentError } = await supabase
+        .from('application_comments')
+        .insert({
+          application_id: selectedRow.id,
+          comment: rejectMessage,
+          type: 'rejection'
+        });
+
+      if (commentError) throw commentError;
+
+      toast({
+        title: "Success",
+        description: "Application has been rejected",
+      });
+
+      setRejectDialogOpen(false);
+      setSheetOpen(false);
+      setRejectMessage("");
+    } catch (error) {
+      console.error('Error rejecting application:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reject application",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="bg-white">
@@ -184,13 +263,13 @@ export const DashboardTable = ({
               <div className="flex justify-end gap-3">
                 <Button
                   className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px]"
-                  onClick={() => setSheetOpen(false)}
+                  onClick={handleApprove}
                 >
                   Approve
                 </Button>
                 <Button
                   className="bg-red-600 hover:bg-red-700 text-white rounded-[4px]"
-                  onClick={() => setSheetOpen(false)}
+                  onClick={() => setRejectDialogOpen(true)}
                 >
                   Reject
                 </Button>
@@ -206,6 +285,14 @@ export const DashboardTable = ({
           </div>
         </SheetContent>
       </Sheet>
+
+      <RejectDialog
+        open={rejectDialogOpen}
+        onOpenChange={setRejectDialogOpen}
+        rejectMessage={rejectMessage}
+        setRejectMessage={setRejectMessage}
+        onConfirm={handleReject}
+      />
     </div>
   );
 };
