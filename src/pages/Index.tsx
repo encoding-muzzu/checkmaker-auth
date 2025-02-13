@@ -47,7 +47,7 @@ function Index() {
     setIsLoading(true);
 
     try {
-      // Sign in with Supabase
+      // First sign in with Supabase
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: formData.username,
         password: formData.password,
@@ -55,7 +55,7 @@ function Index() {
 
       if (authError) throw authError;
 
-      // Fetch user profile to check role
+      // Then fetch the user's profile to verify their role
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('role')
@@ -64,7 +64,7 @@ function Index() {
 
       if (profileError) throw profileError;
 
-      // Verify role matches
+      // Verify that the selected role matches the user's actual role
       if (profileData.role !== formData.role) {
         throw new Error(`Invalid role selected. You are a ${profileData.role}.`);
       }
