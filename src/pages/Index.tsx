@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 function Index() {
   const [showPassword, setShowPassword] = useState(false);
@@ -45,25 +46,43 @@ function Index() {
 
     setIsLoading(true);
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      // Sign in with Supabase
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: formData.username,
+        password: formData.password,
+      });
 
-    // Updated credential check
-    if (formData.role === "maker" && formData.username === "maker" && formData.password === "password123") {
+      if (authError) throw authError;
+
+      // Fetch user profile to check role
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', authData.user.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      // Verify role matches
+      if (profileData.role !== formData.role) {
+        throw new Error(`Invalid role selected. You are a ${profileData.role}.`);
+      }
+
       toast({
         title: "Login successful",
-        description: "Welcome to the dashboard",
+        description: `Welcome, ${formData.role}`,
       });
       navigate("/dashboard");
-    } else {
+    } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Invalid credentials",
-        description: "Please check your username and password",
+        title: "Login failed",
+        description: error.message || "Please check your credentials",
       });
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   return (
@@ -107,12 +126,12 @@ function Index() {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="username" className="text-sm font-medium text-gray-700">Username</Label>
+                  <Label htmlFor="username" className="text-sm font-medium text-gray-700">Email</Label>
                   <div className="relative">
                     <Input
                       id="username"
-                      type="text"
-                      placeholder="Enter your username"
+                      type="email"
+                      placeholder="Enter your email"
                       className="pl-10 h-11 border-gray-200 focus:border-gray-400 focus:ring-gray-400"
                       value={formData.username}
                       onChange={(e) =>
@@ -157,6 +176,7 @@ function Index() {
                 <div className="space-y-2">
                   <Label htmlFor="role" className="text-sm font-medium text-gray-700">Role</Label>
                   <Select
+                    value={formData.role}
                     onValueChange={(value) =>
                       setFormData({ ...formData, role: value })
                     }
