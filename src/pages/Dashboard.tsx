@@ -5,115 +5,29 @@ import { SearchControls } from "@/components/dashboard/SearchControls";
 import { DashboardTable } from "@/components/dashboard/DashboardTable";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { ApplicationData } from "@/types/dashboard";
-
-const DUMMY_DATA: ApplicationData[] = [
-  {
-    workflow: "kycform",
-    applicationId: "20250203114417182GT",
-    status: "New",
-    currentActivity: {
-      name: "Form Task",
-      status: "Initiated"
-    },
-    assignedTo: "superuser",
-    createdAt: "Feb 3, 2025, 11:44:17 AM",
-    updatedAt: "Feb 3, 2025, 11:44:17 AM"
-  },
-  {
-    workflow: "Credit Card Application",
-    applicationId: "CC789456123",
-    status: "Completed",
-    currentActivity: {
-      name: "Income Verification",
-      status: "Pending"
-    },
-    assignedTo: "verifier",
-    createdAt: "Feb 1, 2025, 9:30:00 AM",
-    updatedAt: "Feb 5, 2025, 3:15:00 PM",
-    documents: [
-      {
-        name: "Photo ID",
-        status: "Approved",
-        type: "image/jpeg",
-        uploadedAt: "Feb 1, 2025, 9:35:00 AM"
-      },
-      {
-        name: "Proof of Income",
-        status: "Pending Review",
-        type: "application/pdf",
-        uploadedAt: "Feb 1, 2025, 9:40:00 AM"
-      },
-      {
-        name: "Bank Statements",
-        status: "Approved",
-        type: "application/pdf",
-        uploadedAt: "Feb 1, 2025, 9:45:00 AM"
-      },
-      {
-        name: "Employment Letter",
-        status: "Rejected",
-        type: "application/pdf",
-        uploadedAt: "Feb 2, 2025, 10:15:00 AM"
-      }
-    ]
-  },
-  {
-    workflow: "Personal Loan",
-    applicationId: "PL456789012",
-    status: "Rejected by Maker",
-    currentActivity: {
-      name: "Document Upload",
-      status: "In Progress"
-    },
-    assignedTo: "processor",
-    createdAt: "Feb 2, 2025, 2:45:00 PM",
-    updatedAt: "Feb 5, 2025, 10:30:00 AM"
-  },
-  {
-    workflow: "Home Loan",
-    applicationId: "HL123456789",
-    status: "Returned by Checker",
-    currentActivity: {
-      name: "Property Valuation",
-      status: "Scheduled"
-    },
-    assignedTo: "evaluator",
-    createdAt: "Jan 29, 2025, 11:20:00 AM",
-    updatedAt: "Feb 5, 2025, 9:45:00 AM"
-  },
-  {
-    workflow: "Auto Loan",
-    applicationId: "AL987654321",
-    status: "Rejected by Checker",
-    currentActivity: {
-      name: "Vehicle Inspection",
-      status: "Pending"
-    },
-    assignedTo: "inspector",
-    createdAt: "Feb 4, 2025, 3:30:00 PM",
-    updatedAt: "Feb 5, 2025, 4:20:00 PM"
-  },
-  {
-    workflow: "Business Loan",
-    applicationId: "BL234567890",
-    status: "Resubmitted to Checker",
-    currentActivity: {
-      name: "Business Verification",
-      status: "Under Review"
-    },
-    assignedTo: "analyst",
-    createdAt: "Feb 3, 2025, 1:15:00 PM",
-    updatedAt: "Feb 5, 2025, 2:00:00 PM"
-  }
-];
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("pending");
-  const [searchColumn, setSearchColumn] = useState("applicationId"); // Changed default value to applicationId
+  const [searchColumn, setSearchColumn] = useState("applicationId");
   const [searchQuery, setSearchQuery] = useState("");
   const [entriesPerPage, setEntriesPerPage] = useState("10");
   const [currentPage, setCurrentPage] = useState(1);
+
+  const { data: applications, isLoading } = useQuery({
+    queryKey: ['applications'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('applications')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as ApplicationData[];
+    }
+  });
 
   const handleSearch = () => {
     console.log("Searching in column:", searchColumn, "for query:", searchQuery);
@@ -121,10 +35,10 @@ const Dashboard = () => {
 
   // Calculate pagination
   const pageSize = parseInt(entriesPerPage);
-  const totalPages = Math.ceil(DUMMY_DATA.length / pageSize);
+  const totalPages = Math.ceil((applications?.length || 0) / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const currentData = DUMMY_DATA.slice(startIndex, endIndex);
+  const currentData = applications?.slice(startIndex, endIndex) || [];
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -154,19 +68,19 @@ const Dashboard = () => {
           <TabButton
             isActive={activeTab === "pending"}
             label="Pending"
-            count={12}
+            count={applications?.filter(app => app.status === 'New').length || 0}
             onClick={() => setActiveTab("pending")}
           />
           <TabButton
             isActive={activeTab === "completed"}
             label="Completed"
-            count={11}
+            count={applications?.filter(app => app.status === 'Completed').length || 0}
             onClick={() => setActiveTab("completed")}
           />
           <TabButton
             isActive={activeTab === "reopened"}
             label="Re-Opened"
-            count={0}
+            count={applications?.filter(app => app.status === 'Reopened').length || 0}
             onClick={() => setActiveTab("reopened")}
           />
         </div>

@@ -1,15 +1,13 @@
+
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { ApplicationData } from "@/types/dashboard";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Button as ShadcnButton } from "@/components/ui/button";
-import { Accordion } from "@/components/ui/accordion";
-import { DocumentsSection } from "./dialogs/DocumentsSection";
-import { CustomerDetailsSection } from "./dialogs/CustomerDetailsSection";
-import { CommentsSection } from "./dialogs/CommentsSection";
-import { RejectDialog } from "./dialogs/RejectDialog";
+import { Label } from "@/components/ui/label";
+import { format } from "date-fns";
 
 interface DashboardTableProps {
   data: ApplicationData[];
@@ -44,65 +42,24 @@ export const DashboardTable = ({
 }: DashboardTableProps) => {
   const [selectedRow, setSelectedRow] = useState<ApplicationData | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [showRejectDialog, setShowRejectDialog] = useState(false);
-  const [rejectMessage, setRejectMessage] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
-  const [itrFlag, setItrFlag] = useState("true");
-  const [lrsAmount, setLrsAmount] = useState("2345");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [conversations, setConversations] = useState([
-    {
-      text: "asdfasdf",
-      timestamp: "05 February 2025, 1:28 PM",
-      author: "dinesh"
-    },
-    {
-      text: "Return reason: To validate photo again",
-      timestamp: "31 January 2025, 2:17 PM",
-      author: "dinesh"
-    },
-    {
-      text: "Return by dinesh",
-      timestamp: "31 January 2025, 2:17 PM",
-      author: "dinesh"
-    },
-    {
-      text: "Reject for photo",
-      timestamp: "31 January 2025, 2:16 PM",
-      author: "muzzu"
-    }
-  ]);
 
-  const customerDetails = [
-    { label: "ARN", value: "1895637456" },
-    { label: "Kit No", value: "6670000033" },
-    { label: "Customer Name", value: "GrupoHoteleroCubanacan" },
-    { label: "PAN", value: "QDDBW1536A" },
-    { label: "Total Amount Loaded (USD)", value: "200000.00" },
-    { label: "Customer Type", value: "ETB" },
-    { label: "Product Variant", value: "PRD8001" },
-    { label: "Card Type", value: "Perso" },
-    { label: "Processing Type", value: "Online" }
-  ];
-
-  const handleApprove = () => {
-    console.log("Application approved");
-    setSheetOpen(false);
+  const formatDate = (dateString: string) => {
+    return format(new Date(dateString), 'MMM d, yyyy, h:mm a');
   };
 
-  const handleReject = () => {
-    setShowRejectDialog(true);
-  };
-
-  const confirmReject = () => {
-    console.log("Application rejected with message:", rejectMessage);
-    setShowRejectDialog(false);
-    setSheetOpen(false);
-  };
-
-  const totalAmount = parseFloat(customerDetails.find(detail => detail.label === "Total Amount Loaded (USD)")?.value || "0");
-  const lrsAmountValue = parseFloat(lrsAmount);
-  const shouldHideApprove = totalAmount + lrsAmountValue > 250000;
+  const applicationDetails = selectedRow ? [
+    { label: "ARN", value: selectedRow.arn },
+    { label: "Kit No", value: selectedRow.kit_no },
+    { label: "Customer Name", value: selectedRow.customer_name },
+    { label: "PAN", value: selectedRow.pan_number },
+    { label: "Total Amount Loaded (USD)", value: selectedRow.total_amount_loaded.toFixed(2) },
+    { label: "Customer Type", value: selectedRow.customer_type },
+    { label: "Product Variant", value: selectedRow.product_variant },
+    { label: "Card Type", value: selectedRow.card_type },
+    { label: "Processing Type", value: selectedRow.processing_type },
+    { label: "ITR Flag", value: selectedRow.itr_flag ? "Yes" : "No" },
+    { label: "LRS Amount Consumed", value: selectedRow.lrs_amount_consumed.toFixed(2) }
+  ] : [];
 
   return (
     <div className="bg-white">
@@ -116,10 +73,14 @@ export const DashboardTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((row, index) => (
-            <TableRow key={index} className={`border-b border-[rgb(224,224,224)] ${isDense ? 'py-6' : 'py-2'}`}>
-              <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.createdAt}</TableCell>
-              <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>{row.applicationId}</TableCell>
+          {data.map((row) => (
+            <TableRow key={row.id} className={`border-b border-[rgb(224,224,224)] ${isDense ? 'py-6' : 'py-2'}`}>
+              <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>
+                {formatDate(row.created_at)}
+              </TableCell>
+              <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>
+                {row.id}
+              </TableCell>
               <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
                 <span className={`px-[10px] py-[3px] rounded-[10px] ${getStatusColor(row.status)}`}>
                   {row.status}
@@ -170,45 +131,22 @@ export const DashboardTable = ({
       </Table>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="!w-[70%] !max-w-[70%] h-[94vh] !rounded-[10px] overflow-hidden flex flex-col border-l mt-[2%] mr-[2%]">
+        <SheetContent className="w-[500px] sm:w-[700px]">
           <SheetHeader>
             <SheetTitle>Application Details</SheetTitle>
           </SheetHeader>
-          
-          <div className="flex-1 overflow-y-auto">
-            <Accordion type="multiple" defaultValue={["documents", "details", "notes"]} className="space-y-4">
-              <DocumentsSection />
-              <CustomerDetailsSection 
-                customerDetails={customerDetails}
-                itrFlag={itrFlag}
-                setItrFlag={setItrFlag}
-                lrsAmount={lrsAmount}
-                setLrsAmount={setLrsAmount}
-                setIsEditing={setIsEditing}
-              />
-              <CommentsSection 
-                conversations={conversations}
-                messagesEndRef={messagesEndRef}
-              />
-            </Accordion>
+          <div className="mt-6">
+            <div className="space-y-4">
+              {applicationDetails.map((detail, index) => (
+                <div key={index} className="grid grid-cols-2 gap-4 py-2 border-b border-gray-100">
+                  <Label className="text-sm font-medium text-gray-500">{detail.label}</Label>
+                  <div className="text-sm text-gray-900">{detail.value}</div>
+                </div>
+              ))}
+            </div>
           </div>
-
-          <div className="flex justify-end gap-2 py-4 px-6 border-t bg-white mt-auto sticky bottom-0">
-            {!shouldHideApprove && (
-              <ShadcnButton 
-                onClick={handleApprove}
-                className="bg-green-600 hover:bg-green-700 text-white rounded-[4px]"
-              >
-                Approve
-              </ShadcnButton>
-            )}
-            <ShadcnButton 
-              onClick={handleReject}
-              className="bg-red-600 hover:bg-red-700 text-white rounded-[4px]"
-            >
-              Reject
-            </ShadcnButton>
-            <ShadcnButton 
+          <div className="mt-6 flex justify-end">
+            <ShadcnButton
               onClick={() => setSheetOpen(false)}
               variant="outline"
               className="hover:bg-gray-100 rounded-[4px] border-black text-black"
@@ -218,14 +156,6 @@ export const DashboardTable = ({
           </div>
         </SheetContent>
       </Sheet>
-
-      <RejectDialog 
-        open={showRejectDialog}
-        onOpenChange={setShowRejectDialog}
-        rejectMessage={rejectMessage}
-        setRejectMessage={setRejectMessage}
-        onConfirm={confirmReject}
-      />
     </div>
   );
 };

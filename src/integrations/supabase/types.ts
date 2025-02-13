@@ -9,6 +9,71 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      applications: {
+        Row: {
+          arn: string
+          assigned_to: string | null
+          card_type: string
+          created_at: string | null
+          customer_name: string
+          customer_type: string
+          id: string
+          itr_flag: boolean | null
+          kit_no: string
+          lrs_amount_consumed: number | null
+          pan_number: string
+          processing_type: string
+          product_variant: string
+          status: string
+          total_amount_loaded: number
+          updated_at: string | null
+        }
+        Insert: {
+          arn: string
+          assigned_to?: string | null
+          card_type: string
+          created_at?: string | null
+          customer_name: string
+          customer_type: string
+          id?: string
+          itr_flag?: boolean | null
+          kit_no: string
+          lrs_amount_consumed?: number | null
+          pan_number: string
+          processing_type: string
+          product_variant: string
+          status?: string
+          total_amount_loaded: number
+          updated_at?: string | null
+        }
+        Update: {
+          arn?: string
+          assigned_to?: string | null
+          card_type?: string
+          created_at?: string | null
+          customer_name?: string
+          customer_type?: string
+          id?: string
+          itr_flag?: boolean | null
+          kit_no?: string
+          lrs_amount_consumed?: number | null
+          pan_number?: string
+          processing_type?: string
+          product_variant?: string
+          status?: string
+          total_amount_loaded?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
