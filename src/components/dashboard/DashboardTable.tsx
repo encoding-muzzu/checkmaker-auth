@@ -131,28 +131,38 @@ export const DashboardTable = ({
       </Table>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-[500px] sm:w-[700px]">
-          <SheetHeader>
-            <SheetTitle>Application Details</SheetTitle>
-          </SheetHeader>
-          <div className="mt-6">
-            <div className="space-y-4">
-              {applicationDetails.map((detail, index) => (
-                <div key={index} className="grid grid-cols-2 gap-4 py-2 border-b border-gray-100">
-                  <Label className="text-sm font-medium text-gray-500">{detail.label}</Label>
-                  <div className="text-sm text-gray-900">{detail.value}</div>
-                </div>
-              ))}
+        <SheetContent side="right" className="w-[600px] sm:w-[800px] p-0">
+          <div className="h-full flex flex-col">
+            {/* Header */}
+            <div className="p-6 border-b border-gray-100">
+              <h2 className="text-lg font-medium">Application Details</h2>
+              <p className="text-sm text-gray-500 mt-1">View and manage application information</p>
             </div>
-          </div>
-          <div className="mt-6 flex justify-end">
-            <ShadcnButton
-              onClick={() => setSheetOpen(false)}
-              variant="outline"
-              className="hover:bg-gray-100 rounded-[4px] border-black text-black"
-            >
-              Close
-            </ShadcnButton>
+
+            {/* Content */}
+            <div className="flex-1 overflow-auto p-6">
+              <div className="grid gap-6">
+                {applicationDetails.map((detail, index) => (
+                  <div key={index} className="grid grid-cols-3 gap-4">
+                    <Label className="text-sm font-medium text-gray-500">{detail.label}</Label>
+                    <div className="text-sm text-gray-900 col-span-2">{detail.value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-gray-100">
+              <div className="flex justify-end">
+                <ShadcnButton
+                  onClick={() => setSheetOpen(false)}
+                  variant="outline"
+                  className="bg-white hover:bg-gray-50 rounded-[4px] border-black text-black"
+                >
+                  Close
+                </ShadcnButton>
+              </div>
+            </div>
           </div>
         </SheetContent>
       </Sheet>
