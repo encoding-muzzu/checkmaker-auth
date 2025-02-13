@@ -98,7 +98,7 @@ export const DashboardTable = ({
         .update({
           itr_flag: itrFlag === "true",
           lrs_amount_consumed: parseFloat(lrsAmount),
-          status: 'Initiated by maker'
+          status: 'Completed'  // Changed from 'Initiated by maker' to 'Completed'
         })
         .eq('id', selectedRow.id);
 
@@ -130,7 +130,7 @@ export const DashboardTable = ({
         .update({
           itr_flag: itrFlag === "true",
           lrs_amount_consumed: parseFloat(lrsAmount),
-          status: 'Rejected by Maker'
+          status: 'Completed'  // Changed from 'Rejected by Maker' to 'Completed'
         })
         .eq('id', selectedRow.id);
 
@@ -138,7 +138,7 @@ export const DashboardTable = ({
 
       // Then create comment
       const { error: insertError } = await supabase
-        .from('application_comments')  // Changed from 'applications_comments' to 'application_comments'
+        .from('application_comments')
         .insert([{
           application_id: selectedRow.id,
           comment: rejectMessage,
@@ -237,7 +237,11 @@ export const DashboardTable = ({
       </Table>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-[400px] sm:w-[600px] p-0 overflow-y-auto">
+        <SheetContent 
+          id="application-details-sheet"
+          className="w-[80%] h-[94vh] mt-[2%] mr-[2%] p-0 overflow-y-auto"
+          side="right"
+        >
           <div className="flex flex-col h-full">
             <div className="p-6 border-b">
               <h2 className="text-xl font-semibold text-black">Application Details</h2>
