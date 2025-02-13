@@ -138,7 +138,7 @@ export const DashboardTable = ({
 
       // Then create comment
       const { error: insertError } = await supabase
-        .from('applications_comments')
+        .from('application_comments')  // Changed from 'applications_comments' to 'application_comments'
         .insert([{
           application_id: selectedRow.id,
           comment: rejectMessage,
