@@ -194,7 +194,7 @@ function Index() {
 
                 <Button 
                   type="submit" 
-                  className="w-full h-11 bg-gradient-to-r from-gray-900 to-gray-700 hover:from-gray-800 hover:to-gray-600 text-white transition-all duration-300"
+                  className="w-full h-11 bg-black hover:bg-gray-800 text-white transition-all duration-300"
                   disabled={isLoading}
                 >
                   {isLoading ? (
