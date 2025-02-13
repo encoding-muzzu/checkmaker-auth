@@ -3,9 +3,8 @@ import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { ApplicationData } from "@/types/dashboard";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { useState } from "react";
-import { Button as ShadcnButton } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 
@@ -46,20 +45,6 @@ export const DashboardTable = ({
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'MMM d, yyyy, h:mm a');
   };
-
-  const applicationDetails = selectedRow ? [
-    { label: "ARN", value: selectedRow.arn },
-    { label: "Kit No", value: selectedRow.kit_no },
-    { label: "Customer Name", value: selectedRow.customer_name },
-    { label: "PAN", value: selectedRow.pan_number },
-    { label: "Total Amount Loaded (USD)", value: selectedRow.total_amount_loaded.toFixed(2) },
-    { label: "Customer Type", value: selectedRow.customer_type },
-    { label: "Product Variant", value: selectedRow.product_variant },
-    { label: "Card Type", value: selectedRow.card_type },
-    { label: "Processing Type", value: selectedRow.processing_type },
-    { label: "ITR Flag", value: selectedRow.itr_flag ? "Yes" : "No" },
-    { label: "LRS Amount Consumed", value: selectedRow.lrs_amount_consumed.toFixed(2) }
-  ] : [];
 
   return (
     <div className="bg-white">
@@ -131,38 +116,62 @@ export const DashboardTable = ({
       </Table>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent side="right" className="w-[600px] sm:w-[800px] p-0">
-          <div className="h-full flex flex-col">
-            {/* Header */}
-            <div className="p-6 border-b border-gray-100">
-              <h2 className="text-lg font-medium">Application Details</h2>
-              <p className="text-sm text-gray-500 mt-1">View and manage application information</p>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-auto p-6">
-              <div className="grid gap-6">
-                {applicationDetails.map((detail, index) => (
-                  <div key={index} className="grid grid-cols-3 gap-4">
-                    <Label className="text-sm font-medium text-gray-500">{detail.label}</Label>
-                    <div className="text-sm text-gray-900 col-span-2">{detail.value}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="p-6 border-t border-gray-100">
-              <div className="flex justify-end">
-                <ShadcnButton
-                  onClick={() => setSheetOpen(false)}
-                  variant="outline"
-                  className="bg-white hover:bg-gray-50 rounded-[4px] border-black text-black"
-                >
-                  Close
-                </ShadcnButton>
-              </div>
-            </div>
+        <SheetContent className="w-[400px] sm:w-[540px]">
+          <SheetHeader>
+            <SheetTitle>Application Details</SheetTitle>
+            <SheetDescription>
+              View information about this application
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-6 space-y-4">
+            {selectedRow && (
+              <>
+                <div className="grid grid-cols-3 gap-4">
+                  <Label className="text-sm font-medium text-gray-500">ARN</Label>
+                  <div className="col-span-2 text-sm">{selectedRow.arn}</div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <Label className="text-sm font-medium text-gray-500">Kit No</Label>
+                  <div className="col-span-2 text-sm">{selectedRow.kit_no}</div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <Label className="text-sm font-medium text-gray-500">Customer Name</Label>
+                  <div className="col-span-2 text-sm">{selectedRow.customer_name}</div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <Label className="text-sm font-medium text-gray-500">PAN</Label>
+                  <div className="col-span-2 text-sm">{selectedRow.pan_number}</div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <Label className="text-sm font-medium text-gray-500">Total Amount Loaded (USD)</Label>
+                  <div className="col-span-2 text-sm">{selectedRow.total_amount_loaded.toFixed(2)}</div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <Label className="text-sm font-medium text-gray-500">Customer Type</Label>
+                  <div className="col-span-2 text-sm">{selectedRow.customer_type}</div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <Label className="text-sm font-medium text-gray-500">Product Variant</Label>
+                  <div className="col-span-2 text-sm">{selectedRow.product_variant}</div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <Label className="text-sm font-medium text-gray-500">Card Type</Label>
+                  <div className="col-span-2 text-sm">{selectedRow.card_type}</div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <Label className="text-sm font-medium text-gray-500">Processing Type</Label>
+                  <div className="col-span-2 text-sm">{selectedRow.processing_type}</div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <Label className="text-sm font-medium text-gray-500">ITR Flag</Label>
+                  <div className="col-span-2 text-sm">{selectedRow.itr_flag ? "Yes" : "No"}</div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <Label className="text-sm font-medium text-gray-500">LRS Amount Consumed</Label>
+                  <div className="col-span-2 text-sm">{selectedRow.lrs_amount_consumed.toFixed(2)}</div>
+                </div>
+              </>
+            )}
           </div>
         </SheetContent>
       </Sheet>
