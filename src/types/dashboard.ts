@@ -17,3 +17,11 @@ export interface ApplicationData {
   status: string;
   assigned_to?: string;
 }
+
+export interface ApplicationComment {
+  id: string;
+  application_id: string;
+  comment: string;
+  type: 'rejection' | 'return' | 'comment';
+  created_at: string;
+}

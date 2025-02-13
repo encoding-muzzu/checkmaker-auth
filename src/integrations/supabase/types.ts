@@ -9,6 +9,38 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      application_comments: {
+        Row: {
+          application_id: string
+          comment: string
+          created_at: string | null
+          id: string
+          type: string
+        }
+        Insert: {
+          application_id: string
+          comment: string
+          created_at?: string | null
+          id?: string
+          type: string
+        }
+        Update: {
+          application_id?: string
+          comment?: string
+          created_at?: string | null
+          id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_comments_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           arn: string

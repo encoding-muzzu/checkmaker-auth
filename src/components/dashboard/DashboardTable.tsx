@@ -1,3 +1,4 @@
+
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
@@ -123,7 +124,8 @@ export const DashboardTable = ({
     if (!selectedRow) return;
 
     try {
-      const { error } = await supabase
+      // First update application status
+      const { error: updateError } = await supabase
         .from('applications')
         .update({
           itr_flag: itrFlag === "true",
@@ -132,18 +134,18 @@ export const DashboardTable = ({
         })
         .eq('id', selectedRow.id);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
-      // Add rejection comment
-      const { error: commentError } = await supabase
-        .from('application_comments')
-        .insert({
+      // Then create comment
+      const { error: insertError } = await supabase
+        .from('applications_comments')
+        .insert([{
           application_id: selectedRow.id,
           comment: rejectMessage,
           type: 'rejection'
-        });
+        }]);
 
-      if (commentError) throw commentError;
+      if (insertError) throw insertError;
 
       toast({
         title: "Success",
