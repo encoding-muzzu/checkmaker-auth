@@ -20,7 +20,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id: string
-          role: Database["public"]["Enums"]["user_role"]
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
           username: string
         }
