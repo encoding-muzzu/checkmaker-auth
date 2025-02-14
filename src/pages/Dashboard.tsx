@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { TabButton } from "@/components/dashboard/TabButton";
 import { SearchControls } from "@/components/dashboard/SearchControls";
@@ -12,6 +11,8 @@ import { ApplicationData } from "@/types/dashboard";
 import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+import { RefreshCw } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("pending");
@@ -22,6 +23,7 @@ const Dashboard = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Fetch user role
   useEffect(() => {
@@ -81,7 +83,11 @@ const Dashboard = () => {
     console.log("Searching in column:", searchColumn, "for query:", searchQuery);
   };
 
-  // Filter applications based on active tab and role
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['applications'] });
+    queryClient.invalidateQueries({ queryKey: ['application-comments'] });
+  };
+
   const getFilteredApplications = () => {
     if (!applications || !userRole) return [];
     
@@ -111,7 +117,6 @@ const Dashboard = () => {
     }
   };
 
-  // Calculate pagination
   const pageSize = parseInt(entriesPerPage);
   const filteredData = getFilteredApplications();
   const totalPages = Math.ceil(filteredData.length / pageSize);
@@ -131,7 +136,6 @@ const Dashboard = () => {
     }
   };
 
-  // Reset to first page when entries per page changes
   const handleEntriesPerPageChange = (value: string) => {
     setEntriesPerPage(value);
     setCurrentPage(1);
@@ -152,38 +156,47 @@ const Dashboard = () => {
 
       {/* Tabs */}
       <div className="border-b mb-8">
-        <div className="flex gap-8">
-          <TabButton
-            isActive={activeTab === "pending"}
-            label="Pending"
-            count={userRole === 'checker' 
-              ? (applications?.filter(app => app.status_id === 1).length || 0)
-              : (applications?.filter(app => app.status_id === 0).length || 0)
-            }
-            onClick={() => setActiveTab("pending")}
-          />
-          <TabButton
-            isActive={activeTab === "completed"}
-            label="Completed"
-            count={userRole === 'checker'
-              ? (applications?.filter(app => app.status_id === 2).length || 0)
-              : (applications?.filter(app => app.status_id === 1).length || 0)
-            }
-            onClick={() => setActiveTab("completed")}
-          />
-          <TabButton
-            isActive={activeTab === "reopened"}
-            label="Re-Opened"
-            count={applications?.filter(app => app.status_id === 4).length || 0}
-            onClick={() => setActiveTab("reopened")}
-          />
+        <div className="flex justify-between items-center">
+          <div className="flex gap-8">
+            <TabButton
+              isActive={activeTab === "pending"}
+              label="Pending"
+              count={userRole === 'checker' 
+                ? (applications?.filter(app => app.status_id === 1).length || 0)
+                : (applications?.filter(app => app.status_id === 0).length || 0)
+              }
+              onClick={() => setActiveTab("pending")}
+            />
+            <TabButton
+              isActive={activeTab === "completed"}
+              label="Completed"
+              count={userRole === 'checker'
+                ? (applications?.filter(app => app.status_id === 2).length || 0)
+                : (applications?.filter(app => app.status_id === 1).length || 0)
+              }
+              onClick={() => setActiveTab("completed")}
+            />
+            <TabButton
+              isActive={activeTab === "reopened"}
+              label="Re-Opened"
+              count={applications?.filter(app => app.status_id === 4).length || 0}
+              onClick={() => setActiveTab("reopened")}
+            />
+          </div>
+          <Button
+            onClick={handleRefresh}
+            variant="outline"
+            size="icon"
+            className="mr-4"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
       {/* Controls Section */}
       <div className="bg-white border-b border-[#e0e0e0] mb-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 py-6">
-          {/* Show Entries Section */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <Label htmlFor="entries-per-page" className="text-sm text-gray-600 whitespace-nowrap">

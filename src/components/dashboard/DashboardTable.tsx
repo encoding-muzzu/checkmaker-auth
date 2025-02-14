@@ -266,7 +266,7 @@ export const DashboardTable = ({
                   setIsEditing={setIsEditing}
                 />
                 <CommentsSection 
-                  conversations={conversations}
+                  applicationId={selectedRow?.id || ''}
                   messagesEndRef={messagesEndRef}
                 />
               </Accordion>
