@@ -33,12 +33,30 @@ const Dashboard = () => {
     console.log("Searching in column:", searchColumn, "for query:", searchQuery);
   };
 
+  // Filter applications based on active tab and role
+  const getFilteredApplications = () => {
+    if (!applications) return [];
+    
+    // For maker role
+    switch (activeTab) {
+      case "pending":
+        return applications.filter(app => app.status_id === 0);
+      case "completed":
+        return applications.filter(app => app.status_id === 1);
+      case "reopened":
+        return applications.filter(app => app.status_id === 4);
+      default:
+        return [];
+    }
+  };
+
   // Calculate pagination
   const pageSize = parseInt(entriesPerPage);
-  const totalPages = Math.ceil((applications?.length || 0) / pageSize);
+  const filteredData = getFilteredApplications();
+  const totalPages = Math.ceil(filteredData.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const currentData = applications?.slice(startIndex, endIndex) || [];
+  const currentData = filteredData.slice(startIndex, endIndex);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -68,19 +86,19 @@ const Dashboard = () => {
           <TabButton
             isActive={activeTab === "pending"}
             label="Pending"
-            count={applications?.filter(app => app.status === 'New').length || 0}
+            count={applications?.filter(app => app.status_id === 0).length || 0}
             onClick={() => setActiveTab("pending")}
           />
           <TabButton
             isActive={activeTab === "completed"}
             label="Completed"
-            count={applications?.filter(app => app.status === 'Completed').length || 0}
+            count={applications?.filter(app => app.status_id === 1).length || 0}
             onClick={() => setActiveTab("completed")}
           />
           <TabButton
             isActive={activeTab === "reopened"}
             label="Re-Opened"
-            count={applications?.filter(app => app.status === 'Reopened').length || 0}
+            count={applications?.filter(app => app.status_id === 4).length || 0}
             onClick={() => setActiveTab("reopened")}
           />
         </div>
@@ -119,6 +137,15 @@ const Dashboard = () => {
           />
         </div>
       </div>
+
+      <style>
+        {`
+          #application-details-sheet {
+            max-width: 70% !important;
+            border-radius: 10px !important;
+          }
+        `}
+      </style>
 
       <DashboardTable 
         data={currentData}

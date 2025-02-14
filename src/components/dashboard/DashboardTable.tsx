@@ -1,4 +1,3 @@
-
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
@@ -23,18 +22,26 @@ interface DashboardTableProps {
   onPreviousPage: () => void;
 }
 
-const getStatusColor = (status: string) => {
-  const statusColors: Record<string, string> = {
-    "New": "bg-[#E5DEFF] text-[#8B5CF6]",
-    "Initiated by maker": "bg-[#D3E4FD] text-[#0EA5E9]",
-    "Pending checker approval": "bg-[#FEF7CD] text-[#F97316]",
-    "Completed": "bg-[#F2FCE2] text-green-600",
-    "Rejected by Maker": "bg-[#FFDEE2] text-red-600",
-    "Returned by Checker": "bg-[#FDE1D3] text-orange-600",
-    "Rejected by Checker": "bg-[#FFDEE2] text-red-600",
-    "Resubmitted to Checker": "bg-[#D3E4FD] text-[#0EA5E9]"
+const getStatusColor = (statusId: number) => {
+  const statusColors: Record<number, string> = {
+    0: "bg-[#E5DEFF] text-[#8B5CF6]", // New
+    1: "bg-[#D3E4FD] text-[#0EA5E9]", // Initiated By Maker
+    2: "bg-[#F2FCE2] text-green-600", // Approved By Checker
+    3: "bg-[#FFDEE2] text-red-600",   // Rejected By Checker
+    4: "bg-[#FDE1D3] text-orange-600" // Re Opened
   };
-  return statusColors[status] || "";
+  return statusColors[statusId] || "";
+};
+
+const getStatusText = (statusId: number) => {
+  const statusTexts: Record<number, string> = {
+    0: "New",
+    1: "Initiated By Maker",
+    2: "Approved By Checker",
+    3: "Rejected By Checker",
+    4: "Re Opened"
+  };
+  return statusTexts[statusId] || "Unknown";
 };
 
 export const DashboardTable = ({ 
@@ -96,9 +103,9 @@ export const DashboardTable = ({
       const { error } = await supabase
         .from('applications')
         .update({
-          itr_flag: itrFlag === "true",
+          itr_flag: itrFlag,
           lrs_amount_consumed: parseFloat(lrsAmount),
-          status: 'Completed'  // Changed from 'Initiated by maker' to 'Completed'
+          status_id: 1 // Initiated By Maker
         })
         .eq('id', selectedRow.id);
 
@@ -128,9 +135,9 @@ export const DashboardTable = ({
       const { error: updateError } = await supabase
         .from('applications')
         .update({
-          itr_flag: itrFlag === "true",
+          itr_flag: itrFlag,
           lrs_amount_consumed: parseFloat(lrsAmount),
-          status: 'Completed'  // Changed from 'Rejected by Maker' to 'Completed'
+          status_id: 3 // Rejected By Checker
         })
         .eq('id', selectedRow.id);
 
@@ -186,8 +193,8 @@ export const DashboardTable = ({
                 {row.id}
               </TableCell>
               <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
-                <span className={`px-[10px] py-[3px] rounded-[10px] ${getStatusColor(row.status)}`}>
-                  {row.status}
+                <span className={`px-[10px] py-[3px] rounded-[10px] ${getStatusColor(row.status_id)}`}>
+                  {getStatusText(row.status_id)}
                 </span>
               </TableCell>
               <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
@@ -198,7 +205,7 @@ export const DashboardTable = ({
                   onClick={() => {
                     setSelectedRow(row);
                     setSheetOpen(true);
-                    setItrFlag(row.itr_flag ? "true" : "false");
+                    setItrFlag(row.itr_flag || "false");
                     setLrsAmount(row.lrs_amount_consumed.toString());
                   }}
                 >

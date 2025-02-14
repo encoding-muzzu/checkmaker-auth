@@ -41,6 +41,21 @@ export type Database = {
           },
         ]
       }
+      application_statuses: {
+        Row: {
+          id: number
+          name: string
+        }
+        Insert: {
+          id: number
+          name: string
+        }
+        Update: {
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           arn: string
@@ -57,6 +72,7 @@ export type Database = {
           processing_type: string
           product_variant: string
           status: string
+          status_id: number | null
           total_amount_loaded: number
           updated_at: string | null
         }
@@ -75,6 +91,7 @@ export type Database = {
           processing_type: string
           product_variant: string
           status?: string
+          status_id?: number | null
           total_amount_loaded: number
           updated_at?: string | null
         }
@@ -93,6 +110,7 @@ export type Database = {
           processing_type?: string
           product_variant?: string
           status?: string
+          status_id?: number | null
           total_amount_loaded?: number
           updated_at?: string | null
         }
@@ -102,6 +120,13 @@ export type Database = {
             columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_status_id_fkey"
+            columns: ["status_id"]
+            isOneToOne: false
+            referencedRelation: "application_statuses"
             referencedColumns: ["id"]
           },
         ]

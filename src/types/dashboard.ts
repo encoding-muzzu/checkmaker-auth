@@ -12,9 +12,10 @@ export interface ApplicationData {
   product_variant: string;
   card_type: string;
   processing_type: string;
-  itr_flag: boolean;
-  lrs_amount_consumed: number;
+  itr_flag: string | null;
   status: string;
+  status_id: number;
+  lrs_amount_consumed: number;
   assigned_to?: string;
 }
 
