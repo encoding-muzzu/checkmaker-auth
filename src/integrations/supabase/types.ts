@@ -50,7 +50,7 @@ export type Database = {
           customer_name: string
           customer_type: string
           id: string
-          itr_flag: boolean | null
+          itr_flag: string | null
           kit_no: string
           lrs_amount_consumed: number | null
           pan_number: string
@@ -68,7 +68,7 @@ export type Database = {
           customer_name: string
           customer_type: string
           id?: string
-          itr_flag?: boolean | null
+          itr_flag?: string | null
           kit_no: string
           lrs_amount_consumed?: number | null
           pan_number: string
@@ -86,7 +86,7 @@ export type Database = {
           customer_name?: string
           customer_type?: string
           id?: string
-          itr_flag?: boolean | null
+          itr_flag?: string | null
           kit_no?: string
           lrs_amount_consumed?: number | null
           pan_number?: string
