@@ -320,20 +320,24 @@ export const DashboardTable = ({
 
             <div className="p-6 border-t bg-white mt-auto">
               <div className="flex justify-end gap-3">
-                <Button
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px]"
-                  onClick={handleApprove}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Approving..." : "Approve"}
-                </Button>
-                <Button
-                  className="bg-red-600 hover:bg-red-700 text-white rounded-[4px]"
-                  onClick={() => setRejectDialogOpen(true)}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Rejecting..." : "Reject"}
-                </Button>
+                {selectedRow && selectedRow.status_id !== 1 && selectedRow.status_id !== 2 && (
+                  <>
+                    <Button
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px]"
+                      onClick={handleApprove}
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? "Approving..." : "Approve"}
+                    </Button>
+                    <Button
+                      className="bg-red-600 hover:bg-red-700 text-white rounded-[4px]"
+                      onClick={() => setRejectDialogOpen(true)}
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? "Rejecting..." : "Reject"}
+                    </Button>
+                  </>
+                )}
                 <Button
                   variant="outline"
                   className="border-black text-black hover:bg-gray-100 rounded-[4px]"

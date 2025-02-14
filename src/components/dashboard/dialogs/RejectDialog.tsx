@@ -22,6 +22,10 @@ export const RejectDialog = ({
     onOpenChange(false);
   };
 
+  const handleInputClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent onClick={(e) => e.stopPropagation()}>
@@ -34,6 +38,8 @@ export const RejectDialog = ({
               onChange={(e) => setRejectMessage(e.target.value)}
               className="mt-2"
               placeholder="Enter rejection reason..."
+              onClick={handleInputClick}
+              onFocus={(e) => e.stopPropagation()}
             />
           </AlertDialogDescription>
         </AlertDialogHeader>
