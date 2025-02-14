@@ -12,6 +12,8 @@ import { RejectDialog } from "./dialogs/RejectDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
+import { TableSkeleton } from "./TableSkeleton";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface DashboardTableProps {
   data: ApplicationData[];
@@ -20,6 +22,7 @@ interface DashboardTableProps {
   totalPages: number;
   onNextPage: () => void;
   onPreviousPage: () => void;
+  isLoading?: boolean;
 }
 
 const getStatusColor = (statusId: number) => {
@@ -50,7 +53,8 @@ export const DashboardTable = ({
   currentPage,
   totalPages,
   onNextPage,
-  onPreviousPage
+  onPreviousPage,
+  isLoading = false
 }: DashboardTableProps) => {
   const [selectedRow, setSelectedRow] = useState<ApplicationData | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -59,8 +63,10 @@ export const DashboardTable = ({
   const [isEditing, setIsEditing] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectMessage, setRejectMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'MMM d, yyyy, h:mm a');
@@ -98,6 +104,7 @@ export const DashboardTable = ({
 
   const handleApprove = async () => {
     if (!selectedRow) return;
+    setIsSubmitting(true);
 
     try {
       const { error } = await supabase
@@ -110,6 +117,8 @@ export const DashboardTable = ({
         .eq('id', selectedRow.id);
 
       if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ['applications'] });
 
       toast({
         title: "Success",
@@ -124,11 +133,14 @@ export const DashboardTable = ({
         description: "Failed to approve application",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleReject = async () => {
     if (!selectedRow) return;
+    setIsSubmitting(true);
 
     try {
       // First update application status
@@ -154,6 +166,11 @@ export const DashboardTable = ({
 
       if (insertError) throw insertError;
 
+      await queryClient.invalidateQueries({ queryKey: ['applications'] });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['application-comments', selectedRow.id] 
+      });
+
       toast({
         title: "Success",
         description: "Application has been rejected",
@@ -169,6 +186,8 @@ export const DashboardTable = ({
         description: "Failed to reject application",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -184,37 +203,41 @@ export const DashboardTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((row) => (
-            <TableRow key={row.id} className={`border-b border-[rgb(224,224,224)] ${isDense ? 'py-6' : 'py-2'}`}>
-              <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>
-                {formatDate(row.created_at)}
-              </TableCell>
-              <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>
-                {row.id}
-              </TableCell>
-              <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
-                <span className={`px-[10px] py-[3px] rounded-[10px] ${getStatusColor(row.status_id)}`}>
-                  {getStatusText(row.status_id)}
-                </span>
-              </TableCell>
-              <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex items-center gap-1 bg-transparent text-black hover:bg-transparent px-0 py-1 text-xs border-0"
-                  onClick={() => {
-                    setSelectedRow(row);
-                    setSheetOpen(true);
-                    setItrFlag(row.itr_flag || "false");
-                    setLrsAmount(row.lrs_amount_consumed.toString());
-                  }}
-                >
-                  <Eye className="h-3 w-3" />
-                  View
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
+          {isLoading ? (
+            <TableSkeleton />
+          ) : (
+            data.map((row) => (
+              <TableRow key={row.id} className={`border-b border-[rgb(224,224,224)] ${isDense ? 'py-6' : 'py-2'}`}>
+                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>
+                  {formatDate(row.created_at)}
+                </TableCell>
+                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>
+                  {row.id}
+                </TableCell>
+                <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
+                  <span className={`px-[10px] py-[3px] rounded-[10px] ${getStatusColor(row.status_id)}`}>
+                    {getStatusText(row.status_id)}
+                  </span>
+                </TableCell>
+                <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex items-center gap-1 bg-transparent text-black hover:bg-transparent px-0 py-1 text-xs border-0"
+                    onClick={() => {
+                      setSelectedRow(row);
+                      setSheetOpen(true);
+                      setItrFlag(row.itr_flag || "false");
+                      setLrsAmount(row.lrs_amount_consumed.toString());
+                    }}
+                  >
+                    <Eye className="h-3 w-3" />
+                    View
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
         <TableFooter>
           <TableRow>
@@ -248,6 +271,7 @@ export const DashboardTable = ({
           id="application-details-sheet"
           className="w-[80%] h-[94vh] mt-[2%] mr-[2%] p-0 overflow-y-auto"
           side="right"
+          onClick={(e) => e.stopPropagation()}
         >
           <div className="flex flex-col h-full">
             <div className="p-6 border-b">
@@ -277,14 +301,16 @@ export const DashboardTable = ({
                 <Button
                   className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px]"
                   onClick={handleApprove}
+                  disabled={isSubmitting}
                 >
-                  Approve
+                  {isSubmitting ? "Approving..." : "Approve"}
                 </Button>
                 <Button
                   className="bg-red-600 hover:bg-red-700 text-white rounded-[4px]"
                   onClick={() => setRejectDialogOpen(true)}
+                  disabled={isSubmitting}
                 >
-                  Reject
+                  {isSubmitting ? "Rejecting..." : "Reject"}
                 </Button>
                 <Button
                   variant="outline"

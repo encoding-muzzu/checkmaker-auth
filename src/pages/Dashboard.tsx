@@ -243,6 +243,7 @@ const Dashboard = () => {
         totalPages={totalPages}
         onNextPage={handleNextPage}
         onPreviousPage={handlePreviousPage}
+        isLoading={isLoading}
       />
     </div>
   );
