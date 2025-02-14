@@ -107,12 +107,23 @@ export const DashboardTable = ({
     setIsSubmitting(true);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single();
+
+      const newStatusId = profile?.role === 'checker' ? 2 : 1; // 2 for checker approval, 1 for maker
+
       const { error } = await supabase
         .from('applications')
         .update({
           itr_flag: itrFlag,
           lrs_amount_consumed: parseFloat(lrsAmount),
-          status_id: 1 // Initiated By Maker
+          status_id: newStatusId
         })
         .eq('id', selectedRow.id);
 
@@ -143,13 +154,24 @@ export const DashboardTable = ({
     setIsSubmitting(true);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single();
+
+      const newStatusId = profile?.role === 'checker' ? 4 : 3; // 4 for checker rejection, 3 for maker
+
       // First update application status
       const { error: updateError } = await supabase
         .from('applications')
         .update({
           itr_flag: itrFlag,
           lrs_amount_consumed: parseFloat(lrsAmount),
-          status_id: 3 // Rejected By Checker
+          status_id: newStatusId
         })
         .eq('id', selectedRow.id);
 
