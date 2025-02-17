@@ -74,6 +74,7 @@ export const ApplicationDetailsSheet = ({
                 lrsAmount={lrsAmount}
                 setLrsAmount={setLrsAmount}
                 setIsEditing={setIsEditing}
+                userRole={userRole}
               />
               <CommentsSection 
                 applicationId={selectedRow?.id || ''}

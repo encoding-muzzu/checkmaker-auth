@@ -11,6 +11,7 @@ interface CustomerDetailsSectionProps {
   lrsAmount: string;
   setLrsAmount: (value: string) => void;
   setIsEditing: (value: boolean) => void;
+  userRole: string | null;
 }
 
 export const CustomerDetailsSection = ({
@@ -19,8 +20,11 @@ export const CustomerDetailsSection = ({
   setItrFlag,
   lrsAmount,
   setLrsAmount,
-  setIsEditing
+  setIsEditing,
+  userRole
 }: CustomerDetailsSectionProps) => {
+  const isChecker = userRole === 'checker';
+
   return (
     <AccordionItem value="details" className="border rounded-[4px] shadow-sm">
       <AccordionTrigger className="px-4 hover:no-underline">
@@ -42,30 +46,38 @@ export const CustomerDetailsSection = ({
           ))}
           <div className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
             <span className="text-gray-600 my-auto">ITR Flag</span>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">{itrFlag === "true" ? "Yes" : "No"}</span>
-              <Switch 
-                checked={itrFlag === "true"}
-                onCheckedChange={(checked) => setItrFlag(checked ? "true" : "false")}
-                className="data-[state=checked]:bg-black"
-              />
-            </div>
+            {isChecker ? (
+              <span className="font-medium text-black">{itrFlag === "true" ? "Yes" : "No"}</span>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">{itrFlag === "true" ? "Yes" : "No"}</span>
+                <Switch 
+                  checked={itrFlag === "true"}
+                  onCheckedChange={(checked) => setItrFlag(checked ? "true" : "false")}
+                  className="data-[state=checked]:bg-black"
+                />
+              </div>
+            )}
           </div>
           <div className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
             <span className="text-gray-600 my-auto">LRS Amount Consumed(USD)</span>
-            <div className="relative flex items-center">
-              <Input 
-                value={lrsAmount}
-                onChange={(e) => setLrsAmount(e.target.value)}
-                className="w-32 h-8 bg-gray-50 rounded-[4px] pr-8"
-              />
-              <button 
-                onClick={() => setIsEditing(true)} 
-                className="absolute right-2 text-black hover:text-gray-700"
-              >
-                <Edit2 className="h-4 w-4" />
-              </button>
-            </div>
+            {isChecker ? (
+              <span className="font-medium text-black">{lrsAmount}</span>
+            ) : (
+              <div className="relative flex items-center">
+                <Input 
+                  value={lrsAmount}
+                  onChange={(e) => setLrsAmount(e.target.value)}
+                  className="w-32 h-8 bg-gray-50 rounded-[4px] pr-8"
+                />
+                <button 
+                  onClick={() => setIsEditing(true)} 
+                  className="absolute right-2 text-black hover:text-gray-700"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </AccordionContent>
