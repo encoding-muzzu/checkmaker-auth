@@ -22,7 +22,25 @@ export const useDashboard = () => {
     queryKey: ['applications'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return [];
+      if (!session) {
+        navigate('/');
+        return [];
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!profile) {
+        toast({
+          title: "Error",
+          description: "User profile not found",
+          variant: "destructive",
+        });
+        return [];
+      }
 
       const { data, error } = await supabase
         .from('applications')
@@ -35,7 +53,15 @@ export const useDashboard = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching applications:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch applications",
+          variant: "destructive",
+        });
+        return [];
+      }
 
       return data.map((app: any) => ({
         ...app,
@@ -79,6 +105,12 @@ export const useDashboard = () => {
     }
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/');
+        return;
+      }
+
       const { data, error } = await supabase
         .from('applications')
         .select(`
@@ -91,7 +123,15 @@ export const useDashboard = () => {
         .ilike(searchColumn, `%${searchQuery}%`)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Search error:', error);
+        toast({
+          title: "Search Error",
+          description: "Failed to perform search",
+          variant: "destructive",
+        });
+        return;
+      }
 
       setSearchResults(
         (data || []).map((app: any) => ({
