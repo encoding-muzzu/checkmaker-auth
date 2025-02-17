@@ -23,6 +23,7 @@ interface ApplicationDetailsSheetProps {
   handleApprove: () => Promise<void>;
   handleReject: () => void;
   isSubmitting: boolean;
+  activeTab: string;
 }
 
 export const ApplicationDetailsSheet = ({
@@ -39,8 +40,17 @@ export const ApplicationDetailsSheet = ({
   userRole,
   handleApprove,
   handleReject,
-  isSubmitting
+  isSubmitting,
+  activeTab
 }: ApplicationDetailsSheetProps) => {
+  const showButtons = (
+    selectedRow && (
+      (userRole === 'maker' && (selectedRow.status_id === 0 || selectedRow.status_id === 3)) || 
+      (userRole === 'checker' && selectedRow.status_id === 1) ||
+      (activeTab === 'reopened')
+    )
+  );
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent 
@@ -74,10 +84,7 @@ export const ApplicationDetailsSheet = ({
 
           <div className="p-6 border-t bg-white mt-auto">
             <div className="flex justify-end gap-3">
-              {selectedRow && (
-                (userRole === 'maker' && selectedRow.status_id === 0) || 
-                (userRole === 'checker' && selectedRow.status_id === 1)
-              ) && (
+              {showButtons && (
                 <>
                   <Button
                     className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px]"

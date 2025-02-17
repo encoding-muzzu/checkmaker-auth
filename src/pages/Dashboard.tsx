@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { TabButton } from "@/components/dashboard/TabButton";
 import { SearchControls } from "@/components/dashboard/SearchControls";
@@ -8,15 +9,14 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ApplicationData } from "@/types/dashboard";
-import { LogOut } from "lucide-react";
+import { LogOut, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import { RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("pending");
-  const [searchColumn, setSearchColumn] = useState("applicationId");
+  const [searchColumn, setSearchColumn] = useState("id");
   const [searchQuery, setSearchQuery] = useState("");
   const [entriesPerPage, setEntriesPerPage] = useState("10");
   const [currentPage, setCurrentPage] = useState(1);
@@ -78,10 +78,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleSearch = () => {
-    console.log("Searching in column:", searchColumn, "for query:", searchQuery);
-  };
-
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ['applications'] });
     queryClient.invalidateQueries({ queryKey: ['application-comments'] });
@@ -89,31 +85,55 @@ const Dashboard = () => {
 
   const getFilteredApplications = () => {
     if (!applications || !userRole) return [];
+
+    let filteredApps = [];
+    
+    if (activeTab === "search" && searchQuery) {
+      // Filter based on search criteria for the search tab
+      return applications.filter(app => {
+        const value = app[searchColumn as keyof ApplicationData];
+        if (value === null || value === undefined) return false;
+        return value.toString().toLowerCase().includes(searchQuery.toLowerCase());
+      });
+    }
     
     if (userRole === 'checker') {
       switch (activeTab) {
         case "pending":
-          return applications.filter(app => app.status_id === 1); // Initiated By Maker
+          filteredApps = applications.filter(app => app.status_id === 1);
+          break;
         case "completed":
-          return applications.filter(app => app.status_id === 2); // Approved By Checker
+          filteredApps = applications.filter(app => app.status_id === 2);
+          break;
         case "reopened":
-          return applications.filter(app => app.status_id === 3); // Rejected By Checker
+          filteredApps = applications.filter(app => app.status_id === 3);
+          break;
+        case "search":
+          filteredApps = applications;
+          break;
         default:
-          return [];
+          filteredApps = [];
       }
     } else {
-      // Maker role
       switch (activeTab) {
         case "pending":
-          return applications.filter(app => app.status_id === 0); // New
+          filteredApps = applications.filter(app => app.status_id === 0);
+          break;
         case "completed":
-          return applications.filter(app => app.status_id === 1); // Initiated By Maker
+          filteredApps = applications.filter(app => app.status_id === 1);
+          break;
         case "reopened":
-          return applications.filter(app => app.status_id === 3); // Rejected By Checker
+          filteredApps = applications.filter(app => app.status_id === 3);
+          break;
+        case "search":
+          filteredApps = applications;
+          break;
         default:
-          return [];
+          filteredApps = [];
       }
     }
+
+    return filteredApps;
   };
 
   const pageSize = parseInt(entriesPerPage);
@@ -139,6 +159,19 @@ const Dashboard = () => {
     setEntriesPerPage(value);
     setCurrentPage(1);
   };
+
+  const searchableColumns = [
+    { value: "id", label: "Application ID" },
+    { value: "arn", label: "ARN" },
+    { value: "kit_no", label: "Kit No" },
+    { value: "customer_name", label: "Customer Name" },
+    { value: "pan_number", label: "PAN" },
+    { value: "customer_type", label: "Customer Type" },
+    { value: "product_variant", label: "Product Variant" },
+    { value: "card_type", label: "Card Type" },
+    { value: "processing_type", label: "Processing Type" },
+    { value: "status", label: "Status" }
+  ];
 
   return (
     <div className="p-8 max-w-[1400px] mx-auto">
@@ -180,6 +213,12 @@ const Dashboard = () => {
               count={applications?.filter(app => app.status_id === 3).length || 0}
               onClick={() => setActiveTab("reopened")}
             />
+            <TabButton
+              isActive={activeTab === "search"}
+              label="Search"
+              count={0}
+              onClick={() => setActiveTab("search")}
+            />
           </div>
           <Button
             onClick={handleRefresh}
@@ -191,6 +230,20 @@ const Dashboard = () => {
           </Button>
         </div>
       </div>
+
+      {activeTab === "search" && (
+        <div className="bg-white border-b border-[#e0e0e0] mb-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 py-6">
+            <SearchControls
+              searchColumn={searchColumn}
+              searchQuery={searchQuery}
+              onSearchColumnChange={setSearchColumn}
+              onSearchQueryChange={setSearchQuery}
+              searchableColumns={searchableColumns}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="bg-white border-b border-[#e0e0e0] mb-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 py-6">
@@ -213,14 +266,6 @@ const Dashboard = () => {
               </Select>
             </div>
           </div>
-
-          <SearchControls
-            searchColumn={searchColumn}
-            searchQuery={searchQuery}
-            onSearchColumnChange={setSearchColumn}
-            onSearchQueryChange={setSearchQuery}
-            onSearch={handleSearch}
-          />
         </div>
       </div>
 
@@ -242,6 +287,7 @@ const Dashboard = () => {
         onPreviousPage={handlePreviousPage}
         isLoading={isLoading}
         userRole={userRole}
+        activeTab={activeTab}
       />
     </div>
   );

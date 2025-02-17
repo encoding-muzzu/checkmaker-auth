@@ -1,5 +1,5 @@
 
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,7 +9,7 @@ interface SearchControlsProps {
   searchQuery: string;
   onSearchColumnChange: (value: string) => void;
   onSearchQueryChange: (value: string) => void;
-  onSearch: () => void;
+  searchableColumns: Array<{ value: string; label: string }>;
 }
 
 export const SearchControls = ({
@@ -17,19 +17,21 @@ export const SearchControls = ({
   searchQuery,
   onSearchColumnChange,
   onSearchQueryChange,
-  onSearch
+  searchableColumns
 }: SearchControlsProps) => {
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-      <div className="flex items-center gap-2">
-        <SlidersHorizontal className="w-4 h-4 text-gray-500" />
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
+      <div className="flex items-center gap-2 w-full sm:w-auto">
         <Select value={searchColumn} onValueChange={onSearchColumnChange}>
           <SelectTrigger className="w-[180px] bg-white border-gray-200">
-            <SelectValue placeholder="Filter by column" />
+            <SelectValue placeholder="Select field" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="applicationId">Application ID</SelectItem>
-            <SelectItem value="status">Status</SelectItem>
+            {searchableColumns.map(column => (
+              <SelectItem key={column.value} value={column.value}>
+                {column.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -44,14 +46,7 @@ export const SearchControls = ({
           />
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         </div>
-        <Button 
-          onClick={onSearch}
-          className="bg-black text-white hover:bg-black/90 px-4"
-        >
-          Search
-        </Button>
       </div>
     </div>
   );
 };
-
