@@ -31,4 +31,3 @@ export interface ApplicationComment {
   type: 'rejection' | 'return' | 'comment';
   created_at: string;
 }
-

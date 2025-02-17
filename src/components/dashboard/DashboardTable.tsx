@@ -20,6 +20,7 @@ interface DashboardTableProps {
   onPreviousPage: () => void;
   isLoading?: boolean;
   userRole: string | null;
+  activeTab: string;
 }
 
 export const DashboardTable = ({ 
@@ -30,7 +31,8 @@ export const DashboardTable = ({
   onNextPage,
   onPreviousPage,
   isLoading = false,
-  userRole
+  userRole,
+  activeTab
 }: DashboardTableProps) => {
   const [selectedRow, setSelectedRow] = useState<ApplicationData | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -177,6 +179,7 @@ export const DashboardTable = ({
         handleApprove={handleApproveClick}
         handleReject={handleRejectClick}
         isSubmitting={isSubmitting}
+        activeTab={activeTab}
       />
 
       <RejectDialog

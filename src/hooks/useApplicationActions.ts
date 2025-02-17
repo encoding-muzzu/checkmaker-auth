@@ -32,18 +32,22 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
       let newStatusId: number;
       let successMessage: string;
 
-      if (profile?.role === 'maker' && selectedRow.status_id === 0) {
-        // Maker approving a new entry
-        newStatusId = 1; // Initiated By Maker
-        successMessage = "Application has been initiated";
+      if (profile?.role === 'maker') {
+        if (selectedRow.status_id === 0) {
+          // Maker approving a new entry
+          newStatusId = 1; // Initiated By Maker
+          successMessage = "Application has been initiated";
+        } else if (selectedRow.status_id === 3) {
+          // Maker re-submitting a rejected entry
+          newStatusId = 4; // Re-opened by Maker
+          successMessage = "Application has been re-submitted";
+        } else {
+          throw new Error("Invalid approval action for current status");
+        }
       } else if (profile?.role === 'checker' && selectedRow.status_id === 1) {
         // Checker approving a maker-initiated entry
         newStatusId = 2; // Approved By Checker
         successMessage = "Application has been approved";
-      } else if (profile?.role === 'maker' && selectedRow.status_id === 3) {
-        // Maker re-submitting a rejected entry
-        newStatusId = 1; // Back to Initiated By Maker
-        successMessage = "Application has been re-submitted";
       } else {
         throw new Error("Invalid approval action for current status");
       }
@@ -94,9 +98,10 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
         .eq('id', session.user.id)
         .single();
 
-      // Only checker can reject applications
-      if (profile?.role !== 'checker' || selectedRow.status_id !== 1) {
-        throw new Error("Only checker can reject applications in 'Initiated by Maker' status");
+      // Only checker can reject applications that are initiated by maker or re-opened
+      if (profile?.role !== 'checker' || 
+         (selectedRow.status_id !== 1 && selectedRow.status_id !== 4)) {
+        throw new Error("Invalid reject action for current status");
       }
 
       const newStatusId = 3; // Rejected By Checker

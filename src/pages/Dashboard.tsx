@@ -136,7 +136,7 @@ const Dashboard = () => {
         case "pending":
           return applications.filter(app => app.status_id === 0);
         case "completed":
-          return applications.filter(app => app.status_id === 1);
+          return applications.filter(app => app.status_id === 1 || app.status_id === 4);
         case "reopened":
           return applications.filter(app => app.status_id === 3);
         default:
