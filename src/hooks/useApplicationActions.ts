@@ -28,7 +28,25 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
         .eq('id', session.user.id)
         .single();
 
-      const newStatusId = profile?.role === 'checker' ? 2 : 1;
+      // Based on the user's role and current status, determine the new status
+      let newStatusId: number;
+      let successMessage: string;
+
+      if (profile?.role === 'maker' && selectedRow.status_id === 0) {
+        // Maker approving a new entry
+        newStatusId = 1; // Initiated By Maker
+        successMessage = "Application has been initiated";
+      } else if (profile?.role === 'checker' && selectedRow.status_id === 1) {
+        // Checker approving a maker-initiated entry
+        newStatusId = 2; // Approved By Checker
+        successMessage = "Application has been approved";
+      } else if (profile?.role === 'maker' && selectedRow.status_id === 3) {
+        // Maker re-submitting a rejected entry
+        newStatusId = 1; // Back to Initiated By Maker
+        successMessage = "Application has been re-submitted";
+      } else {
+        throw new Error("Invalid approval action for current status");
+      }
 
       const { error } = await supabase
         .from('applications')
@@ -45,7 +63,7 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
 
       toast({
         title: "Success",
-        description: "Application has been approved",
+        description: successMessage,
       });
 
       return true;
@@ -53,7 +71,7 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
       console.error('Error updating application:', error);
       toast({
         title: "Error",
-        description: "Failed to approve application",
+        description: "Failed to update application",
         variant: "destructive",
       });
       return false;
@@ -76,7 +94,12 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
         .eq('id', session.user.id)
         .single();
 
-      const newStatusId = profile?.role === 'checker' ? 4 : 3;
+      // Only checker can reject applications
+      if (profile?.role !== 'checker' || selectedRow.status_id !== 1) {
+        throw new Error("Only checker can reject applications in 'Initiated by Maker' status");
+      }
+
+      const newStatusId = 3; // Rejected By Checker
 
       const { error: updateError } = await supabase
         .from('applications')

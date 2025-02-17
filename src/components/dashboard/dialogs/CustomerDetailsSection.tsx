@@ -5,7 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { CheckCircle2, Edit2 } from "lucide-react";
 
 interface CustomerDetailsSectionProps {
-  customerDetails: Array<{ label: string; value: string }>;
+  customerDetails: Array<{ label: string; value: string | number }>;
   itrFlag: string;
   setItrFlag: (value: string) => void;
   lrsAmount: string;
@@ -37,7 +37,7 @@ export const CustomerDetailsSection = ({
               className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
             >
               <span className="text-gray-600">{detail.label}</span>
-              <span className="font-medium text-black">{detail.value}</span>
+              <span className="font-medium text-black">{detail.value.toString()}</span>
             </div>
           ))}
           <div className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
