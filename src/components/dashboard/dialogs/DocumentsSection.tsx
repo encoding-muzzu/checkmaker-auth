@@ -2,10 +2,53 @@
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Clock, Download, Eye, FileX } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
-export const DocumentsSection = () => {
-  // Simulate no documents for demo
-  const hasDocuments = false;
+interface Document {
+  name: string;
+  path: string;
+  type: string;
+}
+
+interface DocumentsSectionProps {
+  documents?: Document[];
+}
+
+export const DocumentsSection = ({ documents }: DocumentsSectionProps) => {
+  const hasDocuments = documents && documents.length > 0;
+
+  const handleViewDocument = async (document: Document) => {
+    try {
+      const { data } = await supabase.storage
+        .from('customer_documents')
+        .createSignedUrl(document.path, 60);
+
+      if (data?.signedUrl) {
+        window.open(data.signedUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Error viewing document:', error);
+    }
+  };
+
+  const handleDownloadDocument = async (document: Document) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('customer_documents')
+        .download(document.path);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = document.name;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading document:', error);
+    }
+  };
 
   return (
     <AccordionItem value="documents" className="border rounded-[4px] shadow-sm">
@@ -17,31 +60,37 @@ export const DocumentsSection = () => {
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4">
         {hasDocuments ? (
-          <div className="p-6 border rounded-[4px] bg-gray-50/50 shadow-sm hover:shadow-md transition-shadow duration-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold text-black">CustomerImage</h3>
-                <p className="text-sm text-gray-500">Customer Document</p>
+          <div className="space-y-4">
+            {documents.map((doc, index) => (
+              <div key={index} className="p-6 border rounded-[4px] bg-gray-50/50 shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-black">{doc.name}</h3>
+                    <p className="text-sm text-gray-500">Customer Document</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="flex items-center gap-1 hover:bg-gray-100 rounded-[4px] border-black text-black"
+                      onClick={() => handleDownloadDocument(doc)}
+                    >
+                      <Download className="h-4 w-4" />
+                      Download
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="flex items-center gap-1 hover:bg-gray-100 rounded-[4px] border-black text-black"
+                      onClick={() => handleViewDocument(doc)}
+                    >
+                      <Eye className="h-4 w-4" />
+                      View
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="flex items-center gap-1 hover:bg-gray-100 rounded-[4px] border-black text-black"
-                >
-                  <Download className="h-4 w-4" />
-                  Download
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="flex items-center gap-1 hover:bg-gray-100 rounded-[4px] border-black text-black"
-                >
-                  <Eye className="h-4 w-4" />
-                  View
-                </Button>
-              </div>
-            </div>
+            ))}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center p-8 border rounded-[4px] bg-gray-50/50">
@@ -53,3 +102,4 @@ export const DocumentsSection = () => {
     </AccordionItem>
   );
 };
+

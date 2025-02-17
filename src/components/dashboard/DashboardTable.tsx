@@ -302,7 +302,7 @@ export const DashboardTable = ({
 
             <div className="flex-1 overflow-y-auto p-6">
               <Accordion type="single" collapsible defaultValue="details" className="space-y-4">
-                <DocumentsSection />
+                <DocumentsSection documents={selectedRow?.documents} />
                 <CustomerDetailsSection 
                   customerDetails={customerDetails}
                   itrFlag={itrFlag}
@@ -320,7 +320,10 @@ export const DashboardTable = ({
 
             <div className="p-6 border-t bg-white mt-auto">
               <div className="flex justify-end gap-3">
-                {selectedRow && selectedRow.status_id !== 1 && selectedRow.status_id !== 2 && (
+                {selectedRow && (
+                  (userRole === 'maker' && selectedRow.status_id === 0) || 
+                  (userRole === 'checker' && selectedRow.status_id === 1)
+                ) && (
                   <>
                     <Button
                       className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px]"

@@ -64,6 +64,7 @@ export type Database = {
           created_at: string | null
           customer_name: string
           customer_type: string
+          documents: Json | null
           id: string
           itr_flag: string | null
           kit_no: string
@@ -83,6 +84,7 @@ export type Database = {
           created_at?: string | null
           customer_name: string
           customer_type: string
+          documents?: Json | null
           id?: string
           itr_flag?: string | null
           kit_no: string
@@ -102,6 +104,7 @@ export type Database = {
           created_at?: string | null
           customer_name?: string
           customer_type?: string
+          documents?: Json | null
           id?: string
           itr_flag?: string | null
           kit_no?: string

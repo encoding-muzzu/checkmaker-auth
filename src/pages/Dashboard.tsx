@@ -25,7 +25,6 @@ const Dashboard = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch user role
   useEffect(() => {
     const fetchUserRole = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -98,7 +97,7 @@ const Dashboard = () => {
         case "completed":
           return applications.filter(app => app.status_id === 2); // Approved By Checker
         case "reopened":
-          return applications.filter(app => app.status_id === 4); // Re Opened
+          return applications.filter(app => app.status_id === 3); // Rejected By Checker
         default:
           return [];
       }
@@ -106,11 +105,11 @@ const Dashboard = () => {
       // Maker role
       switch (activeTab) {
         case "pending":
-          return applications.filter(app => app.status_id === 0);
+          return applications.filter(app => app.status_id === 0); // New
         case "completed":
-          return applications.filter(app => app.status_id === 1);
+          return applications.filter(app => app.status_id === 1); // Initiated By Maker
         case "reopened":
-          return applications.filter(app => app.status_id === 4);
+          return applications.filter(app => app.status_id === 3); // Rejected By Checker
         default:
           return [];
       }
@@ -154,7 +153,6 @@ const Dashboard = () => {
         </Button>
       </div>
 
-      {/* Tabs */}
       <div className="border-b mb-8">
         <div className="flex justify-between items-center">
           <div className="flex gap-8">
@@ -179,7 +177,7 @@ const Dashboard = () => {
             <TabButton
               isActive={activeTab === "reopened"}
               label="Re-Opened"
-              count={applications?.filter(app => app.status_id === 4).length || 0}
+              count={applications?.filter(app => app.status_id === 3).length || 0}
               onClick={() => setActiveTab("reopened")}
             />
           </div>
@@ -194,7 +192,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Controls Section */}
       <div className="bg-white border-b border-[#e0e0e0] mb-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 py-6">
           <div className="flex items-center gap-3">

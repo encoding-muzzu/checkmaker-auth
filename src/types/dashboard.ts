@@ -17,6 +17,11 @@ export interface ApplicationData {
   status_id: number;
   lrs_amount_consumed: number;
   assigned_to?: string;
+  documents?: {
+    name: string;
+    path: string;
+    type: string;
+  }[];
 }
 
 export interface ApplicationComment {
@@ -26,3 +31,4 @@ export interface ApplicationComment {
   type: 'rejection' | 'return' | 'comment';
   created_at: string;
 }
+
