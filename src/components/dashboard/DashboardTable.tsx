@@ -1,4 +1,3 @@
-
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
@@ -89,8 +88,8 @@ export const DashboardTable = ({
     }
   };
 
-  return (
-    <div className="bg-white">
+  const renderTable = () => {
+    return (
       <Table>
         <TableHeader>
           <TableRow>
@@ -107,14 +106,14 @@ export const DashboardTable = ({
             data.map((row) => (
               <TableRow key={row.id} className={`border-b border-[rgb(224,224,224)] ${isDense ? 'py-6' : 'py-2'}`}>
                 <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>
-                  {formatDate(row.created_at)}
+                  {format(new Date(row.created_at), 'MMM d, yyyy, h:mm a')}
                 </TableCell>
                 <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>
                   {row.id}
                 </TableCell>
                 <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
                   <span className={`px-[10px] py-[3px] rounded-[10px] ${getStatusColor(row.status_id)}`}>
-                    {getStatusText(row.status_id)}
+                    {getStatusText(row.status_id, row.status_name)}
                   </span>
                 </TableCell>
                 <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
@@ -125,8 +124,6 @@ export const DashboardTable = ({
                     onClick={() => {
                       setSelectedRow(row);
                       setSheetOpen(true);
-                      setItrFlag(row.itr_flag || "false");
-                      setLrsAmount(row.lrs_amount_consumed.toString());
                     }}
                   >
                     <Eye className="h-3 w-3" />
@@ -163,6 +160,12 @@ export const DashboardTable = ({
           </TableRow>
         </TableFooter>
       </Table>
+    );
+  };
+
+  return (
+    <div className="bg-white">
+      {renderTable()}
 
       <ApplicationDetailsSheet
         open={sheetOpen}

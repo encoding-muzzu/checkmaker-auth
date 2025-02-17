@@ -50,13 +50,26 @@ const Dashboard = () => {
   const { data: applications, isLoading } = useQuery({
     queryKey: ['applications'],
     queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return [];
+
       const { data, error } = await supabase
         .from('applications')
-        .select('*')
+        .select(`
+          *,
+          application_statuses (
+            name
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as ApplicationData[];
+
+      return data.map((app: any) => ({
+        ...app,
+        status_name: app.application_statuses?.name,
+        documents: app.documents || []
+      })) as ApplicationData[];
     }
   });
 

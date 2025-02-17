@@ -15,13 +15,14 @@ export interface ApplicationData {
   itr_flag: string | null;
   status: string;
   status_id: number;
+  status_name: string;
   lrs_amount_consumed: number;
   assigned_to?: string;
-  documents?: {
+  documents: {
     name: string;
     path: string;
     type: string;
-  }[];
+  }[] | null;
 }
 
 export interface ApplicationComment {

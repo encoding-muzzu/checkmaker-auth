@@ -10,13 +10,6 @@ export const getStatusColor = (statusId: number) => {
   return statusColors[statusId] || "";
 };
 
-export const getStatusText = (statusId: number) => {
-  const statusTexts: Record<number, string> = {
-    0: "New Entry",
-    1: "Maker Decision Pending Approval",
-    2: "Approved by Checker",
-    3: "Rejected by Checker",
-    4: "Re-opened by Maker"
-  };
-  return statusTexts[statusId] || "Unknown";
+export const getStatusText = (statusId: number, statusName?: string) => {
+  return statusName || "Unknown";
 };
