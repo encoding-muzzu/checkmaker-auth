@@ -23,6 +23,7 @@ interface DashboardTableProps {
   onNextPage: () => void;
   onPreviousPage: () => void;
   isLoading?: boolean;
+  userRole: string | null;
 }
 
 const getStatusColor = (statusId: number) => {
@@ -54,7 +55,8 @@ export const DashboardTable = ({
   totalPages,
   onNextPage,
   onPreviousPage,
-  isLoading = false
+  isLoading = false,
+  userRole
 }: DashboardTableProps) => {
   const [selectedRow, setSelectedRow] = useState<ApplicationData | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);

@@ -17,11 +17,11 @@ interface DocumentsSectionProps {
 export const DocumentsSection = ({ documents }: DocumentsSectionProps) => {
   const hasDocuments = documents && documents.length > 0;
 
-  const handleViewDocument = async (document: Document) => {
+  const handleViewDocument = async (doc: Document) => {
     try {
       const { data } = await supabase.storage
         .from('customer_documents')
-        .createSignedUrl(document.path, 60);
+        .createSignedUrl(doc.path, 60);
 
       if (data?.signedUrl) {
         window.open(data.signedUrl, '_blank');
@@ -31,18 +31,18 @@ export const DocumentsSection = ({ documents }: DocumentsSectionProps) => {
     }
   };
 
-  const handleDownloadDocument = async (document: Document) => {
+  const handleDownloadDocument = async (doc: Document) => {
     try {
       const { data, error } = await supabase.storage
         .from('customer_documents')
-        .download(document.path);
+        .download(doc.path);
 
       if (error) throw error;
 
-      const url = URL.createObjectURL(data);
-      const a = document.createElement('a');
+      const url = window.URL.createObjectURL(data);
+      const a = window.document.createElement('a');
       a.href = url;
-      a.download = document.name;
+      a.download = doc.name;
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
@@ -102,4 +102,3 @@ export const DocumentsSection = ({ documents }: DocumentsSectionProps) => {
     </AccordionItem>
   );
 };
-

@@ -241,6 +241,7 @@ const Dashboard = () => {
         onNextPage={handleNextPage}
         onPreviousPage={handlePreviousPage}
         isLoading={isLoading}
+        userRole={userRole}
       />
     </div>
   );
