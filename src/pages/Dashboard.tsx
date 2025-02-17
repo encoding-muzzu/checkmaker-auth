@@ -58,7 +58,7 @@ const Dashboard = () => {
         .from('applications')
         .select(`
           *,
-          application_statuses!inner (
+          application_statuses!fk_status (
             id,
             name
           )
@@ -113,7 +113,7 @@ const Dashboard = () => {
         .from('applications')
         .select(`
           *,
-          application_statuses!inner (
+          application_statuses!fk_status (
             id,
             name
           )
