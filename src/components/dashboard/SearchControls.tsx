@@ -9,6 +9,7 @@ interface SearchControlsProps {
   searchQuery: string;
   onSearchColumnChange: (value: string) => void;
   onSearchQueryChange: (value: string) => void;
+  onSearch: () => void;
   searchableColumns: Array<{ value: string; label: string }>;
 }
 
@@ -17,6 +18,7 @@ export const SearchControls = ({
   searchQuery,
   onSearchColumnChange,
   onSearchQueryChange,
+  onSearch,
   searchableColumns
 }: SearchControlsProps) => {
   return (
@@ -46,6 +48,12 @@ export const SearchControls = ({
           />
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         </div>
+        <Button 
+          onClick={onSearch}
+          className="bg-black hover:bg-gray-800 text-white"
+        >
+          Search
+        </Button>
       </div>
     </div>
   );

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { TabButton } from "@/components/dashboard/TabButton";
 import { SearchControls } from "@/components/dashboard/SearchControls";
@@ -21,6 +20,7 @@ const Dashboard = () => {
   const [entriesPerPage, setEntriesPerPage] = useState("10");
   const [currentPage, setCurrentPage] = useState(1);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [searchResults, setSearchResults] = useState<ApplicationData[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -83,57 +83,66 @@ const Dashboard = () => {
     queryClient.invalidateQueries({ queryKey: ['application-comments'] });
   };
 
+  const handleSearch = async () => {
+    if (!searchQuery || !searchColumn) {
+      toast({
+        title: "Search Error",
+        description: "Please select a field and enter a search term",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('applications')
+        .select('*')
+        .ilike(searchColumn, `%${searchQuery}%`)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setSearchResults(data || []);
+    } catch (error) {
+      console.error('Search error:', error);
+      toast({
+        title: "Search Error",
+        description: "Failed to perform search",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getFilteredApplications = () => {
     if (!applications || !userRole) return [];
 
-    let filteredApps = [];
-    
-    if (activeTab === "search" && searchQuery) {
-      // Filter based on search criteria for the search tab
-      return applications.filter(app => {
-        const value = app[searchColumn as keyof ApplicationData];
-        if (value === null || value === undefined) return false;
-        return value.toString().toLowerCase().includes(searchQuery.toLowerCase());
-      });
+    if (activeTab === "search") {
+      return searchResults;
     }
     
     if (userRole === 'checker') {
       switch (activeTab) {
         case "pending":
-          filteredApps = applications.filter(app => app.status_id === 1);
-          break;
+          return applications.filter(app => app.status_id === 1);
         case "completed":
-          filteredApps = applications.filter(app => app.status_id === 2);
-          break;
+          return applications.filter(app => app.status_id === 2);
         case "reopened":
-          filteredApps = applications.filter(app => app.status_id === 3);
-          break;
-        case "search":
-          filteredApps = applications;
-          break;
+          return applications.filter(app => app.status_id === 3);
         default:
-          filteredApps = [];
+          return [];
       }
     } else {
       switch (activeTab) {
         case "pending":
-          filteredApps = applications.filter(app => app.status_id === 0);
-          break;
+          return applications.filter(app => app.status_id === 0);
         case "completed":
-          filteredApps = applications.filter(app => app.status_id === 1);
-          break;
+          return applications.filter(app => app.status_id === 1);
         case "reopened":
-          filteredApps = applications.filter(app => app.status_id === 3);
-          break;
-        case "search":
-          filteredApps = applications;
-          break;
+          return applications.filter(app => app.status_id === 3);
         default:
-          filteredApps = [];
+          return [];
       }
     }
-
-    return filteredApps;
   };
 
   const pageSize = parseInt(entriesPerPage);
@@ -213,12 +222,17 @@ const Dashboard = () => {
               count={applications?.filter(app => app.status_id === 3).length || 0}
               onClick={() => setActiveTab("reopened")}
             />
-            <TabButton
-              isActive={activeTab === "search"}
-              label="Search"
-              count={0}
-              onClick={() => setActiveTab("search")}
-            />
+            <button
+              className={activeTab === "search"
+                ? "pb-4 px-1 relative text-black font-medium before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-black"
+                : "pb-4 px-1 relative text-gray-500 hover:text-gray-800 transition-colors"}
+              onClick={() => {
+                setActiveTab("search");
+                setSearchResults([]);
+              }}
+            >
+              Search
+            </button>
           </div>
           <Button
             onClick={handleRefresh}
@@ -239,6 +253,7 @@ const Dashboard = () => {
               searchQuery={searchQuery}
               onSearchColumnChange={setSearchColumn}
               onSearchQueryChange={setSearchQuery}
+              onSearch={handleSearch}
               searchableColumns={searchableColumns}
             />
           </div>
