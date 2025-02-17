@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { TabButton } from "@/components/dashboard/TabButton";
 import { SearchControls } from "@/components/dashboard/SearchControls";
@@ -57,7 +58,8 @@ const Dashboard = () => {
         .from('applications')
         .select(`
           *,
-          application_statuses (
+          application_statuses!inner (
+            id,
             name
           )
         `)
@@ -67,7 +69,7 @@ const Dashboard = () => {
 
       return data.map((app: any) => ({
         ...app,
-        status_name: app.application_statuses?.name,
+        status_name: app.application_statuses.name,
         documents: app.documents || []
       })) as ApplicationData[];
     }
@@ -111,7 +113,8 @@ const Dashboard = () => {
         .from('applications')
         .select(`
           *,
-          application_statuses (
+          application_statuses!inner (
+            id,
             name
           )
         `)
@@ -123,7 +126,7 @@ const Dashboard = () => {
       setSearchResults(
         (data || []).map((app: any) => ({
           ...app,
-          status_name: app.application_statuses?.name,
+          status_name: app.application_statuses.name,
           documents: app.documents || []
         })) as ApplicationData[]
       );
@@ -147,7 +150,7 @@ const Dashboard = () => {
     if (userRole === 'checker') {
       switch (activeTab) {
         case "pending":
-          return applications.filter(app => app.status_id === 1);
+          return applications.filter(app => app.status_id === 1 || app.status_id === 4);
         case "completed":
           return applications.filter(app => app.status_id === 2);
         case "reopened":
@@ -160,7 +163,7 @@ const Dashboard = () => {
         case "pending":
           return applications.filter(app => app.status_id === 0);
         case "completed":
-          return applications.filter(app => app.status_id === 1 || app.status_id === 4);
+          return applications.filter(app => app.status_id === 1 || app.status_id === 2);
         case "reopened":
           return applications.filter(app => app.status_id === 3);
         default:
@@ -226,7 +229,7 @@ const Dashboard = () => {
               isActive={activeTab === "pending"}
               label="Pending"
               count={userRole === 'checker' 
-                ? (applications?.filter(app => app.status_id === 1).length || 0)
+                ? (applications?.filter(app => app.status_id === 1 || app.status_id === 4).length || 0)
                 : (applications?.filter(app => app.status_id === 0).length || 0)
               }
               onClick={() => setActiveTab("pending")}
@@ -236,7 +239,7 @@ const Dashboard = () => {
               label="Completed"
               count={userRole === 'checker'
                 ? (applications?.filter(app => app.status_id === 2).length || 0)
-                : (applications?.filter(app => app.status_id === 1).length || 0)
+                : (applications?.filter(app => [1, 2].includes(app.status_id)).length || 0)
               }
               onClick={() => setActiveTab("completed")}
             />

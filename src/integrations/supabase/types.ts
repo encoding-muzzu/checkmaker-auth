@@ -132,6 +132,13 @@ export type Database = {
             referencedRelation: "application_statuses"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_status"
+            columns: ["status_id"]
+            isOneToOne: false
+            referencedRelation: "application_statuses"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profiles: {
