@@ -109,13 +109,24 @@ const Dashboard = () => {
     try {
       const { data, error } = await supabase
         .from('applications')
-        .select('*')
+        .select(`
+          *,
+          application_statuses (
+            name
+          )
+        `)
         .ilike(searchColumn, `%${searchQuery}%`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      setSearchResults(data || []);
+      setSearchResults(
+        (data || []).map((app: any) => ({
+          ...app,
+          status_name: app.application_statuses?.name,
+          documents: app.documents || []
+        })) as ApplicationData[]
+      );
     } catch (error) {
       console.error('Search error:', error);
       toast({
