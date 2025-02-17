@@ -1,19 +1,15 @@
+
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { ApplicationData } from "@/types/dashboard";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useState, useRef } from "react";
-import { DocumentsSection } from "./dialogs/DocumentsSection";
-import { CustomerDetailsSection } from "./dialogs/CustomerDetailsSection";
-import { CommentsSection } from "./dialogs/CommentsSection";
-import { Accordion } from "@/components/ui/accordion";
-import { RejectDialog } from "./dialogs/RejectDialog";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
 import { TableSkeleton } from "./TableSkeleton";
-import { useQueryClient } from "@tanstack/react-query";
+import { RejectDialog } from "./dialogs/RejectDialog";
+import { ApplicationDetailsSheet } from "./ApplicationDetailsSheet";
+import { useApplicationActions } from "@/hooks/useApplicationActions";
+import { getStatusColor, getStatusText } from "@/utils/statusUtils";
 
 interface DashboardTableProps {
   data: ApplicationData[];
@@ -25,28 +21,6 @@ interface DashboardTableProps {
   isLoading?: boolean;
   userRole: string | null;
 }
-
-const getStatusColor = (statusId: number) => {
-  const statusColors: Record<number, string> = {
-    0: "bg-[#E5DEFF] text-[#8B5CF6]", // New
-    1: "bg-[#D3E4FD] text-[#0EA5E9]", // Initiated By Maker
-    2: "bg-[#F2FCE2] text-green-600", // Approved By Checker
-    3: "bg-[#FFDEE2] text-red-600",   // Rejected By Checker
-    4: "bg-[#FDE1D3] text-orange-600" // Re Opened
-  };
-  return statusColors[statusId] || "";
-};
-
-const getStatusText = (statusId: number) => {
-  const statusTexts: Record<number, string> = {
-    0: "New",
-    1: "Initiated By Maker",
-    2: "Approved By Checker",
-    3: "Rejected By Checker",
-    4: "Re Opened"
-  };
-  return statusTexts[statusId] || "Unknown";
-};
 
 export const DashboardTable = ({ 
   data, 
@@ -60,37 +34,26 @@ export const DashboardTable = ({
 }: DashboardTableProps) => {
   const [selectedRow, setSelectedRow] = useState<ApplicationData | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [itrFlag, setItrFlag] = useState("false");
-  const [lrsAmount, setLrsAmount] = useState("0");
-  const [isEditing, setIsEditing] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
-  const [rejectMessage, setRejectMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+
+  const {
+    itrFlag,
+    setItrFlag,
+    lrsAmount,
+    setLrsAmount,
+    isEditing,
+    setIsEditing,
+    isSubmitting,
+    rejectMessage,
+    setRejectMessage,
+    handleApprove,
+    handleReject
+  } = useApplicationActions(selectedRow);
 
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'MMM d, yyyy, h:mm a');
   };
-
-  const conversations = [
-    {
-      text: "Return reason: To validate photo again",
-      timestamp: "31 January 2025, 2:17 PM",
-      author: "dinesh"
-    },
-    {
-      text: "Return by dinesh",
-      timestamp: "31 January 2025, 2:17 PM",
-      author: "dinesh"
-    },
-    {
-      text: "Reject for photo",
-      timestamp: "31 January 2025, 2:17 PM",
-      author: "muzzu"
-    }
-  ];
 
   const customerDetails = selectedRow ? [
     { label: "ARN", value: selectedRow.arn },
@@ -104,114 +67,23 @@ export const DashboardTable = ({
     { label: "Processing Type", value: selectedRow.processing_type }
   ] : [];
 
-  const handleApprove = async () => {
-    if (!selectedRow) return;
-    setIsSubmitting(true);
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
-
-      const newStatusId = profile?.role === 'checker' ? 2 : 1; // 2 for checker approval, 1 for maker
-
-      const { error } = await supabase
-        .from('applications')
-        .update({
-          itr_flag: itrFlag,
-          lrs_amount_consumed: parseFloat(lrsAmount),
-          status_id: newStatusId
-        })
-        .eq('id', selectedRow.id);
-
-      if (error) throw error;
-
-      await queryClient.invalidateQueries({ queryKey: ['applications'] });
-
-      toast({
-        title: "Success",
-        description: "Application has been approved",
-      });
-
-      setSheetOpen(false);
-    } catch (error) {
-      console.error('Error updating application:', error);
-      toast({
-        title: "Error",
-        description: "Failed to approve application",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleRejectClick = () => {
+    setRejectDialogOpen(true);
   };
 
-  const handleReject = async () => {
-    if (!selectedRow) return;
-    setIsSubmitting(true);
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
-
-      const newStatusId = profile?.role === 'checker' ? 4 : 3; // 4 for checker rejection, 3 for maker
-
-      // First update application status
-      const { error: updateError } = await supabase
-        .from('applications')
-        .update({
-          itr_flag: itrFlag,
-          lrs_amount_consumed: parseFloat(lrsAmount),
-          status_id: newStatusId
-        })
-        .eq('id', selectedRow.id);
-
-      if (updateError) throw updateError;
-
-      // Then create comment
-      const { error: insertError } = await supabase
-        .from('application_comments')
-        .insert([{
-          application_id: selectedRow.id,
-          comment: rejectMessage,
-          type: 'rejection'
-        }]);
-
-      if (insertError) throw insertError;
-
-      await queryClient.invalidateQueries({ queryKey: ['applications'] });
-      await queryClient.invalidateQueries({ 
-        queryKey: ['application-comments', selectedRow.id] 
-      });
-
-      toast({
-        title: "Success",
-        description: "Application has been rejected",
-      });
-
+  const handleRejectConfirm = async () => {
+    const success = await handleReject();
+    if (success) {
       setRejectDialogOpen(false);
       setSheetOpen(false);
       setRejectMessage("");
-    } catch (error) {
-      console.error('Error rejecting application:', error);
-      toast({
-        title: "Error",
-        description: "Failed to reject application",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
+    }
+  };
+
+  const handleApproveClick = async () => {
+    const success = await handleApprove();
+    if (success) {
+      setSheetOpen(false);
     }
   };
 
@@ -290,78 +162,29 @@ export const DashboardTable = ({
         </TableFooter>
       </Table>
 
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent 
-          id="application-details-sheet"
-          className="w-[80%] h-[94vh] mt-[2%] mr-[2%] p-0 overflow-y-auto"
-          side="right"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex flex-col h-full">
-            <div className="p-6 border-b">
-              <h2 className="text-xl font-semibold text-black">Application Details</h2>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-6">
-              <Accordion type="single" collapsible defaultValue="details" className="space-y-4">
-                <DocumentsSection documents={selectedRow?.documents} />
-                <CustomerDetailsSection 
-                  customerDetails={customerDetails}
-                  itrFlag={itrFlag}
-                  setItrFlag={setItrFlag}
-                  lrsAmount={lrsAmount}
-                  setLrsAmount={setLrsAmount}
-                  setIsEditing={setIsEditing}
-                />
-                <CommentsSection 
-                  applicationId={selectedRow?.id || ''}
-                  messagesEndRef={messagesEndRef}
-                />
-              </Accordion>
-            </div>
-
-            <div className="p-6 border-t bg-white mt-auto">
-              <div className="flex justify-end gap-3">
-                {selectedRow && (
-                  (userRole === 'maker' && selectedRow.status_id === 0) || 
-                  (userRole === 'checker' && selectedRow.status_id === 1)
-                ) && (
-                  <>
-                    <Button
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px]"
-                      onClick={handleApprove}
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? "Approving..." : "Approve"}
-                    </Button>
-                    <Button
-                      className="bg-red-600 hover:bg-red-700 text-white rounded-[4px]"
-                      onClick={() => setRejectDialogOpen(true)}
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? "Rejecting..." : "Reject"}
-                    </Button>
-                  </>
-                )}
-                <Button
-                  variant="outline"
-                  className="border-black text-black hover:bg-gray-100 rounded-[4px]"
-                  onClick={() => setSheetOpen(false)}
-                >
-                  Close
-                </Button>
-              </div>
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
+      <ApplicationDetailsSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        selectedRow={selectedRow}
+        customerDetails={customerDetails}
+        itrFlag={itrFlag}
+        setItrFlag={setItrFlag}
+        lrsAmount={lrsAmount}
+        setLrsAmount={setLrsAmount}
+        setIsEditing={setIsEditing}
+        messagesEndRef={messagesEndRef}
+        userRole={userRole}
+        handleApprove={handleApproveClick}
+        handleReject={handleRejectClick}
+        isSubmitting={isSubmitting}
+      />
 
       <RejectDialog
         open={rejectDialogOpen}
         onOpenChange={setRejectDialogOpen}
         rejectMessage={rejectMessage}
         setRejectMessage={setRejectMessage}
-        onConfirm={handleReject}
+        onConfirm={handleRejectConfirm}
       />
     </div>
   );
