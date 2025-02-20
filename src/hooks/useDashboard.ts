@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -18,7 +17,7 @@ export const useDashboard = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: applications, isLoading } = useQuery({
+  const { data: applications, isLoading, refetch } = useQuery({
     queryKey: ['applications'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -108,12 +107,6 @@ export const useDashboard = () => {
     }
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate('/');
-        return;
-      }
-
       let query = supabase
         .from('applications')
         .select(`
@@ -125,7 +118,7 @@ export const useDashboard = () => {
         `);
 
       if (searchColumn === 'id') {
-        query = query.eq(searchColumn, searchQuery);
+        query = query.eq('id', searchQuery);
       } else {
         query = query.ilike(searchColumn, `%${searchQuery}%`);
       }

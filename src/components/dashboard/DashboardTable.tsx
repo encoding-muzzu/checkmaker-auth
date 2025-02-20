@@ -166,7 +166,6 @@ export const DashboardTable = ({
   return (
     <div className="bg-white">
       {renderTable()}
-
       <ApplicationDetailsSheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}

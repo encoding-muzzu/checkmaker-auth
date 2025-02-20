@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { RefObject } from "react";
 import { format } from "date-fns";
-import { MessageSquare } from "lucide-react";
+import { FileText, MessageSquare } from "lucide-react";
 
 interface CommentsSectionProps {
   applicationId: string;
@@ -17,7 +17,13 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
     queryFn: async () => {
       const { data, error } = await supabase
         .from('application_comments')
-        .select('*')
+        .select(`
+          *,
+          profiles:created_by (
+            username,
+            role
+          )
+        `)
         .eq('application_id', applicationId)
         .order('created_at', { ascending: true });
 
@@ -48,16 +54,24 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
         ) : (
           <div className="space-y-4">
             {comments.map((comment: any) => (
-              <div key={comment.id} className="p-4 bg-gray-50 rounded-lg">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-sm font-medium text-gray-900">
-                    {comment.type === 'rejection' ? 'Rejection Reason' : 'Comment'}
-                  </span>
-                  <span className="text-xs text-gray-500">
+              <div key={comment.id} className="flex flex-col">
+                <div className="inline-block max-w-[80%] bg-white rounded-lg shadow-sm p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                      <span className="text-sm font-medium">
+                        {comment.profiles?.username?.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{comment.profiles?.username}</p>
+                      <p className="text-xs text-gray-500 capitalize">{comment.profiles?.role}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-700">{comment.comment}</p>
+                  <span className="text-xs text-gray-500 mt-2 block">
                     {format(new Date(comment.created_at), 'MMM d, yyyy h:mm a')}
                   </span>
                 </div>
-                <p className="text-sm text-gray-700">{comment.comment}</p>
               </div>
             ))}
             <div ref={messagesEndRef} />
