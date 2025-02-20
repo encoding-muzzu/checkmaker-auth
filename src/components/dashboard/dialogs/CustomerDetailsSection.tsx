@@ -1,8 +1,7 @@
-
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { CheckCircle2, Edit2 } from "lucide-react";
+import { CheckCircle2, Edit2, User } from "lucide-react";
 
 interface CustomerDetailsSectionProps {
   customerDetails: Array<{ label: string; value: string | number }>;
@@ -30,7 +29,7 @@ export const CustomerDetailsSection = ({
       <AccordionTrigger className="px-4 hover:no-underline">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold text-black">Customer Details</h2>
-          <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+          <User className="h-5 w-5 text-emerald-500" />
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4">

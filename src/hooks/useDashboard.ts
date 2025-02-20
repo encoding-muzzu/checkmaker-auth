@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -38,6 +37,7 @@ export const useDashboard = () => {
           title: "Error",
           description: "User profile not found",
           variant: "destructive",
+          duration: 5000,
         });
         return [];
       }
@@ -59,6 +59,7 @@ export const useDashboard = () => {
           title: "Error",
           description: "Failed to fetch applications",
           variant: "destructive",
+          duration: 5000,
         });
         return [];
       }
@@ -100,6 +101,7 @@ export const useDashboard = () => {
         title: "Search Error",
         description: "Please select a field and enter a search term",
         variant: "destructive",
+        duration: 5000,
       });
       return;
     }
@@ -111,7 +113,7 @@ export const useDashboard = () => {
         return;
       }
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('applications')
         .select(`
           *,
@@ -119,9 +121,15 @@ export const useDashboard = () => {
             id,
             name
           )
-        `)
-        .ilike(searchColumn, `%${searchQuery}%`)
-        .order('created_at', { ascending: false });
+        `);
+
+      if (searchColumn === 'id') {
+        query = query.eq(searchColumn, searchQuery);
+      } else {
+        query = query.ilike(searchColumn, `%${searchQuery}%`);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) {
         console.error('Search error:', error);
@@ -129,6 +137,7 @@ export const useDashboard = () => {
           title: "Search Error",
           description: "Failed to perform search",
           variant: "destructive",
+          duration: 5000,
         });
         return;
       }
@@ -146,6 +155,7 @@ export const useDashboard = () => {
         title: "Search Error",
         description: "Failed to perform search",
         variant: "destructive",
+        duration: 5000,
       });
     }
   };
