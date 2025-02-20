@@ -15,20 +15,35 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
   const { data: comments = [], isLoading } = useQuery({
     queryKey: ['application-comments', applicationId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First fetch comments
+      const { data: commentsData, error: commentsError } = await supabase
         .from('application_comments')
-        .select(`
-          *,
-          profiles:created_by (
-            username,
-            role
-          )
-        `)
+        .select('*')
         .eq('application_id', applicationId)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
-      return data || [];
+      if (commentsError) throw commentsError;
+
+      // Then fetch profiles for each unique created_by ID
+      const uniqueUserIds = [...new Set(commentsData?.map(comment => comment.created_by))];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, role')
+        .in('id', uniqueUserIds);
+
+      if (profilesError) throw profilesError;
+
+      // Create a map of user profiles
+      const profileMap = (profilesData || []).reduce((acc: any, profile) => {
+        acc[profile.id] = profile;
+        return acc;
+      }, {});
+
+      // Combine comments with profile data
+      return (commentsData || []).map(comment => ({
+        ...comment,
+        profiles: profileMap[comment.created_by] || null
+      }));
     },
     enabled: !!applicationId
   });
