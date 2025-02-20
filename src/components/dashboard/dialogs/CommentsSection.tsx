@@ -1,142 +1,105 @@
-
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { MessageSquare } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/use-toast";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from 'date-fns';
+import { RefObject, useEffect, useState } from "react";
+import { format } from "date-fns";
+import { MessageSquare } from "lucide-react";
 
 interface CommentsSectionProps {
   applicationId: string;
-  messagesEndRef: React.RefObject<HTMLDivElement>;
-}
-
-interface Comment {
-  id: string;
-  application_id: string;
-  comment: string;
-  type: string;
-  created_at: string;
+  messagesEndRef: RefObject<HTMLDivElement>;
 }
 
 export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSectionProps) => {
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [currentUser, setCurrentUser] = useState<{ email: string; role: string } | null>(null);
 
   useEffect(() => {
-    const fetchComments = async () => {
-      if (!applicationId) return;
-      setIsLoading(true);
-      try {
-        const { data: commentsData, error } = await supabase
-          .from('application_comments')
-          .select('*')
-          .eq('application_id', applicationId)
-          .order('created_at', { ascending: true });
+    const fetchCurrentUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role, username')
+          .eq('id', session.user.id)
+          .single();
 
-        if (error) {
-          console.error("Error fetching comments:", error);
-          toast({
-            title: "Error",
-            description: "Failed to load comments.",
-            variant: "destructive",
+        if (profile) {
+          setCurrentUser({
+            email: session.user.email || '',
+            role: profile.role
           });
-        } else {
-          setComments(commentsData || []);
         }
-      } finally {
-        setIsLoading(false);
       }
     };
 
-    fetchComments();
-  }, [applicationId]);
+    fetchCurrentUser();
+  }, []);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [comments, messagesEndRef]);
-
-  const handlePostComment = async () => {
-    if (!newComment.trim() || !applicationId) {
-      toast({
-        title: "Warning",
-        description: "Please enter a comment.",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
+  const { data: comments = [], isLoading } = useQuery({
+    queryKey: ['application-comments', applicationId],
+    queryFn: async () => {
+      const { data: commentsData, error: commentsError } = await supabase
         .from('application_comments')
-        .insert([{
-          application_id: applicationId,
-          comment: newComment,
-          type: 'comment'
-        }])
-        .select()
-        .single();
+        .select('*')
+        .eq('application_id', applicationId)
+        .order('created_at', { ascending: true });
 
-      if (error) {
-        console.error("Error posting comment:", error);
-        toast({
-          title: "Error",
-          description: "Failed to post comment.",
-          variant: "destructive",
-        });
-      } else {
-        setComments(prevComments => [...prevComments, data]);
-        setNewComment('');
-        inputRef.current?.focus();
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      if (commentsError) throw commentsError;
+      return commentsData || [];
+    },
+    enabled: !!applicationId
+  });
 
   return (
     <AccordionItem value="comments" className="border rounded-[4px] shadow-sm">
       <AccordionTrigger className="px-4 hover:no-underline">
         <div className="flex items-center gap-2">
-          <MessageSquare className="h-5 w-5 text-emerald-500" />
           <h2 className="text-lg font-semibold text-black">Comments</h2>
+          <MessageSquare className="h-5 w-5 text-emerald-500" />
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4">
-        <div className="space-y-4">
-          {isLoading ? (
-            <div className="text-gray-500">Loading comments...</div>
-          ) : (
-            comments.map((comment) => (
-              <div key={comment.id} className="border rounded-md p-3">
-                <div className="text-sm text-gray-500">
-                  {format(new Date(comment.created_at), 'MMM dd, yyyy hh:mm a')}
+        {isLoading ? (
+          <div className="flex items-center justify-center p-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+          </div>
+        ) : comments.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-8 text-gray-500 bg-gray-50 rounded-lg">
+            <MessageSquare className="h-8 w-8 mb-2" />
+            <p className="text-sm">No comments available</p>
+          </div>
+        ) : (
+          <div className="space-y-4 bg-gray-100 p-4 rounded-lg">
+            {comments.map((comment: any) => {
+              const isCurrentUser = currentUser?.email === comment.profiles?.username;
+              return (
+                <div 
+                  key={comment.id} 
+                  className={`flex flex-col max-w-[85%] ${isCurrentUser ? 'ml-auto' : 'mr-auto'} bg-white rounded-lg shadow p-3`}
+                >
+                  <div className="flex justify-between items-start mb-1">
+                    <div>
+                      <span className="text-sm font-medium text-emerald-600 capitalize">
+                        {comment.profiles?.username || currentUser?.email || 'Unknown User'}
+                      </span>
+                      <span className="text-xs text-gray-500 ml-2 capitalize">
+                        ({comment.profiles?.role || currentUser?.role || 'Unknown Role'})
+                      </span>
+                    </div>
+                    <span className="text-xs text-gray-400">
+                      {format(new Date(comment.created_at), 'MMM d, h:mm a')}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-700 mt-1">{comment.comment}</p>
+                  {comment.type === 'rejection' && (
+                    <span className="text-xs text-red-500 mt-1">Rejection Reason</span>
+                  )}
                 </div>
-                <div className="mt-1">{comment.comment}</div>
-              </div>
-            ))
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-        <div className="mt-4">
-          <textarea
-            ref={inputRef}
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Add a comment..."
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-          <Button
-            onClick={handlePostComment}
-            disabled={isLoading}
-            className="mt-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px]"
-          >
-            {isLoading ? "Posting..." : "Post Comment"}
-          </Button>
-        </div>
+              );
+            })}
+            <div ref={messagesEndRef} />
+          </div>
+        )}
       </AccordionContent>
     </AccordionItem>
   );
