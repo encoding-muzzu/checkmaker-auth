@@ -1,7 +1,7 @@
 
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Clock, Download, Eye, FileX } from "lucide-react";
+import { Files, Download, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Document {
@@ -55,7 +55,7 @@ export const DocumentsSection = ({ documents }: DocumentsSectionProps) => {
       <AccordionTrigger className="px-4 hover:no-underline">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold text-black">Customer Documents</h2>
-          <Clock className="h-5 w-5 text-amber-500" />
+          <Files className="h-5 w-5 text-emerald-500" />
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4">
@@ -94,7 +94,7 @@ export const DocumentsSection = ({ documents }: DocumentsSectionProps) => {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center p-8 border rounded-[4px] bg-gray-50/50">
-            <FileX className="h-12 w-12 text-gray-400 mb-2" />
+            <Files className="h-12 w-12 text-gray-400 mb-2" />
             <p className="text-gray-600">No documents have been uploaded yet</p>
           </div>
         )}
