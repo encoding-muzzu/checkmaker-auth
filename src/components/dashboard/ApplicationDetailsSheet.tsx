@@ -1,3 +1,4 @@
+
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { ApplicationData } from "@/types/dashboard";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Accordion } from "@/components/ui/accordion";
 import { DocumentsSection } from "./dialogs/DocumentsSection";
 import { CustomerDetailsSection } from "./dialogs/CustomerDetailsSection";
 import { CommentsSection } from "./dialogs/CommentsSection";
-import { RefObject } from "react";
+import { RefObject, useEffect } from "react";
 
 interface ApplicationDetailsSheetProps {
   open: boolean;
@@ -50,13 +51,18 @@ export const ApplicationDetailsSheet = ({
     (selectedRow?.status_id === 0 || selectedRow?.status_id === 3) &&
     !isCompleted;
 
+  useEffect(() => {
+    if (selectedRow) {
+      setItrFlag(selectedRow.itr_flag === null ? "false" : String(selectedRow.itr_flag));
+      setLrsAmount(selectedRow.lrs_amount_consumed === null ? "0" : String(selectedRow.lrs_amount_consumed));
+    }
+  }, [selectedRow, setItrFlag, setLrsAmount]);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent 
-        id="application-details-sheet"
         className="w-[80%] h-[94vh] mt-[2%] mr-[2%] p-0 overflow-y-auto"
         side="right"
-        onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col h-full">
           <div className="p-6 border-b">
