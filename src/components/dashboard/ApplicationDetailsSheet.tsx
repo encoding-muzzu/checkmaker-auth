@@ -61,7 +61,8 @@ export const ApplicationDetailsSheet = ({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent 
-        className="w-[80%] h-[94vh] mt-[2%] mr-[2%] p-0 overflow-y-auto"
+        className="w-[70%] h-[94vh] mt-[2%] mr-[2%] p-0 overflow-y-auto rounded-[10px]"
+        style={{ maxWidth: '70% !important', borderRadius: '10px !important' }}
         side="right"
       >
         <div className="flex flex-col h-full">

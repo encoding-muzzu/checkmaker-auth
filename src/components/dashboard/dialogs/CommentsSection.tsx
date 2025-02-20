@@ -1,4 +1,3 @@
-
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,13 +40,7 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
     queryFn: async () => {
       const { data: commentsData, error: commentsError } = await supabase
         .from('application_comments')
-        .select(`
-          *,
-          profiles (
-            username,
-            role
-          )
-        `)
+        .select('*')
         .eq('application_id', applicationId)
         .order('created_at', { ascending: true });
 
