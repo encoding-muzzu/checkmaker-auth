@@ -47,7 +47,7 @@ export const ApplicationDetailsSheet = ({
   handleReject,
   isSubmitting,
   activeTab,
-  rejectMessage,
+  rejectMessage = "", // Provide default value
   setRejectMessage
 }: ApplicationDetailsSheetProps) => {
   const isChecker = userRole === 'checker';
@@ -143,9 +143,9 @@ export const ApplicationDetailsSheet = ({
                     </div>
                     <div className="flex justify-end gap-3">
                       <Button
-                        onClick={() => handleReject()}
+                        onClick={handleReject}
                         className="bg-red-600 hover:bg-red-700 text-white"
-                        disabled={!rejectMessage.trim() || isSubmitting}
+                        disabled={!rejectMessage || !rejectMessage.trim() || isSubmitting}
                       >
                         {isSubmitting ? "Processing..." : "Confirm"}
                       </Button>
