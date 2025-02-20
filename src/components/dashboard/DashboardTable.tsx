@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useState, useRef } from "react";
 import { ApplicationData } from "@/types/dashboard";
@@ -60,20 +61,17 @@ export const DashboardTable = ({
 
       if (error) {
         console.error("Error updating application status:", error);
-        // Optionally, display an error message to the user
       } else {
-        // Optionally, display a success message to the user
         console.log("Application approved successfully!");
       }
     } catch (error) {
       console.error("Unexpected error during approval:", error);
-      // Optionally, display an error message to the user
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleReject = () => {
+  const handleReject = async () => { // Added async keyword here
     setIsSubmitting(true);
     try {
       if (!selectedRow) {
@@ -81,7 +79,6 @@ export const DashboardTable = ({
         return;
       }
   
-      // Ensure rejectMessage is not undefined before trimming
       const trimmedRejectMessage = rejectMessage ? rejectMessage.trim() : "";
   
       const { error } = await supabase
@@ -91,14 +88,11 @@ export const DashboardTable = ({
   
       if (error) {
         console.error("Error updating application status:", error);
-        // Optionally, display an error message to the user
       } else {
-        // Optionally, display a success message to the user
         console.log("Application rejected successfully!");
       }
     } catch (error) {
       console.error("Unexpected error during rejection:", error);
-      // Optionally, display an error message to the user
     } finally {
       setIsSubmitting(false);
     }
