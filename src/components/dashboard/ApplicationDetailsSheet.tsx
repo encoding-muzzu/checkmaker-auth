@@ -60,6 +60,14 @@ export const ApplicationDetailsSheet = ({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
+      <style>
+        {`
+          [id^="radix-"]:has([role="dialog"]) {
+            border-radius: 10px !important;
+            max-width: 70% !important;
+          }
+        `}
+      </style>
       <SheetContent 
         className="w-[70%] h-[94vh] mt-[2%] mr-[2%] p-0 overflow-y-auto rounded-[10px]"
         style={{ maxWidth: '70% !important', borderRadius: '10px !important' }}
