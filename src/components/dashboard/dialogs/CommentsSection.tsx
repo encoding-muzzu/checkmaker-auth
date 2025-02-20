@@ -1,10 +1,10 @@
+
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { MessageSquare } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useUser } from "@/hooks/useUser";
 import { format } from 'date-fns';
 
 interface CommentsSectionProps {
@@ -13,21 +13,17 @@ interface CommentsSectionProps {
 }
 
 interface Comment {
-  id: number;
-  created_at: string;
+  id: string;
   application_id: string;
-  user_id: string;
-  text: string;
-  profiles?: {
-    full_name: string;
-  };
+  comment: string;
+  type: string;
+  created_at: string;
 }
 
 export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSectionProps) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { user } = useUser();
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -35,9 +31,9 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
       if (!applicationId) return;
       setIsLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('comments')
-          .select('*, profiles(full_name)')
+        const { data: commentsData, error } = await supabase
+          .from('application_comments')
+          .select('*')
           .eq('application_id', applicationId)
           .order('created_at', { ascending: true });
 
@@ -49,7 +45,7 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
             variant: "destructive",
           });
         } else {
-          setComments(data || []);
+          setComments(commentsData || []);
         }
       } finally {
         setIsLoading(false);
@@ -60,12 +56,11 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
   }, [applicationId]);
 
   useEffect(() => {
-    // Scroll to the bottom when comments change
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [comments, messagesEndRef]);
 
   const handlePostComment = async () => {
-    if (!newComment.trim() || !user?.id || !applicationId) {
+    if (!newComment.trim() || !applicationId) {
       toast({
         title: "Warning",
         description: "Please enter a comment.",
@@ -76,9 +71,13 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from('comments')
-        .insert([{ application_id: applicationId, user_id: user.id, text: newComment }])
-        .select('*, profiles(full_name)')
+        .from('application_comments')
+        .insert([{
+          application_id: applicationId,
+          comment: newComment,
+          type: 'comment'
+        }])
+        .select()
         .single();
 
       if (error) {
@@ -113,13 +112,10 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
           ) : (
             comments.map((comment) => (
               <div key={comment.id} className="border rounded-md p-3">
-                <div className="font-semibold">
-                  {comment.profiles?.full_name || 'Unknown User'}
-                </div>
                 <div className="text-sm text-gray-500">
                   {format(new Date(comment.created_at), 'MMM dd, yyyy hh:mm a')}
                 </div>
-                <div className="mt-1">{comment.text}</div>
+                <div className="mt-1">{comment.comment}</div>
               </div>
             ))
           )}
