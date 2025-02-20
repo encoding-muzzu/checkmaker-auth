@@ -1,4 +1,3 @@
-
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { ApplicationData } from "@/types/dashboard";
 import { Button } from "@/components/ui/button";
@@ -43,13 +42,13 @@ export const ApplicationDetailsSheet = ({
   isSubmitting,
   activeTab
 }: ApplicationDetailsSheetProps) => {
-  const showButtons = (
-    selectedRow && (
-      (userRole === 'maker' && (selectedRow.status_id === 0 || selectedRow.status_id === 3)) || 
-      (userRole === 'checker' && selectedRow.status_id === 1) ||
-      (activeTab === 'reopened')
-    )
-  );
+  const isChecker = userRole === 'checker';
+  const isCompleted = activeTab === 'completed';
+  const showButtons = selectedRow && !isCompleted;
+  const isEditable = 
+    !isChecker && 
+    (selectedRow?.status_id === 0 || selectedRow?.status_id === 3) &&
+    !isCompleted;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -75,6 +74,7 @@ export const ApplicationDetailsSheet = ({
                 setLrsAmount={setLrsAmount}
                 setIsEditing={setIsEditing}
                 userRole={userRole}
+                isEditable={isEditable}
               />
               <CommentsSection 
                 applicationId={selectedRow?.id || ''}
@@ -83,35 +83,26 @@ export const ApplicationDetailsSheet = ({
             </Accordion>
           </div>
 
-          <div className="p-6 border-t bg-white mt-auto">
-            <div className="flex justify-end gap-3">
-              {showButtons && (
-                <>
-                  <Button
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px]"
-                    onClick={handleApprove}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "Approving..." : "Approve"}
-                  </Button>
-                  <Button
-                    className="bg-red-600 hover:bg-red-700 text-white rounded-[4px]"
-                    onClick={handleReject}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "Rejecting..." : "Reject"}
-                  </Button>
-                </>
-              )}
-              <Button
-                variant="outline"
-                className="border-black text-black hover:bg-gray-100 rounded-[4px]"
-                onClick={() => onOpenChange(false)}
-              >
-                Close
-              </Button>
+          {showButtons && (
+            <div className="p-6 border-t bg-white mt-auto">
+              <div className="flex justify-end gap-3">
+                <Button
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px]"
+                  onClick={handleApprove}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Processing..." : "Approve"}
+                </Button>
+                <Button
+                  className="bg-red-600 hover:bg-red-700 text-white rounded-[4px]"
+                  onClick={handleReject}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Processing..." : isChecker ? "Return" : "Reject"}
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </SheetContent>
     </Sheet>

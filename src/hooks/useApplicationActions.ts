@@ -32,18 +32,17 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
       let successMessage: string;
 
       if (profile?.role === 'maker') {
-        if (selectedRow.status_id === 0) {
+        if (selectedRow.status_id === 0 || selectedRow.status_id === 3) {
           newStatusId = 1;
-          successMessage = "Application has been initiated";
-        } else if (selectedRow.status_id === 3) {
-          newStatusId = 4;
-          successMessage = "Application has been re-submitted";
+          successMessage = selectedRow.status_id === 0 
+            ? "Application has been approved by maker"
+            : "Application has been resubmitted";
         } else {
           throw new Error("Invalid approval action for current status");
         }
-      } else if (profile?.role === 'checker' && selectedRow.status_id === 1) {
+      } else if (profile?.role === 'checker' && (selectedRow.status_id === 1 || selectedRow.status_id === 4)) {
         newStatusId = 2;
-        successMessage = "Application has been approved";
+        successMessage = "Application has been approved by checker";
       } else {
         throw new Error("Invalid approval action for current status");
       }
@@ -96,13 +95,18 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
         .eq('id', session.user.id)
         .single();
 
-      // Allow both checker and maker to reject applications
-      if ((profile?.role === 'checker' && (selectedRow.status_id !== 1 && selectedRow.status_id !== 4)) ||
-          (profile?.role === 'maker' && selectedRow.status_id !== 0)) {
+      let newStatusId: number;
+      let successMessage: string;
+
+      if (profile?.role === 'checker' && (selectedRow.status_id === 1 || selectedRow.status_id === 4)) {
+        newStatusId = 3;
+        successMessage = "Application has been returned by checker";
+      } else if (profile?.role === 'maker' && (selectedRow.status_id === 0 || selectedRow.status_id === 3)) {
+        newStatusId = 4;
+        successMessage = "Application has been rejected by maker";
+      } else {
         throw new Error("Invalid reject action for current status");
       }
-
-      const newStatusId = 3; // Rejected status
 
       const { error: updateError } = await supabase
         .from('applications')
@@ -132,7 +136,7 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
 
       toast({
         title: "Success",
-        description: "Application has been rejected",
+        description: successMessage,
         duration: 5000,
       });
 
@@ -141,7 +145,7 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
       console.error('Error rejecting application:', error);
       toast({
         title: "Error",
-        description: "Failed to reject application",
+        description: "Failed to process application",
         variant: "destructive",
         duration: 5000,
       });

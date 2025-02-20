@@ -11,6 +11,7 @@ interface CustomerDetailsSectionProps {
   setLrsAmount: (value: string) => void;
   setIsEditing: (value: boolean) => void;
   userRole: string | null;
+  isEditable: boolean;
 }
 
 export const CustomerDetailsSection = ({
@@ -20,10 +21,9 @@ export const CustomerDetailsSection = ({
   lrsAmount,
   setLrsAmount,
   setIsEditing,
-  userRole
+  userRole,
+  isEditable
 }: CustomerDetailsSectionProps) => {
-  const isChecker = userRole === 'checker';
-
   return (
     <AccordionItem value="details" className="border rounded-[4px] shadow-sm">
       <AccordionTrigger className="px-4 hover:no-underline">
@@ -45,7 +45,7 @@ export const CustomerDetailsSection = ({
           ))}
           <div className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
             <span className="text-gray-600 my-auto">ITR Flag</span>
-            {isChecker ? (
+            {!isEditable ? (
               <span className="font-medium text-black">{itrFlag === "true" ? "Yes" : "No"}</span>
             ) : (
               <div className="flex items-center gap-2">
@@ -60,7 +60,7 @@ export const CustomerDetailsSection = ({
           </div>
           <div className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
             <span className="text-gray-600 my-auto">LRS Amount Consumed(USD)</span>
-            {isChecker ? (
+            {!isEditable ? (
               <span className="font-medium text-black">{lrsAmount}</span>
             ) : (
               <div className="relative flex items-center">
