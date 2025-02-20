@@ -1,14 +1,15 @@
+
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { ApplicationData } from "@/types/dashboard";
 import { Button } from "@/components/ui/button";
-import { Accordion } from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { DocumentsSection } from "./dialogs/DocumentsSection";
 import { CustomerDetailsSection } from "./dialogs/CustomerDetailsSection";
 import { CommentsSection } from "./dialogs/CommentsSection";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { FileText } from "lucide-react";
-import { RefObject } from "react";
+import { RefObject, useEffect } from "react";
 
 interface ApplicationDetailsSheetProps {
   open: boolean;
@@ -18,7 +19,7 @@ interface ApplicationDetailsSheetProps {
   itrFlag: string;
   setItrFlag: (value: string) => void;
   lrsAmount: string;
-  setLrsAmount: (string) => void;
+  setLrsAmount: (value: string) => void;
   setIsEditing: (value: boolean) => void;
   messagesEndRef: RefObject<HTMLDivElement>;
   userRole: string | null;
@@ -59,7 +60,7 @@ export const ApplicationDetailsSheet = ({
 
   useEffect(() => {
     if (selectedRow) {
-      setItrFlag(selectedRow.itr_flag || "false");
+      setItrFlag(selectedRow.itr_flag?.toString() || "false");
       setLrsAmount(selectedRow.lrs_amount_consumed?.toString() || "0");
     }
   }, [selectedRow, setItrFlag, setLrsAmount]);
