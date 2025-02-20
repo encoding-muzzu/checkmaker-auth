@@ -1,16 +1,18 @@
-
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useState, useRef } from "react";
+import { Eye } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { ApplicationData } from "@/types/dashboard";
-import { getStatusColor } from "@/utils/statusUtils";
-import { ApplicationDetailsSheet } from "./ApplicationDetailsSheet";
-import { TableSkeleton } from "./TableSkeleton";
+import { useState, useRef } from "react";
 import { format } from "date-fns";
-import { supabase } from "@/integrations/supabase/client";
+import { TableSkeleton } from "./TableSkeleton";
+import { RejectDialog } from "./dialogs/RejectDialog";
+import { ApplicationDetailsSheet } from "./ApplicationDetailsSheet";
+import { useApplicationActions } from "@/hooks/useApplicationActions";
+import { getStatusColor, getStatusText } from "@/utils/statusUtils";
 
 interface DashboardTableProps {
   data: ApplicationData[];
-  isDense?: boolean;
+  isDense: boolean;
   currentPage: number;
   totalPages: number;
   onNextPage: () => void;
@@ -31,87 +33,63 @@ export const DashboardTable = ({
   userRole,
   activeTab
 }: DashboardTableProps) => {
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState<ApplicationData | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [itrFlag, setItrFlag] = useState("false");
-  const [lrsAmount, setLrsAmount] = useState("0");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [rejectMessage, setRejectMessage] = useState("");
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleRowClick = (row: ApplicationData) => {
-    setSelectedRow(row);
-    setIsSheetOpen(true);
-    setRejectMessage(""); // Reset reject message when opening new application
-  };
+  const {
+    itrFlag,
+    setItrFlag,
+    lrsAmount,
+    setLrsAmount,
+    isEditing,
+    setIsEditing,
+    isSubmitting,
+    rejectMessage,
+    setRejectMessage,
+    handleApprove,
+    handleReject
+  } = useApplicationActions(selectedRow);
 
-  const handleApprove = async () => {
-    setIsSubmitting(true);
-    try {
-      if (!selectedRow) {
-        console.error("No row selected for approval.");
-        return;
-      }
-
-      const { error } = await supabase
-        .from('applications')
-        .update({ status_id: 1 })
-        .eq('id', selectedRow.id);
-
-      if (error) {
-        console.error("Error updating application status:", error);
-      } else {
-        console.log("Application approved successfully!");
-      }
-    } catch (error) {
-      console.error("Unexpected error during approval:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleReject = async () => { // Added async keyword here
-    setIsSubmitting(true);
-    try {
-      if (!selectedRow) {
-        console.error("No row selected for rejection.");
-        return;
-      }
-  
-      const trimmedRejectMessage = rejectMessage ? rejectMessage.trim() : "";
-  
-      const { error } = await supabase
-        .from('applications')
-        .update({ status_id: 2, remarks: trimmedRejectMessage })
-        .eq('id', selectedRow.id);
-  
-      if (error) {
-        console.error("Error updating application status:", error);
-      } else {
-        console.log("Application rejected successfully!");
-      }
-    } catch (error) {
-      console.error("Unexpected error during rejection:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+  const formatDate = (dateString: string) => {
+    return format(new Date(dateString), 'MMM d, yyyy, h:mm a');
   };
 
   const customerDetails = selectedRow ? [
-    { label: "Customer Name", value: selectedRow.customer_name || "" },
-    { label: "PAN", value: selectedRow.pan_number || "" },
-    { label: "ARN", value: selectedRow.arn || "" },
-    { label: "Kit No", value: selectedRow.kit_no || "" },
-    { label: "Created At", value: selectedRow.created_at ? format(new Date(selectedRow.created_at), 'dd/MM/yyyy HH:mm:ss') : "" },
-    { label: "Product Variant", value: selectedRow.product_variant || "" },
-    { label: "Customer Type", value: selectedRow.customer_type || "" },
-    { label: "Card Type", value: selectedRow.card_type || "" },
-    { label: "Processing Type", value: selectedRow.processing_type || "" }
+    { label: "ARN", value: selectedRow.arn },
+    { label: "Kit No", value: selectedRow.kit_no },
+    { label: "Customer Name", value: selectedRow.customer_name },
+    { label: "PAN", value: selectedRow.pan_number },
+    { label: "Total Amount Loaded (USD)", value: selectedRow.total_amount_loaded.toFixed(2) },
+    { label: "Customer Type", value: selectedRow.customer_type },
+    { label: "Product Variant", value: selectedRow.product_variant },
+    { label: "Card Type", value: selectedRow.card_type },
+    { label: "Processing Type", value: selectedRow.processing_type }
   ] : [];
 
-  return (
-    <div className="bg-white">
+  const handleRejectClick = () => {
+    setRejectDialogOpen(true);
+  };
+
+  const handleRejectConfirm = async () => {
+    const success = await handleReject();
+    if (success) {
+      setRejectDialogOpen(false);
+      setSheetOpen(false);
+      setRejectMessage("");
+    }
+  };
+
+  const handleApproveClick = async () => {
+    const success = await handleApprove();
+    if (success) {
+      setSheetOpen(false);
+    }
+  };
+
+  const renderTable = () => {
+    return (
       <Table>
         <TableHeader>
           <TableRow>
@@ -126,34 +104,72 @@ export const DashboardTable = ({
             <TableSkeleton />
           ) : (
             data.map((row) => (
-              <TableRow 
-                key={row.id}
-                className="cursor-pointer hover:bg-gray-50"
-                onClick={() => handleRowClick(row)}
-              >
-                <TableCell className="text-[0.8125rem] leading-[1.43]">
-                  {row.created_at ? format(new Date(row.created_at), 'dd/MM/yyyy HH:mm:ss') : ''}
+              <TableRow key={row.id} className={`border-b border-[rgb(224,224,224)] ${isDense ? 'py-6' : 'py-2'}`}>
+                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>
+                  {format(new Date(row.created_at), 'MMM d, yyyy, h:mm a')}
                 </TableCell>
-                <TableCell className="text-[0.8125rem] leading-[1.43]">{row.id}</TableCell>
-                <TableCell>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                      row.status_id
-                    )}`}
-                  >
-                    {row.status_name}
+                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>
+                  {row.id}
+                </TableCell>
+                <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
+                  <span className={`px-[10px] py-[3px] rounded-[10px] ${getStatusColor(row.status_id)}`}>
+                    {getStatusText(row.status_id, row.status_name)}
                   </span>
                 </TableCell>
-                <TableCell className="text-[0.8125rem] leading-[1.43]">View</TableCell>
+                <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex items-center gap-1 bg-transparent text-black hover:bg-transparent px-0 py-1 text-xs border-0"
+                    onClick={() => {
+                      setSelectedRow(row);
+                      setSheetOpen(true);
+                    }}
+                  >
+                    <Eye className="h-3 w-3" />
+                    View
+                  </Button>
+                </TableCell>
               </TableRow>
             ))
           )}
         </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TableCell colSpan={4}>
+              <div className="flex items-center justify-center gap-4 py-2">
+                <button 
+                  className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                  onClick={onPreviousPage}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </button>
+                <span className="px-3 py-1 bg-gray-100 rounded">
+                  {currentPage} of {totalPages}
+                </span>
+                <button 
+                  className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                  onClick={onNextPage}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </button>
+              </div>
+            </TableCell>
+          </TableRow>
+        </TableFooter>
       </Table>
+    );
+  };
+
+  return (
+    <div className="bg-white">
+      {renderTable()}
 
       <ApplicationDetailsSheet
-        open={isSheetOpen}
-        onOpenChange={setIsSheetOpen}
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
         selectedRow={selectedRow}
         customerDetails={customerDetails}
         itrFlag={itrFlag}
@@ -163,12 +179,18 @@ export const DashboardTable = ({
         setIsEditing={setIsEditing}
         messagesEndRef={messagesEndRef}
         userRole={userRole}
-        handleApprove={handleApprove}
-        handleReject={handleReject}
+        handleApprove={handleApproveClick}
+        handleReject={handleRejectClick}
         isSubmitting={isSubmitting}
         activeTab={activeTab}
+      />
+
+      <RejectDialog
+        open={rejectDialogOpen}
+        onOpenChange={setRejectDialogOpen}
         rejectMessage={rejectMessage}
         setRejectMessage={setRejectMessage}
+        onConfirm={handleRejectConfirm}
       />
     </div>
   );
