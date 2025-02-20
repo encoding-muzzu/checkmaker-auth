@@ -57,7 +57,7 @@ export const ApplicationDetailsSheet = ({
       <SheetContent style={{
       maxWidth: '70% !important',
       borderRadius: '10px !important'
-    }} side="right" className="w-[70%] h-[94vh] mt-[2%] mr-[2%] p-0 overflow-y-auto rounded-2xl">
+    }} side="right" className="h-[95vh] mt-[2%] mr-[2%] p-0 overflow-y-auto rounded-xl max-w-7xl\n">
         <div className="flex flex-col h-full">
           <div className="p-6 border-b">
             <h2 className="text-xl font-semibold text-black">Application Details</h2>
