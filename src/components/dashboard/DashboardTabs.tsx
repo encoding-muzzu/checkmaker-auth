@@ -41,7 +41,7 @@ export const DashboardTabs = ({
             label="Completed"
             count={isChecker
               ? (applications?.filter(app => app.status_id === 2 || app.status_id === 3).length || 0)
-              : (applications?.filter(app => app.status_id === 1 || app.status_id === 4).length || 0)
+              : (applications?.filter(app => app.status_id === 1 || app.status_id === 2 || app.status_id === 4).length || 0)
             }
             onClick={() => setActiveTab("completed")}
           />
