@@ -125,6 +125,7 @@ export const useDashboard = () => {
         `);
 
       if (searchColumn === 'id') {
+        // For UUID search, use eq instead of ilike
         query = query.eq(searchColumn, searchQuery);
       } else {
         query = query.ilike(searchColumn, `%${searchQuery}%`);
