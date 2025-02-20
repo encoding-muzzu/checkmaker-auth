@@ -15,35 +15,14 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
   const { data: comments = [], isLoading } = useQuery({
     queryKey: ['application-comments', applicationId],
     queryFn: async () => {
-      // First fetch comments
-      const { data: commentsData, error: commentsError } = await supabase
+      const { data, error } = await supabase
         .from('application_comments')
         .select('*')
         .eq('application_id', applicationId)
         .order('created_at', { ascending: true });
 
-      if (commentsError) throw commentsError;
-
-      // Then fetch profiles for each unique created_by ID
-      const uniqueUserIds = [...new Set(commentsData?.map(comment => comment.created_by))];
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, username, role')
-        .in('id', uniqueUserIds);
-
-      if (profilesError) throw profilesError;
-
-      // Create a map of user profiles
-      const profileMap = (profilesData || []).reduce((acc: any, profile) => {
-        acc[profile.id] = profile;
-        return acc;
-      }, {});
-
-      // Combine comments with profile data
-      return (commentsData || []).map(comment => ({
-        ...comment,
-        profiles: profileMap[comment.created_by] || null
-      }));
+      if (error) throw error;
+      return data || [];
     },
     enabled: !!applicationId
   });
@@ -67,26 +46,18 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
             <p className="text-sm">No comments available</p>
           </div>
         ) : (
-          <div className="space-y-4 bg-gray-100 p-4 rounded-lg">
+          <div className="space-y-4">
             {comments.map((comment: any) => (
-              <div key={comment.id} className="flex flex-col max-w-[85%] ml-auto bg-white rounded-lg shadow p-3">
-                <div className="flex justify-between items-start mb-1">
-                  <div>
-                    <span className="text-sm font-medium text-emerald-600 capitalize">
-                      {comment.profiles?.username || 'Unknown User'}
-                    </span>
-                    <span className="text-xs text-gray-500 ml-2 capitalize">
-                      ({comment.profiles?.role || 'Unknown Role'})
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-400">
-                    {format(new Date(comment.created_at), 'MMM d, h:mm a')}
+              <div key={comment.id} className="p-4 bg-gray-50 rounded-lg">
+                <div className="flex justify-between items-start mb-2">
+                  <span className="text-sm font-medium text-gray-900">
+                    {comment.type === 'rejection' ? 'Rejection Reason' : 'Comment'}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {format(new Date(comment.created_at), 'MMM d, yyyy h:mm a')}
                   </span>
                 </div>
-                <p className="text-sm text-gray-700 mt-1">{comment.comment}</p>
-                {comment.type === 'rejection' && (
-                  <span className="text-xs text-red-500 mt-1">Rejection Reason</span>
-                )}
+                <p className="text-sm text-gray-700">{comment.comment}</p>
               </div>
             ))}
             <div ref={messagesEndRef} />

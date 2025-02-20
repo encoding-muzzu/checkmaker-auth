@@ -65,16 +65,14 @@ export const DashboardTabs = ({
             Search
           </button>
         </div>
-        {activeTab !== "search" && (
-          <Button
-            onClick={onRefresh}
-            variant="outline"
-            size="icon"
-            className="mr-4 transition-transform hover:rotate-180 duration-500"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-        )}
+        <Button
+          onClick={onRefresh}
+          variant="outline"
+          size="icon"
+          className="mr-4"
+        >
+          <RefreshCw className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   );
