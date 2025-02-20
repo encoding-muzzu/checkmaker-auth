@@ -65,6 +65,8 @@ export const useDashboard = () => {
         return [];
       }
 
+      setUserRole(profile.role);
+
       return data.map((app: any) => ({
         ...app,
         status_name: app.application_statuses.name,
@@ -125,6 +127,7 @@ export const useDashboard = () => {
         `);
 
       if (searchColumn === 'id') {
+        // For UUID, use eq instead of ilike
         query = query.eq(searchColumn, searchQuery);
       } else {
         query = query.ilike(searchColumn, `%${searchQuery}%`);
