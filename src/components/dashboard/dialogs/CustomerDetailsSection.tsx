@@ -1,14 +1,14 @@
+
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateApplication } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CustomerDetailsSectionProps {
   customerDetails: {
@@ -36,19 +36,34 @@ export const CustomerDetailsSection = ({
 }: CustomerDetailsSectionProps) => {
   const [isEditingMode, setIsEditingMode] = useState(false);
   const queryClient = useQueryClient();
-  const { mutate: updateApp, isLoading } = useMutation(updateApplication, {
+
+  const updateApplication = async ({ id, itr_flag, lrs_amount_consumed }: { 
+    id: string; 
+    itr_flag: boolean; 
+    lrs_amount_consumed: number; 
+  }) => {
+    const { error } = await supabase
+      .from('applications')
+      .update({ itr_flag, lrs_amount_consumed })
+      .eq('id', id);
+    
+    if (error) throw error;
+  };
+
+  const { mutate: updateApp, isPending } = useMutation({
+    mutationFn: updateApplication,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applications'] });
       toast({
         title: "Application updated successfully!",
-      })
+      });
     },
     onError: (error) => {
       toast({
         variant: "destructive",
         title: "Update failed!",
         description: "Something went wrong. Please try again.",
-      })
+      });
     },
   });
 
@@ -68,8 +83,8 @@ export const CustomerDetailsSection = ({
     const itr_flag = itrFlag === "true";
     const lrs_amount_consumed = parseFloat(lrsAmount);
     const applicationId = customerDetails.find(detail => detail.label === 'Application ID')?.value as string;
-      updateApp({ id: applicationId, itr_flag: itr_flag, lrs_amount_consumed: lrs_amount_consumed });
-      setIsEditingMode(false);
+    updateApp({ id: applicationId, itr_flag, lrs_amount_consumed });
+    setIsEditingMode(false);
   };
 
   return (
@@ -95,7 +110,11 @@ export const CustomerDetailsSection = ({
               ITR Flag
             </Label>
             {isEditable ? (
-              <Switch id="itrFlag" checked={itrFlag === "true"} onCheckedChange={(checked) => setItrFlag(String(checked))} />
+              <Switch 
+                id="itrFlag" 
+                checked={itrFlag === "true"} 
+                onCheckedChange={(checked) => setItrFlag(String(checked))} 
+              />
             ) : (
               <span>{itrFlag === "true" ? "Yes" : "No"}</span>
             )}
@@ -116,17 +135,21 @@ export const CustomerDetailsSection = ({
               <span>{lrsAmount}</span>
             )}
           </div>
-          {isEditable && <div className="flex justify-end space-x-2">
-            <Button variant="secondary" onClick={handleCancelClick}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveClick} disabled={isLoading}>
-              {isLoading ? "Saving..." : "Save"}
-            </Button>
-          </div>}
-          {!isEditable && userRole === 'maker' && <div className="flex justify-end">
-            <Button onClick={handleEditClick}>Edit</Button>
-          </div>}
+          {isEditable && (
+            <div className="flex justify-end space-x-2">
+              <Button variant="secondary" onClick={handleCancelClick}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveClick} disabled={isPending}>
+                {isPending ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          )}
+          {!isEditable && userRole === 'maker' && (
+            <div className="flex justify-end">
+              <Button onClick={handleEditClick}>Edit</Button>
+            </div>
+          )}
         </div>
       </AccordionContent>
     </AccordionItem>
