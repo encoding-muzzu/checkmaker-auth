@@ -1,10 +1,20 @@
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { User } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useEffect, useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { CheckCircle2, Edit2, User } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateApplication } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface CustomerDetailsSectionProps {
-  customerDetails: Array<{ label: string; value: string | number }>;
+  customerDetails: {
+    label: string;
+    value: string | number;
+  }[];
   itrFlag: string;
   setItrFlag: (value: string) => void;
   lrsAmount: string;
@@ -14,7 +24,7 @@ interface CustomerDetailsSectionProps {
   isEditable: boolean;
 }
 
-export const CustomerDetailsSection = ({
+export const CustomerDetailsSection = ({ 
   customerDetails,
   itrFlag,
   setItrFlag,
@@ -24,60 +34,99 @@ export const CustomerDetailsSection = ({
   userRole,
   isEditable
 }: CustomerDetailsSectionProps) => {
+  const [isEditingMode, setIsEditingMode] = useState(false);
+  const queryClient = useQueryClient();
+  const { mutate: updateApp, isLoading } = useMutation(updateApplication, {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applications'] });
+      toast({
+        title: "Application updated successfully!",
+      })
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Update failed!",
+        description: "Something went wrong. Please try again.",
+      })
+    },
+  });
+
+  useEffect(() => {
+    setIsEditing(isEditingMode);
+  }, [isEditingMode, setIsEditing]);
+
+  const handleEditClick = () => {
+    setIsEditingMode(true);
+  };
+
+  const handleCancelClick = () => {
+    setIsEditingMode(false);
+  };
+
+  const handleSaveClick = async () => {
+    const itr_flag = itrFlag === "true";
+    const lrs_amount_consumed = parseFloat(lrsAmount);
+    const applicationId = customerDetails.find(detail => detail.label === 'Application ID')?.value as string;
+      updateApp({ id: applicationId, itr_flag: itr_flag, lrs_amount_consumed: lrs_amount_consumed });
+      setIsEditingMode(false);
+  };
+
   return (
-    <AccordionItem value="details" className="border rounded-[4px] shadow-sm">
-      <AccordionTrigger className="px-4 hover:no-underline">
+    <AccordionItem value="details" className="border rounded-md">
+      <AccordionTrigger className="px-4">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold text-black">Customer Details</h2>
-          <User className="h-5 w-5 text-emerald-500" />
+          <User className="h-5 w-5" />
+          <span className="text-base font-medium">Customer Details</span>
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4">
-        <div className="grid grid-cols-2 gap-4">
-          {customerDetails.map((detail, index) => (
-            <div 
-              key={index} 
-              className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
-            >
-              <span className="text-gray-600">{detail.label}</span>
-              <span className="font-medium text-black">{detail.value.toString()}</span>
+        <div className="grid gap-4">
+          {customerDetails.map((detail) => (
+            <div key={detail.label} className="grid grid-cols-2 items-center gap-4">
+              <Label htmlFor={detail.label} className="text-right">
+                {detail.label}
+              </Label>
+              <span>{detail.value}</span>
             </div>
           ))}
-          <div className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
-            <span className="text-gray-600 my-auto">ITR Flag</span>
-            {!isEditable ? (
-              <span className="font-medium text-black">{itrFlag === "true" ? "Yes" : "No"}</span>
+          <div className="grid grid-cols-2 items-center gap-4">
+            <Label htmlFor="itrFlag" className="text-right">
+              ITR Flag
+            </Label>
+            {isEditable ? (
+              <Switch id="itrFlag" checked={itrFlag === "true"} onCheckedChange={(checked) => setItrFlag(String(checked))} />
             ) : (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">{itrFlag === "true" ? "Yes" : "No"}</span>
-                <Switch 
-                  checked={itrFlag === "true"}
-                  onCheckedChange={(checked) => setItrFlag(checked ? "true" : "false")}
-                  className="data-[state=checked]:bg-black"
-                />
-              </div>
+              <span>{itrFlag === "true" ? "Yes" : "No"}</span>
             )}
           </div>
-          <div className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
-            <span className="text-gray-600 my-auto">LRS Amount Consumed(USD)</span>
-            {!isEditable ? (
-              <span className="font-medium text-black">{lrsAmount}</span>
+          <div className="grid grid-cols-2 items-center gap-4">
+            <Label htmlFor="lrsAmount" className="text-right">
+              LRS Amount Consumed
+            </Label>
+            {isEditable ? (
+              <Input
+                type="number"
+                id="lrsAmount"
+                value={lrsAmount}
+                onChange={(e) => setLrsAmount(e.target.value)}
+                className="w-32"
+              />
             ) : (
-              <div className="relative flex items-center">
-                <Input 
-                  value={lrsAmount}
-                  onChange={(e) => setLrsAmount(e.target.value)}
-                  className="w-32 h-8 bg-gray-50 rounded-[4px] pr-8"
-                />
-                <button 
-                  onClick={() => setIsEditing(true)} 
-                  className="absolute right-2 text-black hover:text-gray-700"
-                >
-                  <Edit2 className="h-4 w-4" />
-                </button>
-              </div>
+              <span>{lrsAmount}</span>
             )}
           </div>
+          {isEditable && <div className="flex justify-end space-x-2">
+            <Button variant="secondary" onClick={handleCancelClick}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveClick} disabled={isLoading}>
+              {isLoading ? "Saving..." : "Save"}
+            </Button>
+          </div>}
+          {!isEditable && userRole === 'maker' && <div className="flex justify-end">
+            <Button onClick={handleEditClick}>Edit</Button>
+          </div>}
         </div>
       </AccordionContent>
     </AccordionItem>

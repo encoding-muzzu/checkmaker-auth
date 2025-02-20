@@ -51,11 +51,11 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
   });
 
   return (
-    <AccordionItem value="comments" className="border rounded-[4px] shadow-sm">
-      <AccordionTrigger className="px-4 hover:no-underline">
+    <AccordionItem value="comments" className="border rounded-md">
+      <AccordionTrigger className="px-4">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold text-black">Comments</h2>
-          <MessageSquare className="h-5 w-5 text-emerald-500" />
+          <MessageSquare className="h-5 w-5" />
+          <span className="text-base font-medium">Comments</span>
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4">
