@@ -10,7 +10,7 @@ export const useApplicationData = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: applications, isLoading } = useQuery({
+  const { data: applications, isLoading, isFetching } = useQuery({
     queryKey: ['applications'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -70,5 +70,8 @@ export const useApplicationData = () => {
     queryClient.invalidateQueries({ queryKey: ['application-comments'] });
   };
 
-  return { applications, isLoading, handleRefresh };
+  // We combine isLoading (initial load) with isFetching (subsequent refreshes)
+  const isLoadingData = isLoading || isFetching;
+
+  return { applications, isLoading: isLoadingData, handleRefresh };
 };
