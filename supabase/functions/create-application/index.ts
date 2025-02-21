@@ -27,7 +27,7 @@ serve(async (req) => {
     const { data, error } = await supabase
       .from('applications')
       .insert([body])
-      .select()
+      .select('id')
       .single()
 
     if (error) {
@@ -41,9 +41,9 @@ serve(async (req) => {
       )
     }
 
-    // Return the created application data including the ID
+    // Return only the ID of the created application
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify({ id: data.id }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 201 
