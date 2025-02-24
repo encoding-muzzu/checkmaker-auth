@@ -129,15 +129,16 @@ export const ApplicationDetailsSheet = ({
                   <Button
                     variant="outline"
                     onClick={handleCancelReject}
+                    disabled={isSubmitting}
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={handleConfirmReject}
                     className="bg-red-600 hover:bg-red-700 text-white"
-                    disabled={!rejectMessage.trim()}
+                    disabled={!rejectMessage.trim() || isSubmitting}
                   >
-                    Confirm {isChecker ? 'Return' : 'Reject'}
+                    {isSubmitting ? "Processing..." : isChecker ? "Return" : "Reject"}
                   </Button>
                 </div>
               </div>
