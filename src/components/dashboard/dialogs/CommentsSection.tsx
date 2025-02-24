@@ -39,13 +39,11 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
   const { data: comments = [], isLoading } = useQuery({
     queryKey: ['application-comments', applicationId],
     queryFn: async () => {
+      // First get the comments with user profiles
       const { data: commentsData, error: commentsError } = await supabase
         .from('application_comments')
         .select(`
           *,
-          user:user_id (
-            email
-          ),
           profiles:user_id (
             role
           )
@@ -54,6 +52,21 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
         .order('created_at', { ascending: true });
 
       if (commentsError) throw commentsError;
+
+      // Then get the user emails from auth.users
+      if (commentsData && commentsData.length > 0) {
+        const { data: usersData } = await supabase.auth.admin.listUsers();
+        const userMap = new Map(usersData?.users.map(user => [user.id, user.email]));
+        
+        // Combine the data
+        return commentsData.map(comment => ({
+          ...comment,
+          user: {
+            email: comment.user_id ? userMap.get(comment.user_id) : 'Unknown User'
+          }
+        }));
+      }
+
       return commentsData || [];
     },
     enabled: !!applicationId
@@ -113,4 +126,3 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
     </AccordionItem>
   );
 };
-
