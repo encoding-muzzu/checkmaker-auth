@@ -2,7 +2,7 @@
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { RefObject, useEffect, useState } from "react";
+import { RefObject } from "react";
 import { format } from "date-fns";
 import { MessageSquare } from "lucide-react";
 
@@ -15,51 +15,15 @@ interface Comment {
   id: string;
   comment: string;
   created_at: string;
-  type: string;
-  user_id: string;
-  user_profile: {
-    role: string;
-  } | null;
 }
 
 export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSectionProps) => {
-  const [currentUser, setCurrentUser] = useState<{ id: string; role: string } | null>(null);
-
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profile) {
-          setCurrentUser({
-            id: session.user.id,
-            role: profile.role
-          });
-        }
-      }
-    };
-
-    fetchCurrentUser();
-  }, []);
-
   const { data: comments = [], isLoading } = useQuery({
     queryKey: ['application-comments', applicationId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('application_comments')
-        .select(`
-          id,
-          comment,
-          created_at,
-          type,
-          user_id,
-          user_profile:profiles!user_id(role)
-        `)
+        .select('id, comment, created_at')
         .eq('application_id', applicationId)
         .order('created_at', { ascending: true });
 
@@ -89,27 +53,16 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
           </div>
         ) : (
           <div className="space-y-4 bg-gray-100 p-4 rounded-lg">
-            {comments.map((comment) => {
-              const isCurrentUser = currentUser?.id === comment.user_id;
-              const role = comment.user_profile?.role || 'User';
-              
-              return (
-                <div 
-                  key={comment.id} 
-                  className={`flex flex-col max-w-[85%] ${isCurrentUser ? 'ml-auto' : 'mr-auto'} bg-white rounded-lg shadow p-3`}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="text-xs font-medium text-emerald-600 capitalize">
-                      {role}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      {format(new Date(comment.created_at), 'MMM d, h:mm a')}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-700">{comment.comment}</p>
+            {comments.map((comment) => (
+              <div key={comment.id} className="bg-white rounded-lg shadow p-3">
+                <div className="flex justify-end mb-2">
+                  <span className="text-xs text-gray-400">
+                    {format(new Date(comment.created_at), 'MMM d, h:mm a')}
+                  </span>
                 </div>
-              );
-            })}
+                <p className="text-sm text-gray-700">{comment.comment}</p>
+              </div>
+            ))}
             <div ref={messagesEndRef} />
           </div>
         )}
