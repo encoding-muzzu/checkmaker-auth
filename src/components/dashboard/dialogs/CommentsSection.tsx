@@ -39,35 +39,40 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
   const { data: comments = [], isLoading } = useQuery({
     queryKey: ['application-comments', applicationId],
     queryFn: async () => {
-      // First get the comments with user profiles
+      // First get the comments
       const { data: commentsData, error: commentsError } = await supabase
         .from('application_comments')
-        .select(`
-          *,
-          profiles:user_id (
-            role
-          )
-        `)
+        .select('*')
         .eq('application_id', applicationId)
         .order('created_at', { ascending: true });
 
       if (commentsError) throw commentsError;
 
-      // Then get the user emails from auth.users
-      if (commentsData && commentsData.length > 0) {
-        const { data: usersData } = await supabase.auth.admin.listUsers();
-        const userMap = new Map(usersData?.users.map(user => [user.id, user.email]));
-        
-        // Combine the data
-        return commentsData.map(comment => ({
-          ...comment,
-          user: {
-            email: comment.user_id ? userMap.get(comment.user_id) : 'Unknown User'
-          }
-        }));
-      }
+      if (!commentsData || commentsData.length === 0) return [];
 
-      return commentsData || [];
+      // Get unique user IDs from comments
+      const userIds = [...new Set(commentsData.map(comment => comment.user_id))];
+
+      // Get user profiles for these IDs
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, role')
+        .in('id', userIds);
+
+      const profileMap = new Map(profiles?.map(profile => [profile.id, profile]) || []);
+
+      // Get user emails from auth.users
+      const { data: { users } } = await supabase.auth.admin.listUsers();
+      const userMap = new Map(users?.map(user => [user.id, user.email]) || []);
+
+      // Combine all the data
+      return commentsData.map(comment => ({
+        ...comment,
+        user: {
+          email: userMap.get(comment.user_id) || 'Unknown User',
+          role: profileMap.get(comment.user_id)?.role || 'Unknown Role'
+        }
+      }));
     },
     enabled: !!applicationId
   });
@@ -105,7 +110,7 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
                         {comment.user?.email || 'Unknown User'}
                       </span>
                       <span className="text-xs text-gray-500 ml-2 capitalize">
-                        ({comment.profiles?.role || 'Unknown Role'})
+                        ({comment.user?.role || 'Unknown Role'})
                       </span>
                     </div>
                     <span className="text-xs text-gray-400">
