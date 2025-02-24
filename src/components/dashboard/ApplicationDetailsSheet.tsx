@@ -2,11 +2,12 @@
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { ApplicationData } from "@/types/dashboard";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Accordion } from "@/components/ui/accordion";
 import { DocumentsSection } from "./dialogs/DocumentsSection";
 import { CustomerDetailsSection } from "./dialogs/CustomerDetailsSection";
 import { CommentsSection } from "./dialogs/CommentsSection";
-import { RefObject, useEffect } from "react";
+import { RefObject, useEffect, useState } from "react";
 
 interface ApplicationDetailsSheetProps {
   open: boolean;
@@ -50,6 +51,8 @@ export const ApplicationDetailsSheet = ({
   const isCompleted = activeTab === 'completed';
   const showButtons = selectedRow && !isCompleted;
   const isEditable = !isChecker && (selectedRow?.status_id === 0 || selectedRow?.status_id === 3) && !isCompleted;
+  const [showRemarks, setShowRemarks] = useState(false);
+  const [remarks, setRemarks] = useState('');
 
   useEffect(() => {
     if (selectedRow) {
@@ -57,6 +60,18 @@ export const ApplicationDetailsSheet = ({
       setLrsAmount(selectedRow.lrs_amount_consumed === null ? "0" : String(selectedRow.lrs_amount_consumed));
     }
   }, [selectedRow, setItrFlag, setLrsAmount]);
+
+  const handleRejectClick = () => {
+    setShowRemarks(true);
+  };
+
+  const handleConfirmReject = () => {
+    if (remarks.trim()) {
+      handleReject();
+      setShowRemarks(false);
+      setRemarks('');
+    }
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -84,9 +99,29 @@ export const ApplicationDetailsSheet = ({
               />
               <CommentsSection applicationId={selectedRow?.id || ''} messagesEndRef={messagesEndRef} />
             </Accordion>
+
+            {showRemarks && (
+              <div className="mt-4">
+                <Textarea
+                  value={remarks}
+                  onChange={(e) => setRemarks(e.target.value)}
+                  placeholder={`Enter your ${isChecker ? 'return' : 'rejection'} remarks...`}
+                  className="min-h-[100px] mb-3"
+                />
+                <div className="flex justify-end gap-3">
+                  <Button 
+                    onClick={handleConfirmReject}
+                    className="bg-red-600 hover:bg-red-700 text-white rounded-[4px]"
+                    disabled={!remarks.trim() || isSubmitting}
+                  >
+                    {isSubmitting ? "Processing..." : isChecker ? "Confirm Return" : "Confirm Reject"}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
-          {showButtons && (
+          {showButtons && !showRemarks && (
             <div className="p-6 border-t bg-white mt-auto">
               <div className="flex justify-end gap-3">
                 <Button 
@@ -98,7 +133,7 @@ export const ApplicationDetailsSheet = ({
                 </Button>
                 <Button 
                   className="bg-red-600 hover:bg-red-700 text-white rounded-[4px]" 
-                  onClick={handleReject}
+                  onClick={handleRejectClick}
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Processing..." : isChecker ? "Return" : "Reject"}
