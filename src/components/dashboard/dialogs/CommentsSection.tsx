@@ -1,3 +1,4 @@
+
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +12,7 @@ interface CommentsSectionProps {
 }
 
 export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSectionProps) => {
-  const [currentUser, setCurrentUser] = useState<{ email: string; role: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: string; role: string } | null>(null);
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -25,7 +26,7 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
 
         if (profile) {
           setCurrentUser({
-            email: session.user.email || '',
+            id: session.user.id,
             role: profile.role
           });
         }
@@ -38,30 +39,27 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
   const { data: comments = [], isLoading } = useQuery({
     queryKey: ['application-comments', applicationId],
     queryFn: async () => {
-      const { data: commentsWithUsers, error } = await supabase
+      const { data: commentsData, error } = await supabase
         .from('application_comments')
         .select(`
-          *,
-          profiles:user_id (
-            role,
-            id
-          )
+          id,
+          comment,
+          created_at,
+          type,
+          user_id,
+          profiles:user_id(role)
         `)
         .eq('application_id', applicationId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
 
-      // Get the session to access the current user's email
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      return (commentsWithUsers || []).map(comment => ({
+      return commentsData?.map(comment => ({
         ...comment,
-        user: {
-          email: comment.user_id === session?.user?.id ? session.user.email : 'User',
+        profiles: {
           role: comment.profiles?.role || 'User'
         }
-      }));
+      })) || [];
     },
     enabled: !!applicationId
   });
@@ -82,34 +80,28 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
         ) : comments.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-8 text-gray-500 bg-gray-50 rounded-lg">
             <MessageSquare className="h-8 w-8 mb-2" />
-            <p className="text-sm">No comments available</p>
+            <p className="text-sm">No comments yet</p>
           </div>
         ) : (
           <div className="space-y-4 bg-gray-100 p-4 rounded-lg">
             {comments.map((comment: any) => {
-              const isCurrentUser = currentUser?.email === comment.user?.email;
+              const isCurrentUser = currentUser?.id === comment.user_id;
+              const role = comment.profiles?.role || 'User';
+              
               return (
                 <div 
                   key={comment.id} 
                   className={`flex flex-col max-w-[85%] ${isCurrentUser ? 'ml-auto' : 'mr-auto'} bg-white rounded-lg shadow p-3`}
                 >
-                  <div className="flex justify-between items-start mb-1">
-                    <div>
-                      <span className="text-sm font-medium text-emerald-600">
-                        {comment.user?.email}
-                      </span>
-                      <span className="text-xs text-gray-500 ml-2 capitalize">
-                        ({comment.user?.role})
-                      </span>
-                    </div>
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-xs font-medium text-emerald-600 capitalize">
+                      {role}
+                    </span>
                     <span className="text-xs text-gray-400">
                       {format(new Date(comment.created_at), 'MMM d, h:mm a')}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-700 mt-1">{comment.comment}</p>
-                  {comment.type === 'rejection' && (
-                    <span className="text-xs text-red-500 mt-1">Rejection Reason</span>
-                  )}
+                  <p className="text-sm text-gray-700">{comment.comment}</p>
                 </div>
               );
             })}
