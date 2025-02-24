@@ -17,18 +17,9 @@ export const RejectDialog = ({
   setRejectMessage,
   onConfirm
 }: RejectDialogProps) => {
-  const handleCancel = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onOpenChange(false);
-  };
-
-  const handleInputClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-  };
-
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+      <AlertDialogContent onClick={(e) => e.stopPropagation()} className="z-[100]">
         <AlertDialogHeader>
           <AlertDialogTitle>Reject Application</AlertDialogTitle>
           <AlertDialogDescription>
@@ -38,14 +29,23 @@ export const RejectDialog = ({
               onChange={(e) => setRejectMessage(e.target.value)}
               className="mt-2"
               placeholder="Enter rejection reason..."
-              onClick={handleInputClick}
+              onClick={(e) => e.stopPropagation()}
               onFocus={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
             />
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={handleCancel}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} className="bg-red-600 hover:bg-red-700">
+          <AlertDialogCancel onClick={(e) => {
+            e.stopPropagation();
+            onOpenChange(false);
+          }}>
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={(e) => {
+            e.stopPropagation();
+            onConfirm();
+          }} className="bg-red-600 hover:bg-red-700">
             Confirm Reject
           </AlertDialogAction>
         </AlertDialogFooter>

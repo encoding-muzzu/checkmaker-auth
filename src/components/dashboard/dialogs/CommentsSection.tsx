@@ -20,7 +20,7 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
       if (session) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('role, username')
+          .select('role')
           .eq('id', session.user.id)
           .single();
 
@@ -50,26 +50,33 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
 
       if (!commentsData || commentsData.length === 0) return [];
 
-      // Get unique user IDs from comments
-      const userIds = [...new Set(commentsData.map(comment => comment.user_id))];
-
       // Get user profiles for these IDs
       const { data: profiles } = await supabase
         .from('profiles')
         .select('id, role')
-        .in('id', userIds);
+        .in('id', commentsData.map(comment => comment.user_id));
 
-      const profileMap = new Map(profiles?.map(profile => [profile.id, profile]) || []);
+      const profileMap = new Map(
+        profiles?.map(profile => [profile.id, profile]) || []
+      );
 
-      // Get user emails from auth.users
-      const { data: { users } } = await supabase.auth.admin.listUsers();
-      const userMap = new Map(users?.map(user => [user.id, user.email]) || []);
+      // Get user email for each comment's user_id
+      const userEmailMap = new Map<string, string>();
+      
+      for (const comment of commentsData) {
+        if (comment.user_id && !userEmailMap.has(comment.user_id)) {
+          const { data: { user } } = await supabase.auth.admin.getUserById(comment.user_id);
+          if (user) {
+            userEmailMap.set(comment.user_id, user.email || 'Unknown User');
+          }
+        }
+      }
 
       // Combine all the data
       return commentsData.map(comment => ({
         ...comment,
         user: {
-          email: userMap.get(comment.user_id) || 'Unknown User',
+          email: userEmailMap.get(comment.user_id) || 'Unknown User',
           role: profileMap.get(comment.user_id)?.role || 'Unknown Role'
         }
       }));
