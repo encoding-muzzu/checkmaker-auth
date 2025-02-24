@@ -51,33 +51,38 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
       if (!commentsData || commentsData.length === 0) return [];
 
       // Get user profiles for these IDs
+      const userIds = commentsData
+        .map(comment => comment.user_id)
+        .filter(id => id !== null); // Filter out null user_ids
+
       const { data: profiles } = await supabase
         .from('profiles')
         .select('id, role')
-        .in('id', commentsData.map(comment => comment.user_id));
+        .in('id', userIds);
 
       const profileMap = new Map(
         profiles?.map(profile => [profile.id, profile]) || []
       );
 
-      // Get user email for each comment's user_id
-      const userEmailMap = new Map<string, string>();
-      
-      for (const comment of commentsData) {
-        if (comment.user_id && !userEmailMap.has(comment.user_id)) {
-          const { data: { user } } = await supabase.auth.admin.getUserById(comment.user_id);
-          if (user) {
-            userEmailMap.set(comment.user_id, user.email || 'Unknown User');
-          }
-        }
-      }
+      // Get user emails
+      const emailPromises = userIds.map(userId =>
+        supabase.auth.admin.getUserById(userId)
+      );
+
+      const emailResponses = await Promise.all(emailPromises);
+      const userEmailMap = new Map(
+        emailResponses.map((response, index) => [
+          userIds[index],
+          response.data.user?.email || 'Unknown User'
+        ])
+      );
 
       // Combine all the data
       return commentsData.map(comment => ({
         ...comment,
         user: {
-          email: userEmailMap.get(comment.user_id) || 'Unknown User',
-          role: profileMap.get(comment.user_id)?.role || 'Unknown Role'
+          email: comment.user_id ? userEmailMap.get(comment.user_id) : 'System',
+          role: comment.user_id ? (profileMap.get(comment.user_id)?.role || 'User') : 'System'
         }
       }));
     },
@@ -114,10 +119,10 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
                   <div className="flex justify-between items-start mb-1">
                     <div>
                       <span className="text-sm font-medium text-emerald-600">
-                        {comment.user?.email || 'Unknown User'}
+                        {comment.user?.email}
                       </span>
                       <span className="text-xs text-gray-500 ml-2 capitalize">
-                        ({comment.user?.role || 'Unknown Role'})
+                        ({comment.user?.role})
                       </span>
                     </div>
                     <span className="text-xs text-gray-400">
