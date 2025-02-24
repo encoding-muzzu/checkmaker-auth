@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ApplicationData } from "@/types/dashboard";
@@ -119,13 +118,12 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
 
       if (updateError) throw updateError;
 
-      // Insert comment with user ID
       const { error: insertError } = await supabase
         .from('application_comments')
         .insert([{
           application_id: selectedRow.id,
           comment: rejectMessage,
-          type: 'rejection',
+          type: profile?.role === 'maker' ? 'rejection' : 'return',
           user_id: session.user.id
         }]);
 
@@ -171,4 +169,3 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
     handleReject
   };
 };
-

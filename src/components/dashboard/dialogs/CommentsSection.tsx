@@ -15,6 +15,7 @@ interface Comment {
   id: string;
   comment: string;
   created_at: string;
+  type: string;
 }
 
 export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSectionProps) => {
@@ -23,7 +24,7 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
     queryFn: async () => {
       const { data, error } = await supabase
         .from('application_comments')
-        .select('id, comment, created_at')
+        .select('id, comment, created_at, type')
         .eq('application_id', applicationId)
         .order('created_at', { ascending: true });
 
@@ -55,7 +56,10 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
           <div className="space-y-4 bg-gray-100 p-4 rounded-lg">
             {comments.map((comment) => (
               <div key={comment.id} className="bg-white rounded-lg shadow p-3">
-                <div className="flex justify-end mb-2">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-medium text-emerald-600 capitalize">
+                    {comment.type === 'rejection' ? 'Maker' : 'Checker'}
+                  </span>
                   <span className="text-xs text-gray-400">
                     {format(new Date(comment.created_at), 'MMM d, h:mm a')}
                   </span>
