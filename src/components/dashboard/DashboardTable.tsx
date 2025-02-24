@@ -74,7 +74,85 @@ export const DashboardTable = ({
 
   return (
     <div className="bg-white">
-      {renderTable()}
+      {isLoading ? (
+        <TableSkeleton />
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">Application ID</TableHead>
+              <TableHead className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">ARN</TableHead>
+              <TableHead className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">Customer Name</TableHead>
+              <TableHead className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">Created At</TableHead>
+              <TableHead className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">Status</TableHead>
+              <TableHead className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.map((row) => (
+              <TableRow 
+                key={row.id}
+                className="border-b border-[rgb(224,224,224)]"
+              >
+                <TableCell className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">{row.id}</TableCell>
+                <TableCell className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">{row.arn}</TableCell>
+                <TableCell className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">{row.customer_name}</TableCell>
+                <TableCell className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">{formatDate(row.created_at)}</TableCell>
+                <TableCell>
+                  <span 
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(row.status_id)}`}
+                  >
+                    {getStatusText(row.status_id)}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setSelectedRow(row);
+                      setSheetOpen(true);
+                    }}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={6}>
+                <div className="flex items-center justify-between px-2">
+                  <div className="text-sm text-gray-500">
+                    Page {currentPage} of {totalPages}
+                  </div>
+                  <div className="space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={onPreviousPage}
+                      disabled={currentPage === 1}
+                      className="rounded-[4px]"
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={onNextPage}
+                      disabled={currentPage === totalPages}
+                      className="rounded-[4px]"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
+      )}
 
       <ApplicationDetailsSheet
         open={sheetOpen}
