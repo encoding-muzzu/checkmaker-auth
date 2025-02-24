@@ -119,12 +119,14 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
 
       if (updateError) throw updateError;
 
+      // Insert comment with user ID
       const { error: insertError } = await supabase
         .from('application_comments')
         .insert([{
           application_id: selectedRow.id,
           comment: rejectMessage,
-          type: 'rejection'
+          type: 'rejection',
+          user_id: session.user.id
         }]);
 
       if (insertError) throw insertError;
@@ -169,3 +171,4 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
     handleReject
   };
 };
+

@@ -1,3 +1,4 @@
+
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,7 +41,15 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
     queryFn: async () => {
       const { data: commentsData, error: commentsError } = await supabase
         .from('application_comments')
-        .select('*')
+        .select(`
+          *,
+          user:user_id (
+            email
+          ),
+          profiles:user_id (
+            role
+          )
+        `)
         .eq('application_id', applicationId)
         .order('created_at', { ascending: true });
 
@@ -71,7 +80,7 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
         ) : (
           <div className="space-y-4 bg-gray-100 p-4 rounded-lg">
             {comments.map((comment: any) => {
-              const isCurrentUser = currentUser?.email === comment.profiles?.username;
+              const isCurrentUser = currentUser?.email === comment.user?.email;
               return (
                 <div 
                   key={comment.id} 
@@ -79,11 +88,11 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
                 >
                   <div className="flex justify-between items-start mb-1">
                     <div>
-                      <span className="text-sm font-medium text-emerald-600 capitalize">
-                        {comment.profiles?.username || currentUser?.email || 'Unknown User'}
+                      <span className="text-sm font-medium text-emerald-600">
+                        {comment.user?.email || 'Unknown User'}
                       </span>
                       <span className="text-xs text-gray-500 ml-2 capitalize">
-                        ({comment.profiles?.role || currentUser?.role || 'Unknown Role'})
+                        ({comment.profiles?.role || 'Unknown Role'})
                       </span>
                     </div>
                     <span className="text-xs text-gray-400">
@@ -104,3 +113,4 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
     </AccordionItem>
   );
 };
+
