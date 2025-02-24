@@ -76,6 +76,7 @@ export const ApplicationDetailsSheet = ({
       handleReject();
       setShowRejectForm(false);
       setRejectMessage('');
+      onOpenChange(false); // Close the sheet after rejection
     }
   };
 
@@ -135,9 +136,9 @@ export const ApplicationDetailsSheet = ({
                   <Button
                     onClick={handleConfirmReject}
                     className="bg-red-600 hover:bg-red-700 text-white"
-                    disabled={!rejectMessage.trim()}
+                    disabled={!rejectMessage.trim() || isSubmitting}
                   >
-                    Confirm {isChecker ? 'Return' : 'Reject'}
+                    {isSubmitting ? "Processing..." : isChecker ? "Confirm Return" : "Confirm Reject"}
                   </Button>
                 </div>
               </div>
