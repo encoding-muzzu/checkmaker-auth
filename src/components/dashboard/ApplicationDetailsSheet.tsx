@@ -76,7 +76,7 @@ export const ApplicationDetailsSheet = ({
       handleReject();
       setShowRejectForm(false);
       setRejectMessage('');
-      onOpenChange(false); // Close the sheet after rejection
+      onOpenChange(false);
     }
   };
 
