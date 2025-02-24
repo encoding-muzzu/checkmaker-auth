@@ -1,4 +1,3 @@
-
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,50 +38,28 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
   const { data: comments = [], isLoading } = useQuery({
     queryKey: ['application-comments', applicationId],
     queryFn: async () => {
-      // First get the comments
-      const { data: commentsData, error: commentsError } = await supabase
+      const { data: commentsWithUsers, error } = await supabase
         .from('application_comments')
-        .select('*')
+        .select(`
+          *,
+          profiles:user_id (
+            role,
+            id
+          )
+        `)
         .eq('application_id', applicationId)
         .order('created_at', { ascending: true });
 
-      if (commentsError) throw commentsError;
+      if (error) throw error;
 
-      if (!commentsData || commentsData.length === 0) return [];
-
-      // Get user profiles for these IDs
-      const userIds = commentsData
-        .map(comment => comment.user_id)
-        .filter(id => id !== null); // Filter out null user_ids
-
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, role')
-        .in('id', userIds);
-
-      const profileMap = new Map(
-        profiles?.map(profile => [profile.id, profile]) || []
-      );
-
-      // Get user emails
-      const emailPromises = userIds.map(userId =>
-        supabase.auth.admin.getUserById(userId)
-      );
-
-      const emailResponses = await Promise.all(emailPromises);
-      const userEmailMap = new Map(
-        emailResponses.map((response, index) => [
-          userIds[index],
-          response.data.user?.email || 'Unknown User'
-        ])
-      );
-
-      // Combine all the data
-      return commentsData.map(comment => ({
+      // Get the session to access the current user's email
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      return (commentsWithUsers || []).map(comment => ({
         ...comment,
         user: {
-          email: comment.user_id ? userEmailMap.get(comment.user_id) : 'System',
-          role: comment.user_id ? (profileMap.get(comment.user_id)?.role || 'User') : 'System'
+          email: comment.user_id === session?.user?.id ? session.user.email : 'User',
+          role: comment.profiles?.role || 'User'
         }
       }));
     },
