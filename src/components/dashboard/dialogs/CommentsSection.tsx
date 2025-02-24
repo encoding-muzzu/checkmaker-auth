@@ -17,7 +17,7 @@ interface Comment {
   created_at: string;
   type: string;
   user_id: string;
-  profiles: {
+  user_profile: {
     role: string;
   } | null;
 }
@@ -58,14 +58,13 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
           created_at,
           type,
           user_id,
-          profiles (role)
+          user_profile:profiles!user_id(role)
         `)
         .eq('application_id', applicationId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-
-      return (data as Comment[]) || [];
+      return data as Comment[];
     },
     enabled: !!applicationId
   });
@@ -92,7 +91,7 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
           <div className="space-y-4 bg-gray-100 p-4 rounded-lg">
             {comments.map((comment) => {
               const isCurrentUser = currentUser?.id === comment.user_id;
-              const role = comment.profiles?.role || 'User';
+              const role = comment.user_profile?.role || 'User';
               
               return (
                 <div 
