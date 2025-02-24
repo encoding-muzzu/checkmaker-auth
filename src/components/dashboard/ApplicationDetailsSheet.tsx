@@ -110,6 +110,13 @@ export const ApplicationDetailsSheet = ({
                 />
                 <div className="flex justify-end gap-3">
                   <Button 
+                    onClick={() => setShowRemarks(false)}
+                    variant="outline"
+                    className="rounded-[4px]"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
                     onClick={handleConfirmReject}
                     className="bg-red-600 hover:bg-red-700 text-white rounded-[4px]"
                     disabled={!remarks.trim() || isSubmitting}
