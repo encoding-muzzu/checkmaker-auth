@@ -11,6 +11,17 @@ interface CommentsSectionProps {
   messagesEndRef: RefObject<HTMLDivElement>;
 }
 
+interface Comment {
+  id: string;
+  comment: string;
+  created_at: string;
+  type: string;
+  user_id: string;
+  profiles: {
+    role: string;
+  } | null;
+}
+
 export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSectionProps) => {
   const [currentUser, setCurrentUser] = useState<{ id: string; role: string } | null>(null);
 
@@ -39,7 +50,7 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
   const { data: comments = [], isLoading } = useQuery({
     queryKey: ['application-comments', applicationId],
     queryFn: async () => {
-      const { data: commentsData, error } = await supabase
+      const { data, error } = await supabase
         .from('application_comments')
         .select(`
           id,
@@ -47,19 +58,14 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
           created_at,
           type,
           user_id,
-          profiles:user_id(role)
+          profiles (role)
         `)
         .eq('application_id', applicationId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
 
-      return commentsData?.map(comment => ({
-        ...comment,
-        profiles: {
-          role: comment.profiles?.role || 'User'
-        }
-      })) || [];
+      return (data as Comment[]) || [];
     },
     enabled: !!applicationId
   });
@@ -84,7 +90,7 @@ export const CommentsSection = ({ applicationId, messagesEndRef }: CommentsSecti
           </div>
         ) : (
           <div className="space-y-4 bg-gray-100 p-4 rounded-lg">
-            {comments.map((comment: any) => {
+            {comments.map((comment) => {
               const isCurrentUser = currentUser?.id === comment.user_id;
               const role = comment.profiles?.role || 'User';
               
