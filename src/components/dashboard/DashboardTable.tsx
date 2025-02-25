@@ -69,18 +69,6 @@ export const DashboardTable = ({
     }
   };
 
-  const handleRejectConfirm = async () => {
-    const success = await handleReject();
-    if (success) {
-      setSheetOpen(false);
-      setRejectMessage('');
-    }
-  };
-
-  const handleRejectClick = () => {
-    handleRejectConfirm();
-  };
-
   return (
     <div className="bg-white">
       <Table>
@@ -167,7 +155,7 @@ export const DashboardTable = ({
         messagesEndRef={messagesEndRef}
         userRole={userRole}
         handleApprove={handleApproveClick}
-        handleReject={handleRejectClick}
+        handleReject={handleReject}
         isSubmitting={isSubmitting}
         activeTab={activeTab}
         rejectMessage={rejectMessage}
