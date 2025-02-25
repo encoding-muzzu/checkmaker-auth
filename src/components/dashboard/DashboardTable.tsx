@@ -35,7 +35,6 @@ export const DashboardTable = ({
 }: DashboardTableProps) => {
   const [selectedRow, setSelectedRow] = useState<ApplicationData | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [rejectMessage, setRejectMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -47,7 +46,9 @@ export const DashboardTable = ({
     setIsEditing,
     isSubmitting,
     handleApprove,
-    handleReject
+    handleReject,
+    rejectMessage,
+    setRejectMessage
   } = useApplicationActions(selectedRow);
 
   const customerDetails = selectedRow ? [
@@ -73,7 +74,6 @@ export const DashboardTable = ({
     const success = await handleReject();
     if (success) {
       setSheetOpen(false);
-      setRejectMessage('');
     }
   };
 
@@ -176,3 +176,4 @@ export const DashboardTable = ({
     </div>
   );
 };
+
