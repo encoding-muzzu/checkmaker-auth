@@ -76,7 +76,6 @@ export const ApplicationDetailsSheet = ({
       handleReject();
       setShowRejectForm(false);
       setRejectMessage('');
-      onOpenChange(false);
     }
   };
 
@@ -136,9 +135,9 @@ export const ApplicationDetailsSheet = ({
                   <Button
                     onClick={handleConfirmReject}
                     className="bg-red-600 hover:bg-red-700 text-white"
-                    disabled={!rejectMessage.trim() || isSubmitting}
+                    disabled={!rejectMessage.trim()}
                   >
-                    {isSubmitting ? "Processing..." : isChecker ? "Confirm Return" : "Confirm Reject"}
+                    Confirm {isChecker ? 'Return' : 'Reject'}
                   </Button>
                 </div>
               </div>
