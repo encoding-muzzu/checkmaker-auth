@@ -29,6 +29,8 @@ interface ApplicationDetailsSheetProps {
   handleReject: () => void;
   isSubmitting: boolean;
   activeTab: string;
+  rejectMessage: string;
+  setRejectMessage: (value: string) => void;
 }
 
 export const ApplicationDetailsSheet = ({
@@ -46,14 +48,15 @@ export const ApplicationDetailsSheet = ({
   handleApprove,
   handleReject,
   isSubmitting,
-  activeTab
+  activeTab,
+  rejectMessage,
+  setRejectMessage
 }: ApplicationDetailsSheetProps) => {
   const isChecker = userRole === 'checker';
   const isCompleted = activeTab === 'completed';
   const showButtons = selectedRow && !isCompleted;
   const isEditable = !isChecker && (selectedRow?.status_id === 0 || selectedRow?.status_id === 3) && !isCompleted;
   const [showRejectForm, setShowRejectForm] = useState(false);
-  const [rejectMessage, setRejectMessage] = useState('');
 
   useEffect(() => {
     if (selectedRow) {
@@ -76,6 +79,7 @@ export const ApplicationDetailsSheet = ({
       handleReject();
       setShowRejectForm(false);
       setRejectMessage('');
+      onOpenChange(false);
     }
   };
 
@@ -135,9 +139,9 @@ export const ApplicationDetailsSheet = ({
                   <Button
                     onClick={handleConfirmReject}
                     className="bg-red-600 hover:bg-red-700 text-white"
-                    disabled={!rejectMessage.trim()}
+                    disabled={!rejectMessage.trim() || isSubmitting}
                   >
-                    Confirm {isChecker ? 'Return' : 'Reject'}
+                    {isSubmitting ? "Processing..." : isChecker ? "Confirm Return" : "Confirm Reject"}
                   </Button>
                 </div>
               </div>

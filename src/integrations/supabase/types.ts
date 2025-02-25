@@ -61,6 +61,7 @@ export type Database = {
       }
       applications: {
         Row: {
+          application_number: string | null
           arn: string
           assigned_to: string | null
           card_type: string
@@ -81,6 +82,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          application_number?: string | null
           arn: string
           assigned_to?: string | null
           card_type: string
@@ -101,6 +103,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          application_number?: string | null
           arn?: string
           assigned_to?: string | null
           card_type?: string

@@ -6,7 +6,6 @@ import { ApplicationData } from "@/types/dashboard";
 import { useState, useRef } from "react";
 import { format } from "date-fns";
 import { TableSkeleton } from "./TableSkeleton";
-import { RejectDialog } from "./dialogs/RejectDialog";
 import { ApplicationDetailsSheet } from "./ApplicationDetailsSheet";
 import { useApplicationActions } from "@/hooks/useApplicationActions";
 import { getStatusColor, getStatusText } from "@/utils/statusUtils";
@@ -36,7 +35,7 @@ export const DashboardTable = ({
 }: DashboardTableProps) => {
   const [selectedRow, setSelectedRow] = useState<ApplicationData | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectMessage, setRejectMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -47,15 +46,9 @@ export const DashboardTable = ({
     isEditing,
     setIsEditing,
     isSubmitting,
-    rejectMessage,
-    setRejectMessage,
     handleApprove,
     handleReject
   } = useApplicationActions(selectedRow);
-
-  const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'MMM d, yyyy, h:mm a');
-  };
 
   const customerDetails = selectedRow ? [
     { label: "ARN", value: selectedRow.arn },
@@ -69,19 +62,6 @@ export const DashboardTable = ({
     { label: "Processing Type", value: selectedRow.processing_type }
   ] : [];
 
-  const handleRejectClick = () => {
-    setRejectDialogOpen(true);
-  };
-
-  const handleRejectConfirm = async () => {
-    const success = await handleReject();
-    if (success) {
-      setRejectDialogOpen(false);
-      setSheetOpen(false);
-      setRejectMessage("");
-    }
-  };
-
   const handleApproveClick = async () => {
     const success = await handleApprove();
     if (success) {
@@ -89,8 +69,8 @@ export const DashboardTable = ({
     }
   };
 
-  const renderTable = () => {
-    return (
+  return (
+    <div className="bg-white">
       <Table>
         <TableHeader>
           <TableRow>
@@ -161,12 +141,6 @@ export const DashboardTable = ({
           </TableRow>
         </TableFooter>
       </Table>
-    );
-  };
-
-  return (
-    <div className="bg-white">
-      {renderTable()}
 
       <ApplicationDetailsSheet
         open={sheetOpen}
@@ -181,17 +155,11 @@ export const DashboardTable = ({
         messagesEndRef={messagesEndRef}
         userRole={userRole}
         handleApprove={handleApproveClick}
-        handleReject={handleRejectClick}
+        handleReject={handleReject}
         isSubmitting={isSubmitting}
         activeTab={activeTab}
-      />
-
-      <RejectDialog
-        open={rejectDialogOpen}
-        onOpenChange={setRejectDialogOpen}
         rejectMessage={rejectMessage}
         setRejectMessage={setRejectMessage}
-        onConfirm={handleRejectConfirm}
       />
     </div>
   );
