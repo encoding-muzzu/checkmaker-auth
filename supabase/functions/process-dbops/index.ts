@@ -25,6 +25,15 @@ serve(async (req) => {
       new_status 
     } = await req.json()
 
+    console.log('Received request with data:', {
+      application_number,
+      kit_no,
+      lrs_value,
+      itr_flag,
+      old_status,
+      new_status
+    })
+
     // Determine which endpoint to call based on status transition
     let endpoint = ''
     if (old_status === 1 && new_status === 2) {
@@ -37,7 +46,7 @@ serve(async (req) => {
 
     const url = `${DBOPS_API_BASE_URL}/${endpoint}?version=2&isBuilderFlow=false&isPublic=false`
     
-    console.log(`Calling ${endpoint} for application ${application_number}`)
+    console.log(`Calling ${endpoint} API at URL: ${url}`)
 
     const response = await fetch(url, {
       method: 'POST',
@@ -54,7 +63,9 @@ serve(async (req) => {
       })
     })
 
+    console.log(`API Response status: ${response.status}`)
     const result = await response.json()
+    console.log('API Response body:', result)
 
     if (!response.ok) {
       throw new Error(`API call failed: ${JSON.stringify(result)}`)
