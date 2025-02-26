@@ -47,40 +47,6 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
         throw new Error("Invalid approval action for current status");
       }
 
-      // For checker approval, call the DBOps API first
-      if (newStatusId === 2) {
-        const { data: dbopsResponse, error: dbopsError } = await supabase.functions.invoke('process-dbops', {
-          body: {
-            application_number: selectedRow.application_number,
-            kit_no: selectedRow.kit_no,
-            lrs_value: parseFloat(lrsAmount),
-            itr_flag: itrFlag,
-            old_status: selectedRow.status_id,
-            new_status: newStatusId
-          }
-        });
-
-        if (dbopsError || !dbopsResponse.success) {
-          throw new Error(dbopsError?.message || dbopsResponse?.error || 'Failed to process application');
-        }
-
-        // Check if there's a specific message in the response
-        if (dbopsResponse.data?.data?.message) {
-          try {
-            const parsedMessage = JSON.parse(dbopsResponse.data.data.message);
-            if (parsedMessage.title || parsedMessage.detail) {
-              throw new Error(parsedMessage.title || parsedMessage.detail);
-            }
-          } catch (e) {
-            // If parsing fails, use the original message
-            if (typeof dbopsResponse.data.data.message === 'string') {
-              throw new Error(dbopsResponse.data.data.message);
-            }
-          }
-        }
-      }
-
-      // Only update the status if the API call was successful (for checker) or if it's a maker action
       const { error } = await supabase
         .from('applications')
         .update({
@@ -91,6 +57,24 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
         .eq('id', selectedRow.id);
 
       if (error) throw error;
+
+      if (newStatusId === 2) {
+        // Call process-dbops function when checker approves
+        const { error: dbopsError } = await supabase.functions.invoke('process-dbops', {
+          body: {
+            application_number: selectedRow.application_number,
+            kit_no: selectedRow.kit_no,
+            lrs_value: parseFloat(lrsAmount),
+            itr_flag: itrFlag,
+            old_status: selectedRow.status_id,
+            new_status: newStatusId
+          }
+        });
+
+        if (dbopsError) {
+          throw new Error(`Failed to process application: ${dbopsError.message}`);
+        }
+      }
 
       await queryClient.invalidateQueries({ queryKey: ['applications'] });
 
