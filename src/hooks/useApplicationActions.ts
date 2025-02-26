@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ApplicationData } from "@/types/dashboard";
@@ -43,27 +42,6 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
       } else if (profile?.role === 'checker' && (selectedRow.status_id === 1 || selectedRow.status_id === 4)) {
         newStatusId = 2;
         successMessage = "Application has been approved by checker";
-        
-        // Call the DBOps API through our edge function when checker approves
-        try {
-          const { error: apiError } = await supabase.functions.invoke('process-dbops', {
-            body: {
-              application_number: selectedRow.application_number,
-              kit_no: selectedRow.kit_no,
-              lrs_value: parseFloat(lrsAmount),
-              itr_flag: itrFlag,
-              old_status: selectedRow.status_id,
-              new_status: newStatusId
-            }
-          });
-
-          if (apiError) {
-            throw new Error(`Failed to process DBOps: ${apiError.message}`);
-          }
-        } catch (apiError) {
-          console.error('DBOps API Error:', apiError);
-          throw new Error('Failed to process application in DBOps system');
-        }
       } else {
         throw new Error("Invalid approval action for current status");
       }
