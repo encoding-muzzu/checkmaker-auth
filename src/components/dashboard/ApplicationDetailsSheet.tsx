@@ -57,8 +57,23 @@ export const ApplicationDetailsSheet = ({
   const showButtons = selectedRow && !isCompleted;
   const isEditable = !isChecker && (selectedRow?.status_id === 0 || selectedRow?.status_id === 3) && !isCompleted;
   const [showRejectForm, setShowRejectForm] = useState(false);
-  const [hasViewedDocuments, setHasViewedDocuments] = useState(false);
+  const [viewedDocuments, setViewedDocuments] = useState<Set<string>>(new Set());
 
+  // Reset states when sheet is opened or closed
+  useEffect(() => {
+    if (!open) {
+      setViewedDocuments(new Set());
+      setShowRejectForm(false);
+      setRejectMessage('');
+      // Reset to initial values from selectedRow
+      if (selectedRow) {
+        setItrFlag(selectedRow.itr_flag === null ? "N" : String(selectedRow.itr_flag));
+        setLrsAmount(selectedRow.lrs_amount_consumed === null ? "0" : String(selectedRow.lrs_amount_consumed));
+      }
+    }
+  }, [open, selectedRow, setItrFlag, setLrsAmount, setRejectMessage]);
+
+  // Update initial values when selectedRow changes
   useEffect(() => {
     if (selectedRow) {
       setItrFlag(selectedRow.itr_flag === null ? "N" : String(selectedRow.itr_flag));
@@ -84,18 +99,13 @@ export const ApplicationDetailsSheet = ({
     }
   };
 
-  const handleApproveClick = async () => {
-    if (selectedRow?.documents?.length && !hasViewedDocuments) {
-      if (window.confirm('Please review the documents before approving. Would you like to view them now?')) {
-        return;
-      }
-    }
-    await handleApprove();
+  const onDocumentView = (documentPath: string) => {
+    setViewedDocuments(prev => new Set([...prev, documentPath]));
   };
 
-  const onDocumentView = () => {
-    setHasViewedDocuments(true);
-  };
+  const allDocumentsViewed = selectedRow?.documents?.every(doc => 
+    viewedDocuments.has(doc.path)
+  ) ?? true;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -110,7 +120,11 @@ export const ApplicationDetailsSheet = ({
 
           <div className="flex-1 overflow-y-auto p-6">
             <Accordion type="single" collapsible defaultValue="details" className="space-y-4">
-              <DocumentsSection documents={selectedRow?.documents} onDocumentView={onDocumentView} />
+              <DocumentsSection 
+                documents={selectedRow?.documents} 
+                onDocumentView={onDocumentView}
+                viewedDocuments={viewedDocuments}
+              />
               <CustomerDetailsSection 
                 customerDetails={customerDetails} 
                 itrFlag={itrFlag} 
@@ -164,21 +178,31 @@ export const ApplicationDetailsSheet = ({
 
           {showButtons && !showRejectForm && (
             <div className="p-6 border-t bg-white mt-auto">
-              <div className="flex justify-end gap-3">
-                <Button 
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px]" 
-                  onClick={handleApproveClick}
-                  disabled={isSubmitting || (selectedRow?.documents?.length ? !hasViewedDocuments : false)}
-                >
-                  {isSubmitting ? "Processing..." : "Approve"}
-                </Button>
-                <Button 
-                  className="bg-red-600 hover:bg-red-700 text-white rounded-[4px]" 
-                  onClick={handleRejectClick}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Processing..." : isChecker ? "Return" : "Reject"}
-                </Button>
+              <div className="flex flex-col gap-4">
+                {selectedRow?.documents?.length > 0 && !allDocumentsViewed && (
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-[4px] flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5 text-amber-500" />
+                    <p className="text-amber-700 text-sm">
+                      Please view all the documents to approve this application.
+                    </p>
+                  </div>
+                )}
+                <div className="flex justify-end gap-3">
+                  <Button 
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px]" 
+                    onClick={handleApprove}
+                    disabled={isSubmitting || (selectedRow?.documents?.length ? !allDocumentsViewed : false)}
+                  >
+                    {isSubmitting ? "Processing..." : "Approve"}
+                  </Button>
+                  <Button 
+                    className="bg-red-600 hover:bg-red-700 text-white rounded-[4px]" 
+                    onClick={handleRejectClick}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Processing..." : isChecker ? "Return" : "Reject"}
+                  </Button>
+                </div>
               </div>
             </div>
           )}

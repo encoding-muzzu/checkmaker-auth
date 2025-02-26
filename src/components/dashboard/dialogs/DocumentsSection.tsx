@@ -11,11 +11,12 @@ interface Document {
 }
 
 interface DocumentsSectionProps {
-  documents?: Document[];
-  onDocumentView?: () => void;
+  documents?: Document[] | null;
+  onDocumentView: (documentPath: string) => void;
+  viewedDocuments: Set<string>;
 }
 
-export const DocumentsSection = ({ documents, onDocumentView }: DocumentsSectionProps) => {
+export const DocumentsSection = ({ documents, onDocumentView, viewedDocuments }: DocumentsSectionProps) => {
   const hasDocuments = documents && documents.length > 0;
 
   const handleViewDocument = async (doc: Document) => {
@@ -26,7 +27,7 @@ export const DocumentsSection = ({ documents, onDocumentView }: DocumentsSection
 
       if (data?.signedUrl) {
         window.open(data.signedUrl, '_blank');
-        onDocumentView?.();
+        onDocumentView(doc.path);
       }
     } catch (error) {
       console.error('Error viewing document:', error);
@@ -42,11 +43,13 @@ export const DocumentsSection = ({ documents, onDocumentView }: DocumentsSection
       if (error) throw error;
 
       const url = window.URL.createObjectURL(data);
-      const a = window.document.createElement('a');
+      const a = document.createElement('a');
       a.href = url;
       a.download = doc.name;
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading document:', error);
     }
@@ -83,11 +86,11 @@ export const DocumentsSection = ({ documents, onDocumentView }: DocumentsSection
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="flex items-center gap-1 hover:bg-gray-100 rounded-[4px] border-black text-black"
+                      className={`flex items-center gap-1 hover:bg-gray-100 rounded-[4px] border-black ${viewedDocuments.has(doc.path) ? 'bg-emerald-50 text-emerald-600' : 'text-black'}`}
                       onClick={() => handleViewDocument(doc)}
                     >
                       <Eye className="h-4 w-4" />
-                      View
+                      {viewedDocuments.has(doc.path) ? 'Viewed' : 'View'}
                     </Button>
                   </div>
                 </div>
