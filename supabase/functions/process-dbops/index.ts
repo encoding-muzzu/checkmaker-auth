@@ -29,7 +29,8 @@ serve(async (req) => {
 
     // Only process if status is changing to 2 (checker approval)
     if ((old_status === 1 || old_status === 4) && new_status === 2) {
-      const endpoint = old_status === 1 ? 'approveDBOps' : 'rejectDBOps'
+      // Always use approveDBOps when checker is approving, regardless of old status
+      const endpoint = 'approveDBOps'
       const url = `${DBOPS_API_BASE_URL}/${endpoint}?version=2&isBuilderFlow=false&isPublic=false`
       
       console.log(`Calling ${endpoint} API at URL: ${url}`)
@@ -53,8 +54,21 @@ serve(async (req) => {
       const result = await response.json()
       console.log('API Response:', result)
 
-      if (!response.ok) {
-        throw new Error(`API call failed: ${JSON.stringify(result)}`)
+      if (!response.ok || (result.data?.status === 'Failure')) {
+        let errorMessage = 'API call failed';
+        
+        if (result.data?.message) {
+          try {
+            const parsedMessage = JSON.parse(result.data.message);
+            errorMessage = parsedMessage.title || parsedMessage.detail || errorMessage;
+          } catch {
+            errorMessage = result.data.message;
+          }
+        } else if (result.message) {
+          errorMessage = result.message;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       return new Response(
