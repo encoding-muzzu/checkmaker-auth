@@ -53,8 +53,20 @@ serve(async (req) => {
       const result = await response.json()
       console.log('API Response:', result)
 
-      if (!response.ok) {
-        throw new Error(`API call failed: ${JSON.stringify(result)}`)
+      // Check if the response contains error details
+      if (!response.ok || (result.data?.status === 'Failure')) {
+        let errorMessage = 'API call failed';
+        
+        if (result.data?.message) {
+          try {
+            const parsedMessage = JSON.parse(result.data.message);
+            errorMessage = parsedMessage.title || parsedMessage.detail || errorMessage;
+          } catch {
+            errorMessage = result.data.message;
+          }
+        }
+        
+        throw new Error(errorMessage);
       }
 
       return new Response(

@@ -47,20 +47,9 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
         throw new Error("Invalid approval action for current status");
       }
 
-      const { error } = await supabase
-        .from('applications')
-        .update({
-          itr_flag: itrFlag,
-          lrs_amount_consumed: parseFloat(lrsAmount),
-          status_id: newStatusId
-        })
-        .eq('id', selectedRow.id);
-
-      if (error) throw error;
-
+      // For checker approval, call the DBOps API first
       if (newStatusId === 2) {
-        // Call process-dbops function when checker approves
-        const { error: dbopsError } = await supabase.functions.invoke('process-dbops', {
+        const { data: dbopsResponse, error: dbopsError } = await supabase.functions.invoke('process-dbops', {
           body: {
             application_number: selectedRow.application_number,
             kit_no: selectedRow.kit_no,
@@ -71,10 +60,37 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
           }
         });
 
-        if (dbopsError) {
-          throw new Error(`Failed to process application: ${dbopsError.message}`);
+        if (dbopsError || !dbopsResponse.success) {
+          throw new Error(dbopsError?.message || dbopsResponse?.error || 'Failed to process application');
+        }
+
+        // Check if there's a specific message in the response
+        if (dbopsResponse.data?.data?.message) {
+          try {
+            const parsedMessage = JSON.parse(dbopsResponse.data.data.message);
+            if (parsedMessage.title || parsedMessage.detail) {
+              throw new Error(parsedMessage.title || parsedMessage.detail);
+            }
+          } catch (e) {
+            // If parsing fails, use the original message
+            if (typeof dbopsResponse.data.data.message === 'string') {
+              throw new Error(dbopsResponse.data.data.message);
+            }
+          }
         }
       }
+
+      // Only update the status if the API call was successful (for checker) or if it's a maker action
+      const { error } = await supabase
+        .from('applications')
+        .update({
+          itr_flag: itrFlag,
+          lrs_amount_consumed: parseFloat(lrsAmount),
+          status_id: newStatusId
+        })
+        .eq('id', selectedRow.id);
+
+      if (error) throw error;
 
       await queryClient.invalidateQueries({ queryKey: ['applications'] });
 
