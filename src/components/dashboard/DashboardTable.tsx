@@ -87,7 +87,7 @@ export const DashboardTable = ({
         <TableHeader>
           <TableRow>
             <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Created At</TableHead>
-            <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Application ID</TableHead>
+            <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Application Number</TableHead>
             <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Status</TableHead>
             <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Action</TableHead>
           </TableRow>
@@ -102,7 +102,7 @@ export const DashboardTable = ({
                   {format(new Date(row.created_at), 'MMM d, yyyy, h:mm a')}
                 </TableCell>
                 <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>
-                  {row.id}
+                  {row.application_number || '-'}
                 </TableCell>
                 <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
                   <span className={`px-[10px] py-[3px] rounded-[10px] ${getStatusColor(row.status_id)}`}>
@@ -176,4 +176,3 @@ export const DashboardTable = ({
     </div>
   );
 };
-

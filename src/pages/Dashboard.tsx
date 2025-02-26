@@ -9,7 +9,7 @@ import { DashboardTable } from "@/components/dashboard/DashboardTable";
 import { supabase } from "@/integrations/supabase/client";
 
 const searchableColumns = [
-  { value: "id", label: "Application ID" },
+  { value: "application_number", label: "Application Number" },
   { value: "arn", label: "ARN" },
   { value: "kit_no", label: "Kit No" },
   { value: "customer_name", label: "Customer Name" },
