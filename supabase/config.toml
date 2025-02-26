@@ -1,3 +1,6 @@
 
 [functions.create-application]
 verify_jwt = false
+
+[functions.process-dbops]
+verify_jwt = false
