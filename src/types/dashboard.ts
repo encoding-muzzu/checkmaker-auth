@@ -18,17 +18,10 @@ export interface ApplicationData {
   status_name: string;
   lrs_amount_consumed: number;
   assigned_to?: string;
+  application_number?: string | null;
   documents: {
     name: string;
     path: string;
     type: string;
   }[] | null;
-}
-
-export interface ApplicationComment {
-  id: string;
-  application_id: string;
-  comment: string;
-  type: 'rejection' | 'return' | 'comment';
-  created_at: string;
 }

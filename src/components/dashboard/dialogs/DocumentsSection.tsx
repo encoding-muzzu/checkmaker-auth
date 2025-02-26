@@ -12,9 +12,10 @@ interface Document {
 
 interface DocumentsSectionProps {
   documents?: Document[];
+  onDocumentView?: () => void;
 }
 
-export const DocumentsSection = ({ documents }: DocumentsSectionProps) => {
+export const DocumentsSection = ({ documents, onDocumentView }: DocumentsSectionProps) => {
   const hasDocuments = documents && documents.length > 0;
 
   const handleViewDocument = async (doc: Document) => {
@@ -25,6 +26,7 @@ export const DocumentsSection = ({ documents }: DocumentsSectionProps) => {
 
       if (data?.signedUrl) {
         window.open(data.signedUrl, '_blank');
+        onDocumentView?.();
       }
     } catch (error) {
       console.error('Error viewing document:', error);

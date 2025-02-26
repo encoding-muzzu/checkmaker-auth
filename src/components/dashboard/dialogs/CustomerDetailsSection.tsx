@@ -1,3 +1,4 @@
+
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -13,6 +14,19 @@ interface CustomerDetailsSectionProps {
   userRole: string | null;
   isEditable: boolean;
 }
+
+const getItrFlagDisplay = (flag: string) => {
+  switch(flag) {
+    case "Y":
+      return "Yes";
+    case "N":
+      return "No";
+    case "U":
+      return "Unknown";
+    default:
+      return flag;
+  }
+};
 
 export const CustomerDetailsSection = ({
   customerDetails,
@@ -46,13 +60,13 @@ export const CustomerDetailsSection = ({
           <div className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
             <span className="text-gray-600 my-auto">ITR Flag</span>
             {!isEditable ? (
-              <span className="font-medium text-black">{itrFlag === "true" ? "Yes" : "No"}</span>
+              <span className="font-medium text-black">{getItrFlagDisplay(itrFlag)}</span>
             ) : (
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">{itrFlag === "true" ? "Yes" : "No"}</span>
+                <span className="text-sm text-gray-600">{getItrFlagDisplay(itrFlag)}</span>
                 <Switch 
-                  checked={itrFlag === "true"}
-                  onCheckedChange={(checked) => setItrFlag(checked ? "true" : "false")}
+                  checked={itrFlag === "Y"}
+                  onCheckedChange={(checked) => setItrFlag(checked ? "Y" : "N")}
                   className="data-[state=checked]:bg-black"
                 />
               </div>

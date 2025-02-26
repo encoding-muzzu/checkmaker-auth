@@ -57,10 +57,11 @@ export const ApplicationDetailsSheet = ({
   const showButtons = selectedRow && !isCompleted;
   const isEditable = !isChecker && (selectedRow?.status_id === 0 || selectedRow?.status_id === 3) && !isCompleted;
   const [showRejectForm, setShowRejectForm] = useState(false);
+  const [hasViewedDocuments, setHasViewedDocuments] = useState(false);
 
   useEffect(() => {
     if (selectedRow) {
-      setItrFlag(selectedRow.itr_flag === null ? "false" : String(selectedRow.itr_flag));
+      setItrFlag(selectedRow.itr_flag === null ? "N" : String(selectedRow.itr_flag));
       setLrsAmount(selectedRow.lrs_amount_consumed === null ? "0" : String(selectedRow.lrs_amount_consumed));
     }
   }, [selectedRow, setItrFlag, setLrsAmount]);
@@ -83,6 +84,19 @@ export const ApplicationDetailsSheet = ({
     }
   };
 
+  const handleApproveClick = async () => {
+    if (selectedRow?.documents?.length && !hasViewedDocuments) {
+      if (window.confirm('Please review the documents before approving. Would you like to view them now?')) {
+        return;
+      }
+    }
+    await handleApprove();
+  };
+
+  const onDocumentView = () => {
+    setHasViewedDocuments(true);
+  };
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent 
@@ -96,7 +110,7 @@ export const ApplicationDetailsSheet = ({
 
           <div className="flex-1 overflow-y-auto p-6">
             <Accordion type="single" collapsible defaultValue="details" className="space-y-4">
-              <DocumentsSection documents={selectedRow?.documents} />
+              <DocumentsSection documents={selectedRow?.documents} onDocumentView={onDocumentView} />
               <CustomerDetailsSection 
                 customerDetails={customerDetails} 
                 itrFlag={itrFlag} 
@@ -153,8 +167,8 @@ export const ApplicationDetailsSheet = ({
               <div className="flex justify-end gap-3">
                 <Button 
                   className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px]" 
-                  onClick={handleApprove} 
-                  disabled={isSubmitting}
+                  onClick={handleApproveClick}
+                  disabled={isSubmitting || (selectedRow?.documents?.length ? !hasViewedDocuments : false)}
                 >
                   {isSubmitting ? "Processing..." : "Approve"}
                 </Button>

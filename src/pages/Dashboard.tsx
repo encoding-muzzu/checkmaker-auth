@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useDashboard } from "@/hooks/useDashboard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -63,6 +62,10 @@ const Dashboard = () => {
 
     fetchUserRole();
   }, [setUserRole]);
+
+  useEffect(() => {
+    setSearchColumn("application_number");
+  }, [setSearchColumn]);
 
   const pageSize = parseInt(entriesPerPage);
   const filteredData = getFilteredApplications();
