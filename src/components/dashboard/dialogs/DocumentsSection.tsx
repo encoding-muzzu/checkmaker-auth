@@ -1,8 +1,9 @@
 
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Files, Download, Eye } from "lucide-react";
+import { Files, Download, Eye, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
 interface Document {
   name: string;
@@ -11,12 +12,13 @@ interface Document {
 }
 
 interface DocumentsSectionProps {
-  documents?: Document[];
+  documents?: Document[] | null;
   onDocumentView?: () => void;
 }
 
 export const DocumentsSection = ({ documents, onDocumentView }: DocumentsSectionProps) => {
   const hasDocuments = documents && documents.length > 0;
+  const [viewedDocuments, setViewedDocuments] = useState<Set<string>>(new Set());
 
   const handleViewDocument = async (doc: Document) => {
     try {
@@ -26,7 +28,10 @@ export const DocumentsSection = ({ documents, onDocumentView }: DocumentsSection
 
       if (data?.signedUrl) {
         window.open(data.signedUrl, '_blank');
-        onDocumentView?.();
+        setViewedDocuments(prev => new Set([...prev, doc.path]));
+        if (documents && viewedDocuments.size + 1 === documents.length) {
+          onDocumentView?.();
+        }
       }
     } catch (error) {
       console.error('Error viewing document:', error);
@@ -42,11 +47,13 @@ export const DocumentsSection = ({ documents, onDocumentView }: DocumentsSection
       if (error) throw error;
 
       const url = window.URL.createObjectURL(data);
-      const a = window.document.createElement('a');
+      const a = document.createElement('a');
       a.href = url;
       a.download = doc.name;
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading document:', error);
     }
@@ -83,16 +90,24 @@ export const DocumentsSection = ({ documents, onDocumentView }: DocumentsSection
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="flex items-center gap-1 hover:bg-gray-100 rounded-[4px] border-black text-black"
+                      className={`flex items-center gap-1 hover:bg-gray-100 rounded-[4px] border-black ${viewedDocuments.has(doc.path) ? 'bg-emerald-50 text-emerald-600' : 'text-black'}`}
                       onClick={() => handleViewDocument(doc)}
                     >
                       <Eye className="h-4 w-4" />
-                      View
+                      {viewedDocuments.has(doc.path) ? 'Viewed' : 'View'}
                     </Button>
                   </div>
                 </div>
               </div>
             ))}
+            {documents.length > 0 && viewedDocuments.size < documents.length && (
+              <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-[4px] flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-amber-500" />
+                <p className="text-amber-700 text-sm">
+                  Please view all the documents to approve this application.
+                </p>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center p-8 border rounded-[4px] bg-gray-50/50">

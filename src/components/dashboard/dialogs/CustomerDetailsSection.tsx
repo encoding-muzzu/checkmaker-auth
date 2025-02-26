@@ -38,6 +38,8 @@ export const CustomerDetailsSection = ({
   userRole,
   isEditable
 }: CustomerDetailsSectionProps) => {
+  const showToggle = itrFlag !== "U" && !["Y", "N", "U"].includes(itrFlag);
+
   return (
     <AccordionItem value="details" className="border rounded-[4px] shadow-sm">
       <AccordionTrigger className="px-4 hover:no-underline">
@@ -59,7 +61,7 @@ export const CustomerDetailsSection = ({
           ))}
           <div className="flex justify-between p-4 border rounded-[4px] bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
             <span className="text-gray-600 my-auto">ITR Flag</span>
-            {!isEditable ? (
+            {!isEditable || !showToggle ? (
               <span className="font-medium text-black">{getItrFlagDisplay(itrFlag)}</span>
             ) : (
               <div className="flex items-center gap-2">
