@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,117 +9,63 @@ const corsHeaders = {
 const DBOPS_API_BASE_URL = 'https://hdfcprepaid-uat-workflow.m2pfintech.dev/core/api/v2/workflows'
 const DBOPS_API_TOKEN = Deno.env.get('DBOPS_API_TOKEN')
 
-interface QueueItem {
-  id: string
-  application_id: string
-  old_status: number
-  new_status: number
-  application_number: string
-  kit_no: string
-  lrs_amount_consumed: number
-  itr_flag: string
-  retries: number
-}
-
-async function processQueueItem(item: QueueItem) {
-  const { old_status, new_status } = item
-  let endpoint = ''
-
-  if (old_status === 1 && new_status === 2) {
-    endpoint = 'approveDBOps'
-  } else if (old_status === 4 && new_status === 2) {
-    endpoint = 'rejectDBOps'
-  } else {
-    console.error(`Invalid status transition: ${old_status} -> ${new_status}`)
-    return false
-  }
-
-  const url = `${DBOPS_API_BASE_URL}/${endpoint}?version=2&isBuilderFlow=false&isPublic=false`
-  
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${DBOPS_API_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        applicationNumber: item.application_number,
-        kitNo: item.kit_no,
-        lrsValue: item.lrs_amount_consumed,
-        itrFlag: item.itr_flag
-      })
-    })
-
-    if (!response.ok) {
-      throw new Error(`API call failed with status ${response.status}`)
-    }
-
-    return true
-  } catch (error) {
-    console.error('Error calling DBOps API:', error)
-    return false
-  }
-}
-
 serve(async (req) => {
+  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // Initialize Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    const { 
+      application_number, 
+      kit_no, 
+      lrs_value, 
+      itr_flag,
+      old_status,
+      new_status 
+    } = await req.json()
 
-    // Get unprocessed queue items
-    const { data: queueItems, error: fetchError } = await supabaseClient
-      .from('application_status_queue')
-      .select('*')
-      .is('processed_at', null)
-      .lt('retries', 3)
-      .order('created_at', { ascending: true })
-      .limit(10)
-
-    if (fetchError) {
-      throw fetchError
+    // Determine which endpoint to call based on status transition
+    let endpoint = ''
+    if (old_status === 1 && new_status === 2) {
+      endpoint = 'approveDBOps'
+    } else if (old_status === 4 && new_status === 2) {
+      endpoint = 'rejectDBOps'
+    } else {
+      throw new Error(`Invalid status transition: ${old_status} -> ${new_status}`)
     }
 
-    console.log(`Processing ${queueItems?.length || 0} queue items`)
+    const url = `${DBOPS_API_BASE_URL}/${endpoint}?version=2&isBuilderFlow=false&isPublic=false`
+    
+    console.log(`Calling ${endpoint} for application ${application_number}`)
 
-    // Process each queue item
-    for (const item of queueItems || []) {
-      console.log(`Processing queue item ${item.id}`)
-      
-      const success = await processQueueItem(item)
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${DBOPS_API_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        applicationNumber: application_number,
+        kitNo: kit_no,
+        lrsValue: lrs_value,
+        itrFlag: itr_flag
+      })
+    })
 
-      if (success) {
-        // Mark as processed
-        await supabaseClient
-          .from('application_status_queue')
-          .update({
-            processed_at: new Date().toISOString(),
-          })
-          .eq('id', item.id)
-      } else {
-        // Increment retry count
-        await supabaseClient
-          .from('application_status_queue')
-          .update({
-            retries: item.retries + 1,
-            error: 'Failed to process item'
-          })
-          .eq('id', item.id)
-      }
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(`API call failed: ${JSON.stringify(result)}`)
     }
+
+    console.log(`Successfully processed ${endpoint} for application ${application_number}`)
 
     return new Response(
       JSON.stringify({ 
-        success: true, 
-        processed: queueItems?.length || 0 
+        success: true,
+        data: result
       }),
       { 
         headers: { 
@@ -130,11 +75,12 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error processing request:', error)
+    
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message 
+      JSON.stringify({
+        success: false,
+        error: error.message
       }),
       { 
         status: 500,
