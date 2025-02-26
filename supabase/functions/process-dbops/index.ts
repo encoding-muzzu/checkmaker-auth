@@ -1,5 +1,5 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.8'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,8 +8,6 @@ const corsHeaders = {
 
 const DBOPS_API_BASE_URL = 'https://hdfcprepaid-uat-workflow.m2pfintech.dev/core/api/v2/workflows'
 const DBOPS_API_TOKEN = Deno.env.get('DBOPS_API_TOKEN')
-const supabaseUrl = Deno.env.get('SUPABASE_URL')
-const supabaseServiceRole = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
 serve(async (req) => {
   // Handle CORS
@@ -18,68 +16,66 @@ serve(async (req) => {
   }
 
   try {
-    // Initialize Supabase client with service role
-    const supabase = createClient(supabaseUrl!, supabaseServiceRole!)
+    const { application_number, kit_no, lrs_value, itr_flag, old_status, new_status } = await req.json()
+    
+    console.log('Received request:', {
+      application_number,
+      kit_no,
+      lrs_value,
+      itr_flag,
+      old_status,
+      new_status
+    })
 
-    // Subscribe to realtime changes on applications table
-    const changes = await supabase
-      .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'applications',
+    // Only process if status is changing to 2 (checker approval)
+    if ((old_status === 1 || old_status === 4) && new_status === 2) {
+      const endpoint = old_status === 1 ? 'approveDBOps' : 'rejectDBOps'
+      const url = `${DBOPS_API_BASE_URL}/${endpoint}?version=2&isBuilderFlow=false&isPublic=false`
+      
+      console.log(`Calling ${endpoint} API at URL: ${url}`)
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${DBOPS_API_TOKEN}`,
+          'Content-Type': 'application/json'
         },
-        async (payload: any) => {
-          console.log('Change received:', payload)
-          const { old_record, new_record } = payload
+        body: JSON.stringify({
+          applicationNumber: application_number,
+          kitNo: kit_no,
+          lrsValue: lrs_value,
+          itrFlag: itr_flag
+        })
+      })
 
-          // Only process if status is changing to 2 (checker approval)
-          if ((old_record.status_id === 1 || old_record.status_id === 4) && new_record.status_id === 2) {
-            const endpoint = old_record.status_id === 1 ? 'approveDBOps' : 'rejectDBOps'
-            const url = `${DBOPS_API_BASE_URL}/${endpoint}?version=2&isBuilderFlow=false&isPublic=false`
-            
-            console.log(`Calling ${endpoint} API at URL: ${url}`)
+      console.log(`API Response status: ${response.status}`)
+      const result = await response.json()
+      console.log('API Response:', result)
 
-            try {
-              const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                  'Accept': 'application/json',
-                  'Authorization': `Bearer ${DBOPS_API_TOKEN}`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  applicationNumber: new_record.application_number,
-                  kitNo: new_record.kit_no,
-                  lrsValue: new_record.lrs_amount_consumed,
-                  itrFlag: new_record.itr_flag
-                })
-              })
+      if (!response.ok) {
+        throw new Error(`API call failed: ${JSON.stringify(result)}`)
+      }
 
-              console.log(`API Response status: ${response.status}`)
-              const result = await response.json()
-              console.log('API Response:', result)
-
-              if (!response.ok) {
-                throw new Error(`API call failed: ${JSON.stringify(result)}`)
-              }
-
-              console.log(`Successfully processed ${endpoint} for application ${new_record.application_number}`)
-            } catch (error) {
-              console.error('Error calling DBOps API:', error)
-              // Log the error but don't throw to keep the subscription alive
-            }
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          data: result,
+          message: `Successfully processed ${endpoint} for application ${application_number}`
+        }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json'
           }
         }
       )
-      .subscribe()
+    }
 
     return new Response(
       JSON.stringify({ 
         success: true,
-        message: "Successfully subscribed to application changes" 
+        message: "No action needed for this status change" 
       }),
       { 
         headers: { 

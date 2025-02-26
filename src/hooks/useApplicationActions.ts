@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ApplicationData } from "@/types/dashboard";
@@ -56,6 +57,24 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
         .eq('id', selectedRow.id);
 
       if (error) throw error;
+
+      if (newStatusId === 2) {
+        // Call process-dbops function when checker approves
+        const { error: dbopsError } = await supabase.functions.invoke('process-dbops', {
+          body: {
+            application_number: selectedRow.application_number,
+            kit_no: selectedRow.kit_no,
+            lrs_value: parseFloat(lrsAmount),
+            itr_flag: itrFlag,
+            old_status: selectedRow.status_id,
+            new_status: newStatusId
+          }
+        });
+
+        if (dbopsError) {
+          throw new Error(`Failed to process application: ${dbopsError.message}`);
+        }
+      }
 
       await queryClient.invalidateQueries({ queryKey: ['applications'] });
 
