@@ -64,7 +64,7 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
           body: {
             application_number: selectedRow.application_number,
             kit_no: selectedRow.kit_no,
-            lrs_value: parseFloat(lrsAmount),
+            lrs_value: lrsAmount.toString(), // Convert to string here
             itr_flag: itrFlag,
             old_status: selectedRow.status_id,
             new_status: newStatusId
