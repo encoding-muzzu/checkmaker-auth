@@ -29,10 +29,20 @@ serve(async (req) => {
 
     // Only process if status is changing to 2 (checker approval)
     if ((old_status === 1 || old_status === 4) && new_status === 2) {
-      const endpoint = old_status === 1 ? 'approveDBOps' : 'rejectDBOps'
+      const endpoint = 'approveDBOps'
       const url = `${DBOPS_API_BASE_URL}/${endpoint}?version=2&isBuilderFlow=false&isPublic=false`
       
       console.log(`Calling ${endpoint} API at URL: ${url}`)
+
+      // Convert lrs_value to string for the API request
+      const apiPayload = {
+        applicationNumber: application_number,
+        kitNo: kit_no,
+        lrsValue: lrs_value.toString(), // Convert to string here
+        itrFlag: itr_flag
+      }
+
+      console.log('Sending API payload:', apiPayload)
 
       const response = await fetch(url, {
         method: 'POST',
@@ -41,20 +51,26 @@ serve(async (req) => {
           'Authorization': `Bearer ${DBOPS_API_TOKEN}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          applicationNumber: application_number,
-          kitNo: kit_no,
-          lrsValue: lrs_value,
-          itrFlag: itr_flag
-        })
+        body: JSON.stringify(apiPayload)
       })
 
       console.log(`API Response status: ${response.status}`)
       const result = await response.json()
       console.log('API Response:', result)
 
-      if (!response.ok) {
-        throw new Error(`API call failed: ${JSON.stringify(result)}`)
+      if (!response.ok || (result.data?.status === 'Failure')) {
+        let errorMessage = 'API call failed';
+        
+        if (result.data?.message) {
+          try {
+            const parsedMessage = JSON.parse(result.data.message);
+            errorMessage = parsedMessage.title || parsedMessage.detail || errorMessage;
+          } catch {
+            errorMessage = result.data.message;
+          }
+        }
+        
+        throw new Error(errorMessage);
       }
 
       return new Response(
