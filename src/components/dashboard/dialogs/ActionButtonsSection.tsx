@@ -34,7 +34,7 @@ export const ActionButtonsSection = ({
         )}
         <div className="flex justify-end gap-3">
           <Button 
-            className="bg-black hover:bg-gray-800 text-white rounded-[4px]" 
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px]" 
             onClick={handleApprove}
             disabled={isSubmitting || (documentsExist ? !allDocumentsViewed : false) || lrsLimitExceeded}
           >
