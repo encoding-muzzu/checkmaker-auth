@@ -19,7 +19,8 @@ interface DocumentsSectionProps {
 export const DocumentsSection = ({ documents, onDocumentView, viewedDocuments }: DocumentsSectionProps) => {
   const hasDocuments = documents && documents.length > 0;
   const [documentUrls, setDocumentUrls] = useState<Record<string, string>>({});
-
+  
+  // Only fetch URLs once when the component mounts or when documents change
   useEffect(() => {
     if (!hasDocuments) return;
     
@@ -28,6 +29,9 @@ export const DocumentsSection = ({ documents, onDocumentView, viewedDocuments }:
       
       for (const doc of documents!) {
         try {
+          // Check if we already have a URL for this document
+          if (documentUrls[doc.path]) continue;
+          
           const { data } = await supabase.storage
             .from('customer_documents')
             .createSignedUrl(doc.path, 3600); // 1 hour expiry
@@ -42,14 +46,18 @@ export const DocumentsSection = ({ documents, onDocumentView, viewedDocuments }:
         }
       }
       
-      setDocumentUrls(urls);
+      setDocumentUrls(prev => ({ ...prev, ...urls }));
     };
     
     fetchDocumentUrls();
-  }, [documents, hasDocuments, onDocumentView]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [documents, hasDocuments]);
 
   return (
-    <AccordionItem value="documents" className="border rounded-[4px] shadow-sm">
+    <AccordionItem 
+      value="documents" 
+      className="border rounded-[4px] shadow-sm"
+    >
       <AccordionTrigger className="px-4 hover:no-underline">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold text-black">Customer Documents</h2>
