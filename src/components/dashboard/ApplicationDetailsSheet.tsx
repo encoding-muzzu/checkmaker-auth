@@ -61,10 +61,6 @@ export const ApplicationDetailsSheet = ({
   const [charCount, setCharCount] = useState(0);
   const [exceedsLimit, setExceedsLimit] = useState(false);
   const maxCharLimit = 200;
-  
-  // Determine default accordion value
-  const hasDocuments = selectedRow?.documents && selectedRow.documents.length > 0;
-  const defaultAccordionValue = hasDocuments ? "documents" : "details";
 
   // Reset states when sheet is opened or closed
   useEffect(() => {
@@ -143,7 +139,7 @@ export const ApplicationDetailsSheet = ({
           </div>
 
           <div className="flex-1 overflow-y-auto p-6">
-            <Accordion type="single" collapsible defaultValue={defaultAccordionValue} className="space-y-4">
+            <Accordion type="single" collapsible defaultValue="details" className="space-y-4">
               <DocumentsSection 
                 documents={selectedRow?.documents} 
                 onDocumentView={onDocumentView}
