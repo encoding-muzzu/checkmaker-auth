@@ -1,14 +1,14 @@
 
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { ApplicationData } from "@/types/dashboard";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Accordion } from "@/components/ui/accordion";
 import { DocumentsSection } from "./dialogs/DocumentsSection";
 import { CustomerDetailsSection } from "./dialogs/CustomerDetailsSection";
 import { CommentsSection } from "./dialogs/CommentsSection";
 import { RefObject, useEffect, useState } from "react";
-import { AlertCircle, X } from "lucide-react";
+import { RejectFormSection } from "./dialogs/RejectFormSection";
+import { ActionButtonsSection } from "./dialogs/ActionButtonsSection";
+import { LrsLimitWarning } from "./dialogs/LrsLimitWarning";
 
 interface ApplicationDetailsSheetProps {
   open: boolean;
@@ -159,97 +159,37 @@ export const ApplicationDetailsSheet = ({
             </Accordion>
 
             {lrsLimitExceeded && (
-              <div className="mt-4 mb-2 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-amber-500" />
-                <p className="text-amber-700 text-sm">
-                  Warning: Total amount ($
-                  {totalAmountLoaded.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}) 
-                  plus LRS amount (${lrsAmountValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}) 
-                  exceeds $250,000 limit. Approval is not allowed.
-                </p>
-              </div>
+              <LrsLimitWarning 
+                totalAmountLoaded={totalAmountLoaded} 
+                lrsAmountValue={lrsAmountValue} 
+              />
             )}
 
             {showRejectForm && (
-              <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5 text-red-500" />
-                    <h3 className="text-lg font-semibold text-red-700">
-                      {isChecker ? 'Return Application' : 'Reject Application'}
-                    </h3>
-                  </div>
-                  <button onClick={handleCancelReject} className="text-gray-500 hover:text-gray-700">
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-                <div className="relative">
-                  <Textarea
-                    value={rejectMessage}
-                    onChange={handleMessageChange}
-                    placeholder={`Enter your ${isChecker ? 'return' : 'rejection'} reason here...`}
-                    className={`min-h-[120px] resize-none ${exceedsLimit ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-red-200 focus:border-red-500 focus:ring-red-500'} mb-1`}
-                    maxLength={maxCharLimit}
-                  />
-                  <div className="flex justify-end text-sm">
-                    <span className={`${exceedsLimit ? 'text-red-500 font-medium' : 'text-gray-500'}`}>
-                      {charCount}/{maxCharLimit} characters
-                    </span>
-                  </div>
-                  {exceedsLimit && (
-                    <p className="text-red-500 text-sm mt-1">
-                      Message exceeds maximum character limit of {maxCharLimit}.
-                    </p>
-                  )}
-                </div>
-                <div className="flex justify-end gap-3 mt-3">
-                  <Button
-                    variant="outline"
-                    onClick={handleCancelReject}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleConfirmReject}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                    disabled={!rejectMessage.trim() || exceedsLimit || isSubmitting}
-                  >
-                    {isSubmitting ? "Processing..." : isChecker ? "Confirm Return" : "Confirm Reject"}
-                  </Button>
-                </div>
-              </div>
+              <RejectFormSection 
+                isChecker={isChecker}
+                rejectMessage={rejectMessage}
+                handleMessageChange={handleMessageChange}
+                charCount={charCount}
+                exceedsLimit={exceedsLimit}
+                maxCharLimit={maxCharLimit}
+                handleCancelReject={handleCancelReject}
+                handleConfirmReject={handleConfirmReject}
+                isSubmitting={isSubmitting}
+              />
             )}
           </div>
 
           {showButtons && !showRejectForm && (
-            <div className="p-6 border-t bg-white mt-auto">
-              <div className="flex flex-col gap-4">
-                {selectedRow?.documents?.length > 0 && !allDocumentsViewed && (
-                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-[4px] flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5 text-amber-500" />
-                    <p className="text-amber-700 text-sm">
-                      Please view all the documents to approve this application.
-                    </p>
-                  </div>
-                )}
-                <div className="flex justify-end gap-3">
-                  <Button 
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px]" 
-                    onClick={handleApprove}
-                    disabled={isSubmitting || (selectedRow?.documents?.length ? !allDocumentsViewed : false) || lrsLimitExceeded}
-                  >
-                    {isSubmitting ? "Processing..." : "Approve"}
-                  </Button>
-                  <Button 
-                    className="bg-red-600 hover:bg-red-700 text-white rounded-[4px]" 
-                    onClick={handleRejectClick}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "Processing..." : isChecker ? "Return" : "Reject"}
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <ActionButtonsSection 
+              allDocumentsViewed={allDocumentsViewed}
+              documentsExist={Boolean(selectedRow?.documents?.length)}
+              isSubmitting={isSubmitting}
+              handleApprove={handleApprove}
+              handleRejectClick={handleRejectClick}
+              isChecker={isChecker}
+              lrsLimitExceeded={lrsLimitExceeded}
+            />
           )}
         </div>
       </SheetContent>
