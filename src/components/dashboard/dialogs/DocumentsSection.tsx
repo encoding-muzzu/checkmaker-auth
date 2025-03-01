@@ -28,25 +28,32 @@ export const DocumentsSection = ({ documents, onDocumentView, viewedDocuments }:
       
       for (const doc of documents!) {
         try {
-          const { data } = await supabase.storage
-            .from('customer_documents')
-            .createSignedUrl(doc.path, 3600); // 1 hour expiry
-            
-          if (data?.signedUrl) {
-            urls[doc.path] = data.signedUrl;
-            // Mark document as viewed when loaded
-            onDocumentView(doc.path);
+          // Only fetch URL if we don't already have it
+          if (!documentUrls[doc.path]) {
+            const { data } = await supabase.storage
+              .from('customer_documents')
+              .createSignedUrl(doc.path, 3600); // 1 hour expiry
+              
+            if (data?.signedUrl) {
+              urls[doc.path] = data.signedUrl;
+              // Mark document as viewed when loaded
+              onDocumentView(doc.path);
+            }
           }
         } catch (error) {
           console.error('Error creating signed URL for document:', error);
         }
       }
       
-      setDocumentUrls(urls);
+      if (Object.keys(urls).length > 0) {
+        setDocumentUrls(prev => ({ ...prev, ...urls }));
+      }
     };
     
     fetchDocumentUrls();
-  }, [documents, hasDocuments, onDocumentView]);
+    // Only run this effect when documents list changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [documents]);
 
   return (
     <AccordionItem value="documents" className="border rounded-[4px] shadow-sm">
