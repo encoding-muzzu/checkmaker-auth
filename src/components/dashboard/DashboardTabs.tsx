@@ -48,7 +48,7 @@ export const DashboardTabs = ({
           {!isChecker && (
             <TabButton
               isActive={activeTab === "reopened"}
-              label="Re-Opened"
+              label="Returned By Checker"
               count={applications?.filter(app => app.status_id === 3).length || 0}
               onClick={() => setActiveTab("reopened")}
             />
