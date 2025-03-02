@@ -62,12 +62,15 @@ export const useApplicationData = () => {
         status_name: app.application_statuses.name,
         documents: app.documents || []
       })) as ApplicationData[];
-    }
+    },
+    refetchInterval: 30000, // Refetch every 30 seconds to pick up new statuses
   });
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ['applications'] });
     queryClient.invalidateQueries({ queryKey: ['application-comments'] });
+    queryClient.invalidateQueries({ queryKey: ['bulk-files'] });
+    queryClient.invalidateQueries({ queryKey: ['bulk-processing-results'] });
   };
 
   // We combine isLoading (initial load) with isFetching (subsequent refreshes)

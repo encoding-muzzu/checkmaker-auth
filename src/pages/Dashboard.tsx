@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useDashboard } from "@/hooks/useDashboard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -5,6 +6,7 @@ import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { SearchControls } from "@/components/dashboard/SearchControls";
 import { EntriesPerPage } from "@/components/dashboard/EntriesPerPage";
 import { DashboardTable } from "@/components/dashboard/DashboardTable";
+import { BulkDataTab } from "@/components/dashboard/BulkDataTab";
 import { supabase } from "@/integrations/supabase/client";
 
 const searchableColumns = [
@@ -114,31 +116,37 @@ const Dashboard = () => {
         </div>
       )}
 
-      <EntriesPerPage
-        value={entriesPerPage}
-        onChange={setEntriesPerPage}
-      />
+      {activeTab === "bulk" ? (
+        <BulkDataTab />
+      ) : (
+        <>
+          <EntriesPerPage
+            value={entriesPerPage}
+            onChange={setEntriesPerPage}
+          />
 
-      <style>
-        {`
-          #application-details-sheet {
-            max-width: 70% !important;
-            border-radius: 10px !important;
-          }
-        `}
-      </style>
+          <style>
+            {`
+              #application-details-sheet {
+                max-width: 70% !important;
+                border-radius: 10px !important;
+              }
+            `}
+          </style>
 
-      <DashboardTable 
-        data={currentData}
-        isDense={false}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onNextPage={handleNextPage}
-        onPreviousPage={handlePreviousPage}
-        isLoading={isLoading}
-        userRole={userRole}
-        activeTab={activeTab}
-      />
+          <DashboardTable 
+            data={currentData}
+            isDense={false}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onNextPage={handleNextPage}
+            onPreviousPage={handlePreviousPage}
+            isLoading={isLoading}
+            userRole={userRole}
+            activeTab={activeTab}
+          />
+        </>
+      )}
     </div>
   );
 };

@@ -1,29 +1,106 @@
 
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { createContext, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Session } from '@supabase/supabase-js';
+import { useToast } from '@/components/ui/use-toast';
 
-export const useAuth = () => {
+type AuthContextType = {
+  data: {
+    session: Session | null;
+  };
+  handleSignIn: (email: string, password: string) => Promise<void>;
+  handleLogout: () => Promise<void>;
+};
+
+const AuthContext = createContext<AuthContextType>({
+  data: {
+    session: null
+  },
+  handleSignIn: async () => {},
+  handleLogout: async () => {}
+});
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [session, setSession] = useState<Session | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      navigate('/');
+  
+  useEffect(() => {
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      
+      if (!session) {
+        navigate('/');
+      }
+    };
+    
+    getSession();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      
+      if (!session) {
+        navigate('/');
+      }
+    });
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
+  
+  const handleSignIn = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    
+    if (error) {
       toast({
-        title: "Logged out successfully",
-        description: "You have been logged out of your account",
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+        duration: 5000
       });
-    } catch (error) {
-      console.error('Error logging out:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to log out",
-      });
+      return;
+    }
+    
+    if (data.session) {
+      navigate('/dashboard');
     }
   };
+  
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    
+    if (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to sign out',
+        variant: 'destructive',
+        duration: 5000
+      });
+      return;
+    }
+    
+    navigate('/');
+  };
+  
+  return (
+    <AuthContext.Provider 
+      value={{ 
+        data: { session },
+        handleSignIn,
+        handleLogout
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
 
-  return { handleLogout };
+export const useAuth = () => {
+  return useContext(AuthContext);
 };
