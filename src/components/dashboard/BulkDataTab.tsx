@@ -7,6 +7,7 @@ import { UploadCloud, FileSpreadsheet, Download } from "lucide-react";
 import { format } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 export const BulkDataTab = () => {
   const { 

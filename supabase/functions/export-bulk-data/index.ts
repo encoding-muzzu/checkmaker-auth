@@ -1,221 +1,172 @@
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.21.0";
-import * as XLSX from "https://cdn.sheetjs.com/xlsx-0.20.0/package/xlsx.mjs";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
+import * as XLSX from "https://esm.sh/xlsx@0.18.5";
 
-// Supabase client setup
-const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
-const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-serve(async (req: Request) => {
+// Handle CORS preflight requests
+Deno.serve(async (req) => {
+  console.log("Export bulk data function called");
+  
+  if (req.method === 'OPTIONS') {
+    console.log("Handling OPTIONS request for CORS");
+    return new Response(null, { headers: corsHeaders });
+  }
+  
   try {
-    // Check if this is an HTTP request or a cron job
-    const isCronJob = req.headers.get("Authorization") === null;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
     
-    if (isCronJob) {
-      // Handle cron job (automatic export)
-      const result = await processCronJob();
-      return new Response(JSON.stringify(result), {
-        headers: { "Content-Type": "application/json" },
-        status: 200,
-      });
-    } else {
-      // Handle manual export request
-      const result = await processManualExport();
-      return new Response(JSON.stringify(result), {
-        headers: { "Content-Type": "application/json" },
-        status: 200,
-      });
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("Missing environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+      throw new Error("Server configuration error");
     }
-  } catch (error) {
-    console.error("Error in export-bulk-data function:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { "Content-Type": "application/json" },
-      status: 500,
-    });
-  }
-});
-
-// Process data for cron job (finds applications with status_id=0 that are older than 2 minutes)
-async function processCronJob() {
-  console.log("Running automatic export cron job");
-  
-  // Get the current time
-  const now = new Date();
-  
-  // Calculate the time 2 minutes ago
-  const twoMinutesAgo = new Date(now.getTime() - 2 * 60 * 1000);
-  const twoMinutesAgoStr = twoMinutesAgo.toISOString();
-  
-  // Find applications with status_id=0 that are older than 2 minutes
-  const { data: applications, error: fetchError } = await supabase
-    .from("applications")
-    .select("*")
-    .eq("status_id", 0)
-    .lt("created_at", twoMinutesAgoStr);
-  
-  if (fetchError) {
-    console.error("Error fetching applications:", fetchError);
-    return { success: false, error: fetchError.message };
-  }
-  
-  if (!applications || applications.length === 0) {
-    console.log("No applications found for automatic processing");
-    return { success: true, count: 0, message: "No applications found for automatic processing" };
-  }
-  
-  console.log(`Found ${applications.length} applications to process`);
-  
-  // Get the application IDs
-  const applicationIds = applications.map(app => app.id);
-  
-  // Update applications to status_id 5 (bulk processing)
-  const { error: updateError } = await supabase
-    .from("applications")
-    .update({ status_id: 5 })
-    .in("id", applicationIds);
-  
-  if (updateError) {
-    console.error("Error updating applications:", updateError);
-    return { success: false, error: updateError.message };
-  }
-  
-  // Create an Excel file with the data
-  const result = await createExcelFile(applications, true);
-  
-  return result;
-}
-
-// Process data for manual export (finds applications with status_id=5)
-async function processManualExport() {
-  console.log("Processing manual export request");
-  
-  // Query applications in bulk processing status
-  const { data: applications, error: fetchError } = await supabase
-    .from("applications")
-    .select("*")
-    .eq("status_id", 5);
-  
-  if (fetchError) {
-    console.error("Error fetching applications:", fetchError);
-    return { success: false, error: fetchError.message };
-  }
-  
-  if (!applications || applications.length === 0) {
-    console.log("No applications found in bulk processing status");
-    return { success: true, count: 0, message: "No applications in bulk processing status" };
-  }
-  
-  console.log(`Found ${applications.length} applications for manual export`);
-  
-  // Create an Excel file with the data
-  const result = await createExcelFile(applications, false);
-  
-  return result;
-}
-
-// Create an Excel file with the provided applications data
-async function createExcelFile(applications, isAutoGenerated = false) {
-  try {
-    // Create worksheet data
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    console.log("Supabase client created successfully");
+    
+    // Check if bucket exists and create if not
+    console.log("Checking if bulk-files bucket exists");
+    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+    
+    if (bucketsError) {
+      console.error("Error listing buckets:", bucketsError.message);
+      throw bucketsError;
+    }
+    
+    const bucketExists = buckets.some(bucket => bucket.name === 'bulk-files');
+    console.log(`Bucket 'bulk-files' exists: ${bucketExists}`);
+    
+    if (!bucketExists) {
+      console.log("Creating 'bulk-files' bucket");
+      const { error: createBucketError } = await supabase.storage.createBucket('bulk-files', {
+        public: true
+      });
+      
+      if (createBucketError) {
+        console.error("Error creating bucket:", createBucketError.message);
+        throw createBucketError;
+      }
+      console.log("'bulk-files' bucket created successfully");
+    }
+    
+    // Find all applications in status_id 5 (bulk processing)
+    console.log("Fetching applications with status_id = 5");
+    const { data: applications, error: fetchError } = await supabase
+      .from('applications')
+      .select('*')
+      .eq('status_id', 5);
+    
+    if (fetchError) {
+      console.error("Error fetching applications:", fetchError.message);
+      throw fetchError;
+    }
+    
+    console.log(`Found ${applications?.length || 0} applications with status_id = 5`);
+    
+    if (!applications || applications.length === 0) {
+      console.log("No applications found in bulk processing status");
+      return new Response(
+        JSON.stringify({ 
+          message: "No applications found in bulk processing status",
+          count: 0 
+        }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200 
+        }
+      );
+    }
+    
+    // Create Excel workbook
+    console.log("Creating Excel workbook");
+    const workbook = XLSX.utils.book_new();
+    
+    // Convert applications to worksheet
     const worksheet = XLSX.utils.json_to_sheet(applications.map(app => ({
       id: app.id,
       arn: app.arn,
+      kit_no: app.kit_no,
       customer_name: app.customer_name,
       pan_number: app.pan_number,
       total_amount_loaded: app.total_amount_loaded,
-      lrs_amount_consumed: app.lrs_amount_consumed,
-      itr_flag: app.itr_flag,
-      processing_type: app.processing_type,
-      card_type: app.card_type,
-      product_variant: app.product_variant,
+      lrs_amount_consumed: app.lrs_amount_consumed || 0,
+      itr_flag: app.itr_flag || "",
       customer_type: app.customer_type,
-      kit_no: app.kit_no,
-      created_at: app.created_at,
-      status_id: app.status_id
+      product_variant: app.product_variant,
+      card_type: app.card_type,
     })));
     
-    // Create Excel workbook
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Applications");
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Bulk Processing");
     
     // Generate Excel file
     const excelData = XLSX.write(workbook, { type: "base64", bookType: "xlsx" });
+    console.log("Excel workbook generated successfully");
     
-    // Generate a filename with current timestamp
+    // Create filename
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const filename = isAutoGenerated 
-      ? `auto_bulk_apps_${timestamp}.xlsx` 
-      : `bulk_apps_${timestamp}.xlsx`;
+    const fileName = `bulk_export_${timestamp}.xlsx`;
+    const filePath = `exports/${fileName}`;
+    console.log(`File will be saved as: ${filePath}`);
     
-    const filePath = `bulk-files/${filename}`;
-    
-    // Ensure the bucket exists
-    const { data: buckets } = await supabase.storage.listBuckets();
-    const bulkFilesBucketExists = buckets.some(bucket => bucket.name === "bulk-files");
-    
-    if (!bulkFilesBucketExists) {
-      const { error: bucketError } = await supabase.storage.createBucket("bulk-files", {
-        public: true,
-        fileSizeLimit: 10485760 // 10MB
-      });
-      
-      if (bucketError) {
-        console.error("Error creating bucket:", bucketError);
-        return { success: false, error: bucketError.message };
-      }
-    }
-    
-    // Convert base64 to Uint8Array
-    const binaryStr = atob(excelData);
-    const len = binaryStr.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      bytes[i] = binaryStr.charCodeAt(i);
-    }
-    
-    // Upload the file to Supabase Storage
+    // Upload to Storage
+    console.log("Uploading file to storage");
     const { error: uploadError } = await supabase.storage
-      .from("bulk-files")
-      .upload(filename, bytes, {
-        contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      .from('bulk-files')
+      .upload(filePath, Uint8Array.from(atob(excelData), c => c.charCodeAt(0)), {
+        contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         upsert: true
       });
     
     if (uploadError) {
-      console.error("Error uploading file:", uploadError);
-      return { success: false, error: uploadError.message };
+      console.error("Error uploading file:", uploadError.message);
+      throw uploadError;
     }
+    console.log("File uploaded to storage successfully");
     
-    // Insert a record into auto_generated_files table
-    const { error: insertError } = await supabase
-      .from("auto_generated_files")
+    // Record in auto_generated_files table
+    console.log("Recording file in auto_generated_files table");
+    const { error: recordError } = await supabase
+      .from('auto_generated_files')
       .insert({
-        file_name: filename,
-        file_path: filename,
+        file_name: fileName,
+        file_path: filePath,
         record_count: applications.length,
-        is_auto_generated: isAutoGenerated
+        is_auto_generated: true
       });
     
-    if (insertError) {
-      console.error("Error inserting file record:", insertError);
-      return { success: false, error: insertError.message };
+    if (recordError) {
+      console.error("Error recording file in database:", recordError.message);
+      throw recordError;
     }
+    console.log("File recorded in auto_generated_files table successfully");
     
-    console.log(`Successfully created and uploaded ${filename} with ${applications.length} records`);
-    
-    // Return success and data
-    return { 
-      success: true, 
-      count: applications.length,
-      filename,
-      isAutoGenerated,
-      data: isAutoGenerated ? null : excelData // Only return the file data for manual exports
-    };
+    // Return success response
+    console.log("Returning success response");
+    return new Response(
+      JSON.stringify({
+        message: "Bulk export completed successfully",
+        count: applications.length,
+        filename: fileName,
+        data: excelData
+      }),
+      { 
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200 
+      }
+    );
   } catch (error) {
-    console.error("Error creating Excel file:", error);
-    return { success: false, error: error.message };
+    console.error("Error in export-bulk-data function:", error.message, error.stack);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { 
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500
+      }
+    );
   }
-}
+});
