@@ -147,6 +147,33 @@ export type Database = {
           },
         ]
       }
+      auto_generated_files: {
+        Row: {
+          created_at: string | null
+          file_name: string
+          file_path: string
+          id: string
+          is_auto_generated: boolean | null
+          record_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          file_name: string
+          file_path: string
+          id?: string
+          is_auto_generated?: boolean | null
+          record_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          file_name?: string
+          file_path?: string
+          id?: string
+          is_auto_generated?: boolean | null
+          record_count?: number | null
+        }
+        Relationships: []
+      }
       bulk_processing_files: {
         Row: {
           created_at: string | null
