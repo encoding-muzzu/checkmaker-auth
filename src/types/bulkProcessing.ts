@@ -10,6 +10,15 @@ export interface BulkFile {
   processed_at: string | null;
 }
 
+export interface GeneratedBulkFile {
+  id: string;
+  file_name: string;
+  file_path: string;
+  created_at: string;
+  record_count: number | null;
+  is_auto_generated: boolean;
+}
+
 export interface BulkProcessingResult {
   id: string;
   application_id: string;

@@ -1,9 +1,9 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { BulkFile } from "@/types/bulkProcessing";
+import { BulkFile, GeneratedBulkFile } from "@/types/bulkProcessing";
 
 export const useBulkProcessing = () => {
   const { toast } = useToast();
@@ -57,6 +57,28 @@ export const useBulkProcessing = () => {
     },
   });
 
+  // Fetch auto-generated files
+  const { data: generatedFiles, isLoading: isLoadingGeneratedFiles, refetch: refetchGeneratedFiles } = useQuery({
+    queryKey: ["bulk-files", "generated"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("auto_generated_files")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch auto-generated files",
+          variant: "destructive",
+        });
+        throw error;
+      }
+
+      return data as GeneratedBulkFile[];
+    },
+  });
+
   // Fetch bulk processing results
   const { data: processingResults, isLoading: isLoadingResults } = useQuery({
     queryKey: ["bulk-processing-results"],
@@ -103,6 +125,9 @@ export const useBulkProcessing = () => {
         description: `Exported ${response.data.count} applications.`,
         duration: 5000,
       });
+      
+      // Refresh generated files list after export
+      await refetchGeneratedFiles();
       
       return response.data;
     } catch (error) {
@@ -173,16 +198,24 @@ export const useBulkProcessing = () => {
     }
   };
 
+  // Callback for fetching generated files (to use in useEffect)
+  const fetchGeneratedFiles = useCallback(async () => {
+    await refetchGeneratedFiles();
+  }, [refetchGeneratedFiles]);
+
   return {
     pendingFiles,
     processedFiles,
+    generatedFiles,
     processingResults,
     isLoadingFiles,
     isLoadingProcessedFiles,
+    isLoadingGeneratedFiles,
     isLoadingResults,
     isExporting,
     isUploading,
     exportBulkData,
     uploadBulkFile,
+    fetchGeneratedFiles
   };
 };

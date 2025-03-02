@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
@@ -10,11 +10,34 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAuth } from "@/hooks/useAuth";
 
 export const BulkDataTab = () => {
-  const { pendingFiles, processedFiles, isLoadingFiles, isExporting, isUploading, exportBulkData, uploadBulkFile } = useBulkProcessing();
+  const { 
+    pendingFiles, 
+    processedFiles, 
+    generatedFiles,
+    isLoadingFiles, 
+    isExporting, 
+    isUploading, 
+    exportBulkData, 
+    uploadBulkFile,
+    fetchGeneratedFiles 
+  } = useBulkProcessing();
+  
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [activeTab, setActiveTab] = useState("export");
   const { data: { session } } = useAuth();
   const [makerNumber, setMakerNumber] = useState<number>(1);
+
+  useEffect(() => {
+    // Fetch generated files when the component mounts
+    fetchGeneratedFiles();
+    
+    // Set up a polling interval to check for new files every 30 seconds
+    const interval = setInterval(() => {
+      fetchGeneratedFiles();
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [fetchGeneratedFiles]);
 
   const handleExport = async () => {
     const exportData = await exportBulkData();
@@ -52,6 +75,26 @@ export const BulkDataTab = () => {
     }
   };
 
+  const downloadGeneratedFile = async (filePath: string, fileName: string) => {
+    try {
+      const { data, error } = await fetch(`https://dhgseybgaswdryynnomz.supabase.co/storage/v1/object/public/bulk-files/${filePath}`)
+        .then(res => res.blob());
+      
+      if (error) throw error;
+      
+      const url = URL.createObjectURL(data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -78,6 +121,51 @@ export const BulkDataTab = () => {
                 <Download className="h-4 w-4" />
               </Button>
             </div>
+          </Card>
+          
+          {/* Automatically Generated Files */}
+          <Card className="p-6">
+            <h3 className="text-lg font-medium mb-4">Auto-Generated Files</h3>
+            {isLoadingFiles ? (
+              <p>Loading files...</p>
+            ) : !generatedFiles || generatedFiles.length === 0 ? (
+              <p className="text-sm text-gray-500">No auto-generated files found.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">File Name</TableHead>
+                    <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Generated At</TableHead>
+                    <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Records</TableHead>
+                    <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {generatedFiles.map((file) => (
+                    <TableRow key={file.id} className="border-b border-[rgb(224,224,224)]">
+                      <TableCell className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">{file.file_name}</TableCell>
+                      <TableCell className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">
+                        {format(new Date(file.created_at), "MMM d, yyyy, h:mm a")}
+                      </TableCell>
+                      <TableCell className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">
+                        {file.record_count || "N/A"}
+                      </TableCell>
+                      <TableCell className="text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)]">
+                        <Button
+                          onClick={() => downloadGeneratedFile(file.file_path, file.file_name)}
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center gap-1"
+                        >
+                          <Download className="h-3 w-3" />
+                          Download
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </Card>
         </TabsContent>
         
