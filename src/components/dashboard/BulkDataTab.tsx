@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,10 +27,8 @@ export const BulkDataTab = () => {
   const [makerNumber, setMakerNumber] = useState<number>(1);
 
   useEffect(() => {
-    // Fetch generated files when the component mounts
     fetchGeneratedFiles();
     
-    // Set up a polling interval to check for new files every 30 seconds
     const interval = setInterval(() => {
       fetchGeneratedFiles();
     }, 30000);
@@ -42,7 +39,6 @@ export const BulkDataTab = () => {
   const handleExport = async () => {
     const exportData = await exportBulkData();
     if (exportData) {
-      // Download the file
       const byteCharacters = atob(exportData.data);
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
@@ -77,12 +73,15 @@ export const BulkDataTab = () => {
 
   const downloadGeneratedFile = async (filePath: string, fileName: string) => {
     try {
-      const { data, error } = await fetch(`https://dhgseybgaswdryynnomz.supabase.co/storage/v1/object/public/bulk-files/${filePath}`)
-        .then(res => res.blob());
+      const response = await fetch(`https://dhgseybgaswdryynnomz.supabase.co/storage/v1/object/public/bulk-files/${filePath}`);
       
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error(`Error downloading file: ${response.statusText}`);
+      }
       
-      const url = URL.createObjectURL(data);
+      const blob = await response.blob();
+      
+      const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = fileName;
@@ -123,7 +122,6 @@ export const BulkDataTab = () => {
             </div>
           </Card>
           
-          {/* Automatically Generated Files */}
           <Card className="p-6">
             <h3 className="text-lg font-medium mb-4">Auto-Generated Files</h3>
             {isLoadingFiles ? (
