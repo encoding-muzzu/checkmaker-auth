@@ -1,4 +1,0 @@
-
-project_id = "dhgseybgaswdryynnomz"
-schedule = "*/5 * * * *"  # Run every 5 minutes for more frequent testing
-

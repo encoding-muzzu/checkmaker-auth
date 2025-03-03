@@ -53,20 +53,6 @@ export const DashboardTabs = ({
               onClick={() => setActiveTab("reopened")}
             />
           )}
-          {!isChecker && (
-            <TabButton
-              isActive={activeTab === "discrepancy"}
-              label="Discrepancy"
-              count={applications?.filter(app => app.status_id === 6).length || 0}
-              onClick={() => setActiveTab("discrepancy")}
-            />
-          )}
-          <TabButton
-            isActive={activeTab === "bulk"}
-            label="Bulk Data"
-            count={applications?.filter(app => app.status_id === 5).length || 0}
-            onClick={() => setActiveTab("bulk")}
-          />
           <button
             className={activeTab === "search"
               ? "pb-4 px-1 relative text-black font-medium before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-black"
@@ -79,7 +65,7 @@ export const DashboardTabs = ({
             Search
           </button>
         </div>
-        {activeTab !== "search" && activeTab !== "bulk" && (
+        {activeTab !== "search" && (
           <Button
             onClick={onRefresh}
             variant="outline"
