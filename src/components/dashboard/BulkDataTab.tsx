@@ -6,6 +6,8 @@ import { TableCell, TableRow, TableHeader, TableHead, Table, TableBody } from "@
 import { DownloadIcon, UploadIcon, RefreshCw } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { TableSkeleton } from "./TableSkeleton";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 export const BulkDataTab = () => {
   const {
@@ -21,7 +23,20 @@ export const BulkDataTab = () => {
   } = useBulkProcessing();
   
   const [uploadingFileId, setUploadingFileId] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+  
+  // Fetch current user ID
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setCurrentUserId(session.user.id);
+      }
+    };
+    
+    fetchUserId();
+  }, []);
   
   const handleRefresh = () => {
     console.log("Refreshing bulk files data");
@@ -67,6 +82,31 @@ export const BulkDataTab = () => {
     return "bg-blue-100 text-blue-800";
   };
   
+  // Check if current user can upload as maker1
+  const canCurrentUserUploadAsMaker1 = (file: BulkFile) => {
+    return userRole === "maker" && !file.maker1_processed;
+  };
+  
+  // Check if current user can upload as maker2
+  const canCurrentUserUploadAsMaker2 = (file: BulkFile) => {
+    // If the file has been processed by Maker1 but not by Maker2
+    // And the current user is not the same as Maker1 who processed it
+    return userRole === "maker" && 
+           file.maker1_processed && 
+           !file.maker2_processed && 
+           file.maker1_user_id !== currentUserId;
+  };
+  
+  // Check if current user is Maker1 who already processed this file
+  const isCurrentUserMaker1 = (file: BulkFile) => {
+    return file.maker1_processed && file.maker1_user_id === currentUserId;
+  };
+  
+  // Check if current user is Maker2 who already processed this file
+  const isCurrentUserMaker2 = (file: BulkFile) => {
+    return file.maker2_processed && file.maker2_user_id === currentUserId;
+  };
+  
   if (isLoading) return <TableSkeleton />;
   
   return (
@@ -91,6 +131,7 @@ export const BulkDataTab = () => {
             <li>System automatically generates Excel files for processing every 5 minutes.</li>
             <li><strong>Maker 1:</strong> Download the file, update it locally, then upload your version.</li>
             <li><strong>Maker 2:</strong> Download Maker 1's file, review and update it, then upload the final version.</li>
+            <li><strong>Note:</strong> A maker cannot be both Maker 1 and Maker 2 for the same file.</li>
           </ul>
         </div>
         
@@ -165,7 +206,7 @@ export const BulkDataTab = () => {
                         )}
                         
                         {/* Maker 1 upload */}
-                        {userRole === "maker" && canUploadAsMaker1(file) && (
+                        {canCurrentUserUploadAsMaker1(file) && (
                           <>
                             <input
                               type="file"
@@ -187,8 +228,15 @@ export const BulkDataTab = () => {
                           </>
                         )}
                         
+                        {/* Show "Processed as Maker 1" message if user is maker1 */}
+                        {isCurrentUserMaker1(file) && (
+                          <span className="text-green-600 text-sm flex items-center">
+                            You processed this as Maker 1
+                          </span>
+                        )}
+                        
                         {/* Maker 2 upload */}
-                        {userRole === "maker" && canUploadAsMaker2(file) && (
+                        {canCurrentUserUploadAsMaker2(file) && (
                           <>
                             <input
                               type="file"
@@ -208,6 +256,13 @@ export const BulkDataTab = () => {
                               {isUploading && uploadingFileId === file.id ? "Uploading..." : "Upload as Maker 2"}
                             </Button>
                           </>
+                        )}
+                        
+                        {/* Show "Processed as Maker 2" message if user is maker2 */}
+                        {isCurrentUserMaker2(file) && (
+                          <span className="text-green-600 text-sm flex items-center">
+                            You processed this as Maker 2
+                          </span>
                         )}
                       </div>
                     </TableCell>
