@@ -59,6 +59,12 @@ export const ApplicationDetailsSheet = ({
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [viewedDocuments, setViewedDocuments] = useState<Set<string>>(new Set());
 
+  // Check if total amount plus LRS consumed exceeds limit
+  const totalAmountLoaded = selectedRow?.total_amount_loaded || 0;
+  const lrsAmountValue = parseFloat(lrsAmount) || 0;
+  const totalAmount = totalAmountLoaded + lrsAmountValue;
+  const exceedsLimit = totalAmount >= 250000;
+
   // Reset states when sheet is opened or closed
   useEffect(() => {
     if (!open) {
@@ -153,10 +159,21 @@ export const ApplicationDetailsSheet = ({
                 </div>
                 <Textarea
                   value={rejectMessage}
-                  onChange={(e) => setRejectMessage(e.target.value)}
+                  onChange={(e) => {
+                    // Limit to 300 characters
+                    if (e.target.value.length <= 300) {
+                      setRejectMessage(e.target.value);
+                    }
+                  }}
                   placeholder={`Enter your ${isChecker ? 'return' : 'rejection'} reason here...`}
                   className="min-h-[120px] resize-none border-red-200 focus:border-red-500 focus:ring-red-500 mb-3"
+                  maxLength={300}
                 />
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-sm text-gray-500">
+                    {rejectMessage.length}/300 characters
+                  </span>
+                </div>
                 <div className="flex justify-end gap-3">
                   <Button
                     variant="outline"
@@ -172,6 +189,15 @@ export const ApplicationDetailsSheet = ({
                     {isSubmitting ? "Processing..." : isChecker ? "Confirm Return" : "Confirm Reject"}
                   </Button>
                 </div>
+              </div>
+            )}
+
+            {exceedsLimit && showButtons && !showRejectForm && (
+              <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-[4px] flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-amber-500" />
+                <p className="text-amber-700 text-sm">
+                  Total Amount + LRS Amount Consumed exceeds $250,000 USD limit ({totalAmount.toFixed(2)} USD)
+                </p>
               </div>
             )}
           </div>
@@ -191,7 +217,9 @@ export const ApplicationDetailsSheet = ({
                   <Button 
                     className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px]" 
                     onClick={handleApprove}
-                    disabled={isSubmitting || (selectedRow?.documents?.length ? !allDocumentsViewed : false)}
+                    disabled={isSubmitting || 
+                              (selectedRow?.documents?.length ? !allDocumentsViewed : false) || 
+                              exceedsLimit}
                   >
                     {isSubmitting ? "Processing..." : "Approve"}
                   </Button>
