@@ -1,16 +1,17 @@
 
-import { useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { RefreshCw, Download, Upload, FileIcon } from "lucide-react";
+import React, { useState, useRef } from "react";
 import { useBulkProcessing, BulkFile } from "@/hooks/useBulkProcessing";
-import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { TableCell, TableRow, TableHeader, TableHead, Table, TableBody } from "@/components/ui/table";
+import { DownloadIcon, UploadIcon, RefreshCw } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { TableSkeleton } from "./TableSkeleton";
 
 export const BulkDataTab = () => {
   const {
     bulkFiles,
     isLoading,
+    userRole,
     downloadFile,
     uploadFile,
     refreshData,
@@ -18,189 +19,213 @@ export const BulkDataTab = () => {
     canUploadAsMaker1,
     canUploadAsMaker2
   } = useBulkProcessing();
-
-  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
-  const [selectedMakerType, setSelectedMakerType] = useState<string | null>(null);
-
-  const handleDownload = (file: BulkFile) => {
-    console.log("Handling download for file:", file.file_path);
-    let filePath = file.file_path;
-    
-    // If maker1 has processed the file and we're not downloading for maker1 upload
-    if (file.maker1_processed && !canUploadAsMaker1(file)) {
-      const pathParts = file.file_path.split("/");
-      const fileName = pathParts[pathParts.length - 1].split(".")[0];
-      filePath = `exports/${fileName}_maker1.xlsx`;
-    }
-    
+  
+  const [uploadingFileId, setUploadingFileId] = useState<string | null>(null);
+  const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+  
+  const handleRefresh = () => {
+    console.log("Refreshing bulk files data");
+    refreshData();
+  };
+  
+  const handleDownload = (filePath: string) => {
+    console.log(`Downloading file: ${filePath}`);
     downloadFile(filePath);
   };
-
-  const handleUploadClick = (file: BulkFile, makerType: string) => {
-    console.log(`Setting up upload for ${makerType}:`, file.id);
-    setSelectedFileId(file.id);
-    setSelectedMakerType(makerType);
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+  
+  const handleUploadClick = (fileId: string, inputRef: React.RefObject<HTMLInputElement>) => {
+    console.log(`Upload button clicked for file ID: ${fileId}`);
+    if (inputRef.current) {
+      inputRef.current.click();
     }
   };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0 || !selectedFileId || !selectedMakerType) {
-      console.log("No file selected or missing file ID/maker type");
-      return;
-    }
-
-    const file = files[0];
-    console.log(`Uploading file for ${selectedMakerType}:`, file.name);
-    uploadFile(file, selectedFileId, selectedMakerType);
-    
-    // Reset the file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+  
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, fileId: string, makerType: string) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      console.log(`Selected file for upload: ${file.name}, maker type: ${makerType}`);
+      setUploadingFileId(fileId);
+      try {
+        await uploadFile(file, fileId, makerType);
+      } finally {
+        setUploadingFileId(null);
+        // Reset file input
+        if (e.target) e.target.value = '';
+      }
     }
   };
-
-  const getStatus = (file: BulkFile) => {
-    if (file.maker2_processed) {
-      return "Processed by Maker 2";
-    } else if (file.maker1_processed) {
-      return "Processed by Maker 1";
-    } else {
-      return "Pending";
-    }
+  
+  const getStatusLabel = (file: BulkFile) => {
+    if (file.maker2_processed) return "Processed by Maker 2";
+    if (file.maker1_processed) return "Processed by Maker 1";
+    return "Pending";
   };
-
+  
+  const getStatusClass = (file: BulkFile) => {
+    if (file.maker2_processed) return "bg-green-100 text-green-800";
+    if (file.maker1_processed) return "bg-yellow-100 text-yellow-800";
+    return "bg-blue-100 text-blue-800";
+  };
+  
+  if (isLoading) return <TableSkeleton />;
+  
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Bulk Data Processing</h2>
+    <div className="bg-white rounded-md shadow">
+      <div className="p-4 flex justify-between items-center border-b border-[rgb(224,224,224)]">
+        <h2 className="text-lg font-semibold">Bulk Data Processing</h2>
         <Button 
+          onClick={handleRefresh} 
           variant="outline" 
-          size="icon" 
-          onClick={refreshData} 
-          disabled={isLoading}
+          size="sm"
+          className="flex items-center gap-1"
         >
-          <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+          <RefreshCw size={16} />
+          Refresh
         </Button>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Auto-Generated Files</CardTitle>
-          <CardDescription>
-            Files are generated automatically for bulk processing. Maker 1 downloads, updates, and uploads the file.
-            Then Maker 2 downloads the updated file, adds additional updates, and uploads the final version.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {bulkFiles && bulkFiles.length > 0 ? (
-            <div className="border rounded-md">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>File Name</TableHead>
-                    <TableHead>Created At</TableHead>
-                    <TableHead>Records</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {bulkFiles.map((file) => (
-                    <TableRow 
-                      key={file.id}
-                      onMouseEnter={() => setHoveredRow(file.id)}
-                      onMouseLeave={() => setHoveredRow(null)}
-                      className="hover:bg-gray-50"
-                    >
-                      <TableCell className="font-medium">
-                        <div className="flex items-center space-x-2">
-                          <FileIcon className="h-4 w-4" />
-                          <span>{file.file_name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(file.created_at), "MMM dd, yyyy HH:mm")}
-                      </TableCell>
-                      <TableCell>{file.record_count || "N/A"}</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          file.maker2_processed 
-                            ? "bg-green-100 text-green-800" 
-                            : file.maker1_processed 
-                              ? "bg-yellow-100 text-yellow-800" 
-                              : "bg-blue-100 text-blue-800"
-                        }`}>
-                          {getStatus(file)}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
+      
+      <div className="p-4">
+        <div className="mb-4 p-4 bg-gray-50 rounded border border-gray-200">
+          <h3 className="font-medium mb-2">Workflow Instructions:</h3>
+          <ul className="list-disc pl-5 space-y-1 text-sm">
+            <li>System automatically generates Excel files for processing every 5 minutes.</li>
+            <li><strong>Maker 1:</strong> Download the file, update it locally, then upload your version.</li>
+            <li><strong>Maker 2:</strong> Download Maker 1's file, review and update it, then upload the final version.</li>
+          </ul>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>File Name</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead>Records</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {bulkFiles && bulkFiles.length > 0 ? (
+                bulkFiles.map((file) => (
+                  <TableRow key={file.id}>
+                    <TableCell className="font-medium">{file.file_name}</TableCell>
+                    <TableCell>
+                      {formatDistanceToNow(new Date(file.created_at), { addSuffix: true })}
+                    </TableCell>
+                    <TableCell>{file.record_count || 0}</TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-1 rounded-full text-xs ${getStatusClass(file)}`}>
+                        {getStatusLabel(file)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        {/* Original file download */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDownload(file.file_path)}
+                          className="flex items-center gap-1"
+                        >
+                          <DownloadIcon size={16} />
+                          Download
+                        </Button>
+                        
+                        {/* Maker 1 file download if available */}
+                        {file.maker1_processed && (
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDownload(file)}
-                            title="Download file"
+                            onClick={() => {
+                              const maker1FilePath = file.file_path.replace('.xlsx', '_maker1.xlsx');
+                              handleDownload(maker1FilePath);
+                            }}
+                            className="flex items-center gap-1"
                           >
-                            <Download className="h-4 w-4 mr-1" />
-                            <span className="hidden sm:inline">Download</span>
+                            <DownloadIcon size={16} />
+                            Maker 1
                           </Button>
-                          
-                          {canUploadAsMaker1(file) && (
+                        )}
+                        
+                        {/* Maker 2 file download if available */}
+                        {file.maker2_processed && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const maker2FilePath = file.file_path.replace('.xlsx', '_maker2.xlsx');
+                              handleDownload(maker2FilePath);
+                            }}
+                            className="flex items-center gap-1"
+                          >
+                            <DownloadIcon size={16} />
+                            Maker 2
+                          </Button>
+                        )}
+                        
+                        {/* Maker 1 upload */}
+                        {userRole === "maker" && canUploadAsMaker1(file) && (
+                          <>
+                            <input
+                              type="file"
+                              ref={el => fileInputRefs.current[`maker1_${file.id}`] = el}
+                              onChange={(e) => handleFileChange(e, file.id, "maker1")}
+                              className="hidden"
+                              accept=".xlsx, .xls"
+                            />
                             <Button
-                              variant="outline"
+                              variant="default"
                               size="sm"
-                              onClick={() => handleUploadClick(file, "maker1")}
-                              disabled={isUploading}
-                              title="Upload as Maker 1"
+                              onClick={() => handleUploadClick(file.id, { current: fileInputRefs.current[`maker1_${file.id}`] })}
+                              disabled={isUploading && uploadingFileId === file.id}
+                              className="flex items-center gap-1"
                             >
-                              <Upload className="h-4 w-4 mr-1" />
-                              <span className="hidden sm:inline">Maker 1</span>
+                              <UploadIcon size={16} />
+                              {isUploading && uploadingFileId === file.id ? "Uploading..." : "Upload as Maker 1"}
                             </Button>
-                          )}
-                          
-                          {canUploadAsMaker2(file) && (
+                          </>
+                        )}
+                        
+                        {/* Maker 2 upload */}
+                        {userRole === "maker" && canUploadAsMaker2(file) && (
+                          <>
+                            <input
+                              type="file"
+                              ref={el => fileInputRefs.current[`maker2_${file.id}`] = el}
+                              onChange={(e) => handleFileChange(e, file.id, "maker2")}
+                              className="hidden"
+                              accept=".xlsx, .xls"
+                            />
                             <Button
-                              variant="outline"
+                              variant="default"
                               size="sm"
-                              onClick={() => handleUploadClick(file, "maker2")}
-                              disabled={isUploading}
-                              title="Upload as Maker 2"
+                              onClick={() => handleUploadClick(file.id, { current: fileInputRefs.current[`maker2_${file.id}`] })}
+                              disabled={isUploading && uploadingFileId === file.id}
+                              className="flex items-center gap-1"
                             >
-                              <Upload className="h-4 w-4 mr-1" />
-                              <span className="hidden sm:inline">Maker 2</span>
+                              <UploadIcon size={16} />
+                              {isUploading && uploadingFileId === file.id ? "Uploading..." : "Upload as Maker 2"}
                             </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              {isLoading ? "Loading..." : "No files found. Files are generated automatically."}
-            </div>
-          )}
-          
-          {/* Hidden file input for upload */}
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept=".xlsx"
-            className="hidden"
-          />
-        </CardContent>
-        <CardFooter className="bg-gray-50 text-sm text-gray-500 p-4">
-          Files are generated automatically every 5 minutes for applications that need bulk processing.
-        </CardFooter>
-      </Card>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                    No bulk files available yet. Files are generated automatically every 5 minutes.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
     </div>
   );
 };
+
+export default BulkDataTab;
