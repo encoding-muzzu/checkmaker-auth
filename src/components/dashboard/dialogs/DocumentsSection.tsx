@@ -1,8 +1,8 @@
 
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Files, Image } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Files, Download, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useState } from "react";
 
 interface Document {
   name: string;
@@ -18,35 +18,42 @@ interface DocumentsSectionProps {
 
 export const DocumentsSection = ({ documents, onDocumentView, viewedDocuments }: DocumentsSectionProps) => {
   const hasDocuments = documents && documents.length > 0;
-  const [documentUrls, setDocumentUrls] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    if (!hasDocuments) return;
-    
-    const fetchDocumentUrls = async () => {
-      const urls: Record<string, string> = {};
-      
-      for (const doc of documents!) {
-        try {
-          const { data } = await supabase.storage
-            .from('customer_documents')
-            .createSignedUrl(doc.path, 3600); // 1 hour expiry
-            
-          if (data?.signedUrl) {
-            urls[doc.path] = data.signedUrl;
-            // Mark document as viewed when loaded
-            onDocumentView(doc.path);
-          }
-        } catch (error) {
-          console.error('Error creating signed URL for document:', error);
-        }
+  const handleViewDocument = async (doc: Document) => {
+    try {
+      const { data } = await supabase.storage
+        .from('customer_documents')
+        .createSignedUrl(doc.path, 60);
+
+      if (data?.signedUrl) {
+        window.open(data.signedUrl, '_blank');
+        onDocumentView(doc.path);
       }
-      
-      setDocumentUrls(urls);
-    };
-    
-    fetchDocumentUrls();
-  }, [documents, hasDocuments, onDocumentView]);
+    } catch (error) {
+      console.error('Error viewing document:', error);
+    }
+  };
+
+  const handleDownloadDocument = async (doc: Document) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('customer_documents')
+        .download(doc.path);
+
+      if (error) throw error;
+
+      const url = window.URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = doc.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading document:', error);
+    }
+  };
 
   return (
     <AccordionItem value="documents" className="border rounded-[4px] shadow-sm">
@@ -59,27 +66,33 @@ export const DocumentsSection = ({ documents, onDocumentView, viewedDocuments }:
       <AccordionContent className="px-4 pb-4">
         {hasDocuments ? (
           <div className="space-y-4">
-            {documents!.map((doc, index) => (
-              <div key={index} className="p-4 border rounded-[4px] bg-gray-50/50 shadow-sm hover:shadow-md transition-shadow duration-200">
-                <div>
-                  <h3 className="font-semibold text-black mb-2">{doc.name}</h3>
-                  <p className="text-sm text-gray-500 mb-3">Customer Document</p>
-                  {documentUrls[doc.path] ? (
-                    <div className="mt-2 rounded-lg overflow-hidden border border-gray-200">
-                      <img 
-                        src={documentUrls[doc.path]} 
-                        alt={doc.name} 
-                        className="w-full max-h-96 object-contain bg-white" 
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center h-48 bg-gray-100 rounded-lg">
-                      <div className="flex flex-col items-center">
-                        <Image className="h-12 w-12 text-gray-400" />
-                        <p className="text-gray-500 mt-2">Loading document...</p>
-                      </div>
-                    </div>
-                  )}
+            {documents.map((doc, index) => (
+              <div key={index} className="p-6 border rounded-[4px] bg-gray-50/50 shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-black">{doc.name}</h3>
+                    <p className="text-sm text-gray-500">Customer Document</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="flex items-center gap-1 hover:bg-gray-100 rounded-[4px] border-black text-black"
+                      onClick={() => handleDownloadDocument(doc)}
+                    >
+                      <Download className="h-4 w-4" />
+                      Download
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className={`flex items-center gap-1 hover:bg-gray-100 rounded-[4px] border-black ${viewedDocuments.has(doc.path) ? 'bg-emerald-50 text-emerald-600' : 'text-black'}`}
+                      onClick={() => handleViewDocument(doc)}
+                    >
+                      <Eye className="h-4 w-4" />
+                      {viewedDocuments.has(doc.path) ? 'Viewed' : 'View'}
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}

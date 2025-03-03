@@ -28,14 +28,6 @@ export const useApplicationActions = (selectedRow: ApplicationData | null) => {
         .eq('id', session.user.id)
         .single();
 
-      // Check if LRS amount would exceed limit
-      const totalAmountLoaded = selectedRow.total_amount_loaded ? parseFloat(String(selectedRow.total_amount_loaded)) : 0;
-      const lrsAmountValue = parseFloat(lrsAmount || "0");
-      
-      if (totalAmountLoaded + lrsAmountValue > 250000) {
-        throw new Error("Total amount plus LRS amount exceeds $250,000 limit. Approval is not allowed.");
-      }
-
       let newStatusId: number;
       let successMessage: string;
 
