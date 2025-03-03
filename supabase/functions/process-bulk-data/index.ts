@@ -36,17 +36,33 @@ serve(async (req) => {
       );
     }
 
-    // Initialize Supabase client
+    // Initialize Supabase client with the authorization token from the request
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Fetch the current user from the session
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      console.error("User not authenticated");
+    const authorization = req.headers.get('Authorization');
+    
+    if (!authorization) {
+      console.error("No authorization token provided");
       return new Response(
-        JSON.stringify({ error: "User not authenticated" }),
+        JSON.stringify({ error: "No authorization token provided" }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, 
+          status: 401 
+        }
+      );
+    }
+    
+    // Extract token from Authorization header (Bearer token)
+    const token = authorization.replace('Bearer ', '');
+    const supabase = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY") || "", {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+
+    // Fetch the current user from the session using the token
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) {
+      console.error("User not authenticated:", userError);
+      return new Response(
+        JSON.stringify({ error: "User not authenticated", details: userError }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" }, 
           status: 401 
@@ -54,7 +70,7 @@ serve(async (req) => {
       );
     }
 
-    const userId = session.user.id;
+    const userId = user.id;
     console.log(`User ID: ${userId}`);
 
     // Get the file details from the bulk_file_processing table
@@ -146,7 +162,14 @@ serve(async (req) => {
     const excelOutput = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
     
     // Upload the new Excel file to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    // For storage operations, we need to use the service role key
+    // because the current user might not have permissions to upload to storage
+    const adminSupabase = createClient(
+      supabaseUrl,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+    );
+    
+    const { data: uploadData, error: uploadError } = await adminSupabase.storage
       .from("bulk-files")
       .upload(newFilePath, excelOutput, {
         contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -167,7 +190,7 @@ serve(async (req) => {
     console.log("New Excel file uploaded successfully");
 
     // Get public URL for the file
-    const { data: publicUrl } = supabase.storage
+    const { data: publicUrl } = adminSupabase.storage
       .from("bulk-files")
       .getPublicUrl(newFilePath);
 
@@ -188,6 +211,7 @@ serve(async (req) => {
 
     console.log("Updating bulk_file_processing record:", updateData);
     
+    // Using the user's token to update the record, respecting RLS policies
     const { error: updateError } = await supabase
       .from("bulk_file_processing")
       .update(updateData)

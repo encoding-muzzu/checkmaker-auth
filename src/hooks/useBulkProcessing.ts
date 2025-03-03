@@ -161,8 +161,12 @@ export const useBulkProcessing = () => {
           throw new Error("No active session");
         }
 
+        // Send the auth token along with the request
         const response = await supabase.functions.invoke("process-bulk-data", {
           body: formData,
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
+          }
         });
 
         if (response.error) {
