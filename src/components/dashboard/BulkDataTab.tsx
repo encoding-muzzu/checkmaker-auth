@@ -1,13 +1,13 @@
-
 import React, { useState, useRef } from "react";
 import { useBulkProcessing, BulkFile } from "@/hooks/useBulkProcessing";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow, TableHeader, TableHead, Table, TableBody } from "@/components/ui/table";
-import { DownloadIcon, UploadIcon, RefreshCw } from "lucide-react";
+import { DownloadIcon, UploadIcon, RefreshCw, CheckCircle2, FileText } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { TableSkeleton } from "./TableSkeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
+import { Card } from "@/components/ui/card";
 
 export const BulkDataTab = () => {
   const {
@@ -26,7 +26,6 @@ export const BulkDataTab = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
   
-  // Fetch current user ID
   useEffect(() => {
     const fetchUserId = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -64,7 +63,6 @@ export const BulkDataTab = () => {
         await uploadFile(file, fileId, makerType);
       } finally {
         setUploadingFileId(null);
-        // Reset file input
         if (e.target) e.target.value = '';
       }
     }
@@ -82,27 +80,21 @@ export const BulkDataTab = () => {
     return "bg-blue-100 text-blue-800";
   };
   
-  // Check if current user can upload as maker1
   const canCurrentUserUploadAsMaker1 = (file: BulkFile) => {
     return userRole === "maker" && !file.maker1_processed;
   };
   
-  // Check if current user can upload as maker2
   const canCurrentUserUploadAsMaker2 = (file: BulkFile) => {
-    // If the file has been processed by Maker1 but not by Maker2
-    // And the current user is not the same as Maker1 who processed it
     return userRole === "maker" && 
            file.maker1_processed && 
            !file.maker2_processed && 
            file.maker1_user_id !== currentUserId;
   };
   
-  // Check if current user is Maker1 who already processed this file
   const isCurrentUserMaker1 = (file: BulkFile) => {
     return file.maker1_processed && file.maker1_user_id === currentUserId;
   };
   
-  // Check if current user is Maker2 who already processed this file
   const isCurrentUserMaker2 = (file: BulkFile) => {
     return file.maker2_processed && file.maker2_user_id === currentUserId;
   };
@@ -150,7 +142,12 @@ export const BulkDataTab = () => {
               {bulkFiles && bulkFiles.length > 0 ? (
                 bulkFiles.map((file) => (
                   <TableRow key={file.id}>
-                    <TableCell className="font-medium">{file.file_name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <FileText size={16} className="text-gray-500" />
+                        {file.file_name}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       {formatDistanceToNow(new Date(file.created_at), { addSuffix: true })}
                     </TableCell>
@@ -161,110 +158,121 @@ export const BulkDataTab = () => {
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {/* Original file download */}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDownload(file.file_path)}
-                          className="flex items-center gap-1"
-                        >
-                          <DownloadIcon size={16} />
-                          Download
-                        </Button>
+                      <Card className="border border-gray-100 shadow-sm p-3 rounded-md">
+                        <div className="flex flex-wrap justify-end gap-3">
+                          <div className="flex flex-col gap-2 items-end">
+                            <h4 className="text-xs font-medium text-gray-500 w-full text-right">Download Files:</h4>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDownload(file.file_path)}
+                                className="flex items-center gap-1 border-gray-200 hover:bg-gray-50"
+                              >
+                                <DownloadIcon size={16} />
+                                Original
+                              </Button>
+                              
+                              {file.maker1_processed && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    const maker1FilePath = file.file_path.replace('.xlsx', '_maker1.xlsx');
+                                    handleDownload(maker1FilePath);
+                                  }}
+                                  className="flex items-center gap-1 border-yellow-200 text-yellow-700 hover:bg-yellow-50"
+                                >
+                                  <DownloadIcon size={16} />
+                                  Maker 1
+                                </Button>
+                              )}
+                              
+                              {file.maker2_processed && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    const maker2FilePath = file.file_path.replace('.xlsx', '_maker2.xlsx');
+                                    handleDownload(maker2FilePath);
+                                  }}
+                                  className="flex items-center gap-1 border-green-200 text-green-700 hover:bg-green-50"
+                                >
+                                  <DownloadIcon size={16} />
+                                  Maker 2
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {(canCurrentUserUploadAsMaker1(file) || canCurrentUserUploadAsMaker2(file)) && (
+                            <div className="flex flex-col gap-2 items-end ml-3 border-l border-gray-200 pl-3">
+                              <h4 className="text-xs font-medium text-gray-500 w-full text-right">Upload Actions:</h4>
+                              <div className="flex gap-2">
+                                {canCurrentUserUploadAsMaker1(file) && (
+                                  <>
+                                    <input
+                                      type="file"
+                                      ref={el => fileInputRefs.current[`maker1_${file.id}`] = el}
+                                      onChange={(e) => handleFileChange(e, file.id, "maker1")}
+                                      className="hidden"
+                                      accept=".xlsx, .xls"
+                                    />
+                                    <Button
+                                      variant="default"
+                                      size="sm"
+                                      onClick={() => handleUploadClick(file.id, { current: fileInputRefs.current[`maker1_${file.id}`] })}
+                                      disabled={isUploading && uploadingFileId === file.id}
+                                      className="flex items-center gap-1 bg-black text-white hover:bg-gray-800"
+                                    >
+                                      <UploadIcon size={16} />
+                                      {isUploading && uploadingFileId === file.id ? "Uploading..." : "Upload as Maker 1"}
+                                    </Button>
+                                  </>
+                                )}
+                                
+                                {canCurrentUserUploadAsMaker2(file) && (
+                                  <>
+                                    <input
+                                      type="file"
+                                      ref={el => fileInputRefs.current[`maker2_${file.id}`] = el}
+                                      onChange={(e) => handleFileChange(e, file.id, "maker2")}
+                                      className="hidden"
+                                      accept=".xlsx, .xls"
+                                    />
+                                    <Button
+                                      variant="default"
+                                      size="sm"
+                                      onClick={() => handleUploadClick(file.id, { current: fileInputRefs.current[`maker2_${file.id}`] })}
+                                      disabled={isUploading && uploadingFileId === file.id}
+                                      className="flex items-center gap-1 bg-black text-white hover:bg-gray-800"
+                                    >
+                                      <UploadIcon size={16} />
+                                      {isUploading && uploadingFileId === file.id ? "Uploading..." : "Upload as Maker 2"}
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                         
-                        {/* Maker 1 file download if available */}
-                        {file.maker1_processed && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              const maker1FilePath = file.file_path.replace('.xlsx', '_maker1.xlsx');
-                              handleDownload(maker1FilePath);
-                            }}
-                            className="flex items-center gap-1"
-                          >
-                            <DownloadIcon size={16} />
-                            Maker 1
-                          </Button>
-                        )}
-                        
-                        {/* Maker 2 file download if available */}
-                        {file.maker2_processed && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              const maker2FilePath = file.file_path.replace('.xlsx', '_maker2.xlsx');
-                              handleDownload(maker2FilePath);
-                            }}
-                            className="flex items-center gap-1"
-                          >
-                            <DownloadIcon size={16} />
-                            Maker 2
-                          </Button>
-                        )}
-                        
-                        {/* Maker 1 upload */}
-                        {canCurrentUserUploadAsMaker1(file) && (
-                          <>
-                            <input
-                              type="file"
-                              ref={el => fileInputRefs.current[`maker1_${file.id}`] = el}
-                              onChange={(e) => handleFileChange(e, file.id, "maker1")}
-                              className="hidden"
-                              accept=".xlsx, .xls"
-                            />
-                            <Button
-                              variant="default"
-                              size="sm"
-                              onClick={() => handleUploadClick(file.id, { current: fileInputRefs.current[`maker1_${file.id}`] })}
-                              disabled={isUploading && uploadingFileId === file.id}
-                              className="flex items-center gap-1"
-                            >
-                              <UploadIcon size={16} />
-                              {isUploading && uploadingFileId === file.id ? "Uploading..." : "Upload as Maker 1"}
-                            </Button>
-                          </>
-                        )}
-                        
-                        {/* Show "Processed as Maker 1" message if user is maker1 */}
-                        {isCurrentUserMaker1(file) && (
-                          <span className="text-green-600 text-sm flex items-center">
-                            You processed this as Maker 1
-                          </span>
-                        )}
-                        
-                        {/* Maker 2 upload */}
-                        {canCurrentUserUploadAsMaker2(file) && (
-                          <>
-                            <input
-                              type="file"
-                              ref={el => fileInputRefs.current[`maker2_${file.id}`] = el}
-                              onChange={(e) => handleFileChange(e, file.id, "maker2")}
-                              className="hidden"
-                              accept=".xlsx, .xls"
-                            />
-                            <Button
-                              variant="default"
-                              size="sm"
-                              onClick={() => handleUploadClick(file.id, { current: fileInputRefs.current[`maker2_${file.id}`] })}
-                              disabled={isUploading && uploadingFileId === file.id}
-                              className="flex items-center gap-1"
-                            >
-                              <UploadIcon size={16} />
-                              {isUploading && uploadingFileId === file.id ? "Uploading..." : "Upload as Maker 2"}
-                            </Button>
-                          </>
-                        )}
-                        
-                        {/* Show "Processed as Maker 2" message if user is maker2 */}
-                        {isCurrentUserMaker2(file) && (
-                          <span className="text-green-600 text-sm flex items-center">
-                            You processed this as Maker 2
-                          </span>
-                        )}
-                      </div>
+                        <div className="mt-2 flex justify-end">
+                          {isCurrentUserMaker1(file) && (
+                            <div className="text-green-600 text-xs flex items-center gap-1 font-medium">
+                              <CheckCircle2 size={14} />
+                              You've already processed this as Maker 1
+                            </div>
+                          )}
+                          
+                          {isCurrentUserMaker2(file) && (
+                            <div className="text-green-600 text-xs flex items-center gap-1 font-medium">
+                              <CheckCircle2 size={14} />
+                              You've already processed this as Maker 2
+                            </div>
+                          )}
+                        </div>
+                      </Card>
                     </TableCell>
                   </TableRow>
                 ))
