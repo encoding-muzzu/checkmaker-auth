@@ -8,6 +8,7 @@ export const BulkDataTab = () => {
     bulkFiles,
     isLoading,
     currentUserId,
+    userRole,
     isUploading,
     uploadingFileId,
     fileInputRefs,
@@ -33,6 +34,7 @@ export const BulkDataTab = () => {
           bulkFiles={bulkFiles}
           isLoading={isLoading}
           currentUserId={currentUserId}
+          userRole={userRole}
           isUploading={isUploading}
           uploadingFileId={uploadingFileId}
           currentPage={currentPage}

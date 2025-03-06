@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useRef } from "react";
@@ -37,23 +38,73 @@ export const useBulkProcessing = () => {
 
   const currentUserId = session?.user?.id || null;
 
+  const { data: userProfile } = useQuery({
+    queryKey: ["user-profile"],
+    queryFn: async () => {
+      if (!currentUserId) return null;
+      
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", currentUserId)
+        .single();
+        
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!currentUserId,
+  });
+
+  const userRole = userProfile?.role || null;
+  const isMaker = userRole === 'maker';
+  const isChecker = userRole === 'checker';
+
   const { data: bulkFiles, isLoading, refetch } = useQuery({
-    queryKey: ["bulk-files", currentPage],
+    queryKey: ["bulk-files", currentPage, userRole],
     queryFn: async () => {
       const from = (currentPage - 1) * pageSize;
       const to = from + pageSize - 1;
       
-      const { data, error, count } = await supabase
+      let query = supabase
         .from("bulk_file_processing")
         .select("*", { count: 'exact' })
         .order("created_at", { ascending: false })
         .range(from, to);
-
-      if (error) {
-        throw error;
+      
+      // Filter files based on user role
+      if (isMaker) {
+        // Makers can only see original files and files uploaded by makers
+        const { data, error, count } = await query;
+        
+        if (error) throw error;
+        
+        // Filter files for makers: show only original files and maker-uploaded files
+        const filteredData = data.filter(file => {
+          // Show all files that don't have a maker2_user_id (no checker upload)
+          return file.maker2_user_id === null;
+        });
+        
+        return { data: filteredData as BulkFile[], count: filteredData.length };
+      } else if (isChecker) {
+        // Checkers can only see original files and files uploaded by checkers
+        const { data, error, count } = await query;
+        
+        if (error) throw error;
+        
+        // Filter files for checkers: show only original files and checker-uploaded files
+        const filteredData = data.filter(file => {
+          // Show all files that don't have a maker1_user_id (no maker upload)
+          // or files that have maker1_processed = true (ready for checker)
+          return file.maker1_user_id === null || file.maker1_processed === true;
+        });
+        
+        return { data: filteredData as BulkFile[], count: filteredData.length };
+      } else {
+        // For other roles or unauthenticated users
+        const { data, error, count } = await query;
+        if (error) throw error;
+        return { data: data as BulkFile[], count: count || 0 };
       }
-
-      return { data: data as BulkFile[], count: count || 0 };
     },
     enabled: !!session,
   });
@@ -74,16 +125,15 @@ export const useBulkProcessing = () => {
   };
 
   const canCurrentUserUploadAsMaker1 = (file: BulkFile) => {
-    // Implement the logic based on your business rules
-    return !!currentUserId && !file.maker1_processed && file.maker1_user_id === null;
+    // Implement new logic: Makers can upload only if no maker has uploaded yet
+    return isMaker && !file.maker1_processed && file.maker1_user_id === null;
   };
 
   const canCurrentUserUploadAsMaker2 = (file: BulkFile) => {
-    // Implement the logic based on your business rules
-    return !!currentUserId && 
+    // Implement new logic: Checkers can upload only if maker has processed but no checker has uploaded yet
+    return isChecker && 
       file.maker1_processed && 
       !file.maker2_processed && 
-      file.maker1_user_id !== currentUserId && 
       file.maker2_user_id === null;
   };
 
@@ -144,13 +194,13 @@ export const useBulkProcessing = () => {
         throw dbError;
       }
 
-      sonnerToast.success(`${makerType} uploaded successfully!`);
+      sonnerToast.success(`File uploaded successfully as ${makerType === 'maker1' ? 'Maker' : 'Checker'}!`);
       refetch();
     } catch (error: any) {
       console.error("File upload error:", error);
       toast({
         title: "Error",
-        description: `Failed to upload ${makerType}: ${error.message}`,
+        description: `Failed to upload file: ${error.message}`,
         variant: "destructive",
       });
     } finally {
@@ -199,6 +249,7 @@ export const useBulkProcessing = () => {
     handlePreviousPage,
     isLoading,
     currentUserId,
+    userRole,
     isUploading,
     uploadingFileId,
     fileInputRefs,

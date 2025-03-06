@@ -38,14 +38,14 @@ export const FileUploadActions = ({
         {isCurrentUserMaker1 && (
           <div className="text-green-600 text-xs flex items-center gap-1 font-medium">
             <CheckCircle2 size={14} />
-            You've already processed this as Maker 1
+            You've already processed this as Maker
           </div>
         )}
         
         {isCurrentUserMaker2 && (
           <div className="text-green-600 text-xs flex items-center gap-1 font-medium">
             <CheckCircle2 size={14} />
-            You've already processed this as Maker 2
+            You've already processed this as Checker
           </div>
         )}
       </div>
@@ -73,7 +73,7 @@ export const FileUploadActions = ({
               className="flex items-center gap-1 bg-black text-white hover:bg-gray-800"
             >
               <UploadIcon size={16} />
-              {isUploading && uploadingFileId === file.id ? "Uploading..." : "Upload as Maker 1"}
+              {isUploading && uploadingFileId === file.id ? "Uploading..." : "Upload as a Maker"}
             </Button>
           </>
         )}
@@ -95,7 +95,7 @@ export const FileUploadActions = ({
               className="flex items-center gap-1 bg-black text-white hover:bg-gray-800"
             >
               <UploadIcon size={16} />
-              {isUploading && uploadingFileId === file.id ? "Uploading..." : "Upload as Maker 2"}
+              {isUploading && uploadingFileId === file.id ? "Uploading..." : "Upload as a Checker"}
             </Button>
           </>
         )}
@@ -105,14 +105,14 @@ export const FileUploadActions = ({
         {isCurrentUserMaker1 && (
           <div className="text-green-600 text-xs flex items-center gap-1 font-medium">
             <CheckCircle2 size={14} />
-            You've already processed this as Maker 1
+            You've already processed this as Maker
           </div>
         )}
         
         {isCurrentUserMaker2 && (
           <div className="text-green-600 text-xs flex items-center gap-1 font-medium">
             <CheckCircle2 size={14} />
-            You've already processed this as Maker 2
+            You've already processed this as Checker
           </div>
         )}
       </div>
