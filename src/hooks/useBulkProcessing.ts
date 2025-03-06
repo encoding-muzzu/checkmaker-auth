@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useRef } from "react";
@@ -78,22 +77,9 @@ export const useBulkProcessing = () => {
       
       if (error) throw error;
       
-      // Map the database column names to our frontend interface
-      let transformedData = data.map(file => ({
-        id: file.id,
-        file_name: file.file_name,
-        file_path: file.file_path,
-        created_at: file.created_at,
-        status: file.status,
-        record_count: file.record_count,
-        // Map the DB columns to our interface properties
-        maker_processed: file.maker_processed ?? file.maker1_processed ?? false,
-        maker_processed_at: file.maker_processed_at ?? file.maker1_processed_at,
-        maker_user_id: file.maker_user_id ?? file.maker1_user_id,
-        checker_processed: file.checker_processed ?? file.maker2_processed ?? false,
-        checker_processed_at: file.checker_processed_at ?? file.maker2_processed_at,
-        checker_user_id: file.checker_user_id ?? file.maker2_user_id
-      })) as BulkFile[];
+      // Transform the data directly - we don't need to check for old column names anymore
+      // as they've been renamed in the database
+      const transformedData = data as BulkFile[];
       
       let filteredData = transformedData;
       

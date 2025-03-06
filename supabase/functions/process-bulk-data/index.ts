@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import * as XLSX from "https://esm.sh/xlsx@0.18.5";
@@ -93,12 +92,9 @@ serve(async (req) => {
 
     console.log("File details:", fileDetails);
 
-    // Check if we're using old column names or new ones
-    const makerProcessed = fileDetails.maker_processed !== undefined ? 
-      fileDetails.maker_processed : fileDetails.maker1_processed;
-    
-    const checkerProcessed = fileDetails.checker_processed !== undefined ? 
-      fileDetails.checker_processed : fileDetails.maker2_processed;
+    // Check if the file has been processed already by the appropriate role
+    const makerProcessed = fileDetails.maker_processed;
+    const checkerProcessed = fileDetails.checker_processed;
 
     // Validate maker type and file status
     if (makerType === "maker" && makerProcessed) {
