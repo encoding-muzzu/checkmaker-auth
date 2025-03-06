@@ -14,7 +14,7 @@ const App = () => {
   return (
     <TooltipProvider>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter basename="/db-ops">
+        <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/dashboard" element={<Dashboard />} />
