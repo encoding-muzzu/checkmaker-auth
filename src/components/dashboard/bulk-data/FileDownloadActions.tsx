@@ -2,18 +2,23 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { DownloadIcon } from "lucide-react";
-import { BulkFile } from "@/hooks/useBulkProcessing";
+import { BulkFile, ProcessingRole } from "@/types/bulk-processing";
 
 interface FileDownloadActionsProps {
   file: BulkFile;
   onDownload: (filePath: string) => void;
+  userRole?: string | null;
 }
 
-export const FileDownloadActions = ({ file, onDownload }: FileDownloadActionsProps) => {
+export const FileDownloadActions = ({ file, onDownload, userRole }: FileDownloadActionsProps) => {
+  const isMaker = userRole === 'maker';
+  const isChecker = userRole === 'checker';
+
   return (
     <div className="flex flex-col gap-2 items-end">
       <h4 className="text-xs font-medium text-gray-500 w-full text-right">Download Files:</h4>
       <div className="flex gap-2">
+        {/* Original file is always visible to both roles */}
         <Button
           variant="outline"
           size="sm"
@@ -24,7 +29,8 @@ export const FileDownloadActions = ({ file, onDownload }: FileDownloadActionsPro
           Original
         </Button>
         
-        {file.maker_processed && (
+        {/* Maker file is only visible to Makers */}
+        {file.maker_processed && isMaker && (
           <Button
             variant="outline"
             size="sm"
@@ -39,7 +45,8 @@ export const FileDownloadActions = ({ file, onDownload }: FileDownloadActionsPro
           </Button>
         )}
         
-        {file.checker_processed && (
+        {/* Checker file is only visible to Checkers */}
+        {file.checker_processed && isChecker && (
           <Button
             variant="outline"
             size="sm"

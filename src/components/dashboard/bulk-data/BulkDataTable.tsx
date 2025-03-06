@@ -1,4 +1,3 @@
-
 import React from "react";
 import { TableCell, TableRow, TableHeader, TableHead, Table, TableBody, TableFooter } from "@/components/ui/table";
 import { formatDistanceToNow } from "date-fns";
@@ -51,7 +50,6 @@ export const BulkDataTable = ({
 }: BulkDataTableProps) => {
   if (isLoading) return <TableSkeleton />;
 
-  // If no files are available after filtering
   if (!bulkFiles || bulkFiles.length === 0) {
     return (
       <div className="bg-white rounded-md shadow-sm p-8 text-center">
@@ -98,6 +96,7 @@ export const BulkDataTable = ({
               <FileActionsCard 
                 file={file}
                 currentUserId={currentUserId}
+                userRole={userRole}
                 isUploading={isUploading}
                 uploadingFileId={uploadingFileId}
                 canCurrentUserUploadAsMaker={canCurrentUserUploadAsMaker(file)}

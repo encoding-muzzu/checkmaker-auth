@@ -1,13 +1,14 @@
 
 import React from "react";
 import { Card } from "@/components/ui/card";
-import { BulkFile } from "@/hooks/useBulkProcessing";
+import { BulkFile } from "@/types/bulk-processing";
 import { FileDownloadActions } from "./FileDownloadActions";
 import { FileUploadActions } from "./FileUploadActions";
 
 interface FileActionsCardProps {
   file: BulkFile;
   currentUserId: string | null;
+  userRole?: string | null;
   isUploading: boolean;
   uploadingFileId: string | null;
   canCurrentUserUploadAsMaker: boolean;
@@ -23,6 +24,7 @@ interface FileActionsCardProps {
 export const FileActionsCard = ({
   file,
   currentUserId,
+  userRole,
   isUploading,
   uploadingFileId,
   canCurrentUserUploadAsMaker,
@@ -37,7 +39,11 @@ export const FileActionsCard = ({
   return (
     <Card className="border border-gray-100 shadow-sm p-3 rounded-md">
       <div className="flex flex-wrap justify-end gap-3">
-        <FileDownloadActions file={file} onDownload={handleDownload} />
+        <FileDownloadActions 
+          file={file} 
+          onDownload={handleDownload} 
+          userRole={userRole} 
+        />
         
         <FileUploadActions 
           file={file}
