@@ -78,7 +78,24 @@ export const useBulkProcessing = () => {
       
       if (error) throw error;
       
-      let filteredData = data as BulkFile[];
+      // Map the database column names to our frontend interface
+      let transformedData = data.map(file => ({
+        id: file.id,
+        file_name: file.file_name,
+        file_path: file.file_path,
+        created_at: file.created_at,
+        status: file.status,
+        record_count: file.record_count,
+        // Map the DB columns to our interface properties
+        maker_processed: file.maker_processed ?? file.maker1_processed ?? false,
+        maker_processed_at: file.maker_processed_at ?? file.maker1_processed_at,
+        maker_user_id: file.maker_user_id ?? file.maker1_user_id,
+        checker_processed: file.checker_processed ?? file.maker2_processed ?? false,
+        checker_processed_at: file.checker_processed_at ?? file.maker2_processed_at,
+        checker_user_id: file.checker_user_id ?? file.maker2_user_id
+      })) as BulkFile[];
+      
+      let filteredData = transformedData;
       
       // Filter files based on user role
       if (isMaker) {
@@ -87,7 +104,7 @@ export const useBulkProcessing = () => {
         // 1. Original files (no one has processed yet)
         // 2. Files they've processed as maker
         // 3. Files that are ready for maker processing
-        filteredData = data.filter(file => {
+        filteredData = transformedData.filter(file => {
           const isOriginalFile = !file.maker_processed && !file.checker_processed;
           const isOwnProcessedFile = file.maker_user_id === currentUserId;
           const isReadyForMakerProcessing = !file.maker_processed;
@@ -100,7 +117,7 @@ export const useBulkProcessing = () => {
         // Checkers can see:
         // 1. Files that have been processed by makers and are ready for checker processing
         // 2. Files they've processed as checker
-        filteredData = data.filter(file => {
+        filteredData = transformedData.filter(file => {
           const isReadyForCheckerProcessing = file.maker_processed && !file.checker_processed;
           const isOwnProcessedFile = file.checker_user_id === currentUserId;
           

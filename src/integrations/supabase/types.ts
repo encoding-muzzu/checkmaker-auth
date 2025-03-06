@@ -142,44 +142,44 @@ export type Database = {
       }
       bulk_file_processing: {
         Row: {
+          checker_processed: boolean | null
+          checker_processed_at: string | null
+          checker_user_id: string | null
           created_at: string | null
           file_name: string
           file_path: string
           id: string
-          maker1_processed: boolean | null
-          maker1_processed_at: string | null
-          maker1_user_id: string | null
-          maker2_processed: boolean | null
-          maker2_processed_at: string | null
-          maker2_user_id: string | null
+          maker_processed: boolean | null
+          maker_processed_at: string | null
+          maker_user_id: string | null
           record_count: number | null
           status: string | null
         }
         Insert: {
+          checker_processed?: boolean | null
+          checker_processed_at?: string | null
+          checker_user_id?: string | null
           created_at?: string | null
           file_name: string
           file_path: string
           id?: string
-          maker1_processed?: boolean | null
-          maker1_processed_at?: string | null
-          maker1_user_id?: string | null
-          maker2_processed?: boolean | null
-          maker2_processed_at?: string | null
-          maker2_user_id?: string | null
+          maker_processed?: boolean | null
+          maker_processed_at?: string | null
+          maker_user_id?: string | null
           record_count?: number | null
           status?: string | null
         }
         Update: {
+          checker_processed?: boolean | null
+          checker_processed_at?: string | null
+          checker_user_id?: string | null
           created_at?: string | null
           file_name?: string
           file_path?: string
           id?: string
-          maker1_processed?: boolean | null
-          maker1_processed_at?: string | null
-          maker1_user_id?: string | null
-          maker2_processed?: boolean | null
-          maker2_processed_at?: string | null
-          maker2_user_id?: string | null
+          maker_processed?: boolean | null
+          maker_processed_at?: string | null
+          maker_user_id?: string | null
           record_count?: number | null
           status?: string | null
         }

@@ -93,8 +93,15 @@ serve(async (req) => {
 
     console.log("File details:", fileDetails);
 
+    // Check if we're using old column names or new ones
+    const makerProcessed = fileDetails.maker_processed !== undefined ? 
+      fileDetails.maker_processed : fileDetails.maker1_processed;
+    
+    const checkerProcessed = fileDetails.checker_processed !== undefined ? 
+      fileDetails.checker_processed : fileDetails.maker2_processed;
+
     // Validate maker type and file status
-    if (makerType === "maker" && fileDetails.maker_processed) {
+    if (makerType === "maker" && makerProcessed) {
       console.error("File already processed by Maker");
       return new Response(
         JSON.stringify({ error: "File already processed by Maker" }),
@@ -105,7 +112,7 @@ serve(async (req) => {
       );
     }
 
-    if (makerType === "checker" && !fileDetails.maker_processed) {
+    if (makerType === "checker" && !makerProcessed) {
       console.error("File must be processed by Maker first");
       return new Response(
         JSON.stringify({ error: "File must be processed by Maker first" }),
@@ -116,7 +123,7 @@ serve(async (req) => {
       );
     }
 
-    if (makerType === "checker" && fileDetails.checker_processed) {
+    if (makerType === "checker" && checkerProcessed) {
       console.error("File already processed by Checker");
       return new Response(
         JSON.stringify({ error: "File already processed by Checker" }),
@@ -205,13 +212,13 @@ serve(async (req) => {
           maker_processed: true,
           maker_processed_at: new Date().toISOString(),
           maker_user_id: userId,
-          status: newStatus
+          status: "processed_by_maker"
         }
       : {
           checker_processed: true,
           checker_processed_at: new Date().toISOString(),
           checker_user_id: userId,
-          status: newStatus
+          status: "bulk_processed_successfully"
         };
 
     console.log("Updating bulk_file_processing record:", updateData);
