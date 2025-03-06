@@ -8,13 +8,13 @@ interface FileStatusBadgeProps {
 
 export const FileStatusBadge = ({ file }: FileStatusBadgeProps) => {
   const getStatusLabel = (file: BulkFile) => {
-    if (file.maker2_processed) return "Processed by Maker 2";
-    if (file.maker1_processed) return "Processed by Maker 1";
+    if (file.maker1_processed && file.maker2_processed) return "Bulk Processed Successfully";
+    if (file.maker1_processed) return "Processed by Maker";
     return "Pending";
   };
 
   const getStatusClass = (file: BulkFile) => {
-    if (file.maker2_processed) return "bg-green-100 text-green-800";
+    if (file.maker1_processed && file.maker2_processed) return "bg-green-100 text-green-800";
     if (file.maker1_processed) return "bg-yellow-100 text-yellow-800";
     return "bg-blue-100 text-blue-800";
   };

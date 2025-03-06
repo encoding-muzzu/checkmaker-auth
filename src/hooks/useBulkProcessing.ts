@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useRef } from "react";
@@ -58,6 +59,8 @@ export const useBulkProcessing = () => {
   const isMaker = userRole === 'maker';
   const isChecker = userRole === 'checker';
 
+  console.log("Current user role:", userRole);
+
   const { data: bulkFiles, isLoading, refetch } = useQuery({
     queryKey: ["bulk-files", currentPage, userRole],
     queryFn: async () => {
@@ -70,40 +73,43 @@ export const useBulkProcessing = () => {
         .order("created_at", { ascending: false })
         .range(from, to);
       
+      // Get all files first, then filter on client side based on role
+      const { data, error, count } = await query;
+      
+      if (error) throw error;
+      
+      let filteredData = data as BulkFile[];
+      
       // Filter files based on user role
       if (isMaker) {
-        // Makers can only see original files and files uploaded by makers
-        const { data, error, count } = await query;
-        
-        if (error) throw error;
-        
-        // Filter files for makers: show only original files and maker-uploaded files
-        const filteredData = data.filter(file => {
-          // Show all files that don't have a maker2_user_id (no checker upload)
-          return file.maker2_user_id === null;
+        console.log("Filtering files for maker role");
+        // Makers can see:
+        // 1. Original files (no one has processed yet)
+        // 2. Files they've processed as maker
+        // 3. Files that are ready for maker processing
+        filteredData = data.filter(file => {
+          const isOriginalFile = !file.maker1_processed && !file.maker2_processed;
+          const isOwnProcessedFile = file.maker1_user_id === currentUserId;
+          const isReadyForMakerProcessing = !file.maker1_processed;
+          
+          return isOriginalFile || isOwnProcessedFile || isReadyForMakerProcessing;
         });
-        
-        return { data: filteredData as BulkFile[], count: filteredData.length };
-      } else if (isChecker) {
-        // Checkers can only see original files and files uploaded by checkers
-        const { data, error, count } = await query;
-        
-        if (error) throw error;
-        
-        // Filter files for checkers: show only original files and checker-uploaded files
-        const filteredData = data.filter(file => {
-          // Show all files that don't have a maker1_user_id (no maker upload)
-          // or files that have maker1_processed = true (ready for checker)
-          return file.maker1_user_id === null || file.maker1_processed === true;
+      } 
+      else if (isChecker) {
+        console.log("Filtering files for checker role");
+        // Checkers can see:
+        // 1. Files that have been processed by makers and are ready for checker processing
+        // 2. Files they've processed as checker
+        filteredData = data.filter(file => {
+          const isReadyForCheckerProcessing = file.maker1_processed && !file.maker2_processed;
+          const isOwnProcessedFile = file.maker2_user_id === currentUserId;
+          
+          return isReadyForCheckerProcessing || isOwnProcessedFile;
         });
-        
-        return { data: filteredData as BulkFile[], count: filteredData.length };
-      } else {
-        // For other roles or unauthenticated users
-        const { data, error, count } = await query;
-        if (error) throw error;
-        return { data: data as BulkFile[], count: count || 0 };
       }
+      
+      console.log(`Role: ${userRole}, Filtered files count: ${filteredData.length}, Original count: ${data.length}`);
+      return { data: filteredData, count: filteredData.length };
     },
     enabled: !!session,
   });
@@ -124,16 +130,18 @@ export const useBulkProcessing = () => {
   };
 
   const canCurrentUserUploadAsMaker1 = (file: BulkFile) => {
-    // Implement new logic: Makers can upload only if no maker has uploaded yet
-    return isMaker && !file.maker1_processed && file.maker1_user_id === null;
+    // Makers can upload only if:
+    // 1. User has maker role
+    // 2. File hasn't been processed by a maker yet
+    return isMaker && !file.maker1_processed;
   };
 
   const canCurrentUserUploadAsMaker2 = (file: BulkFile) => {
-    // Implement new logic: Checkers can upload only if maker has processed but no checker has uploaded yet
-    return isChecker && 
-      file.maker1_processed && 
-      !file.maker2_processed && 
-      file.maker2_user_id === null;
+    // Checkers can upload only if:
+    // 1. User has checker role
+    // 2. File has been processed by a maker
+    // 3. File hasn't been processed by a checker yet
+    return isChecker && file.maker1_processed && !file.maker2_processed;
   };
 
   const isCurrentUserMaker1 = (file: BulkFile) => {
@@ -168,7 +176,7 @@ export const useBulkProcessing = () => {
     try {
       const filePath = `bulk_uploads/${fileId}/${makerType}_${file.name}`;
       const { error: uploadError } = await supabase.storage
-        .from('bulk-files')  // Fixed bucket name from 'bulk_processing' to 'bulk-files'
+        .from('bulk-files')
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
@@ -182,10 +190,12 @@ export const useBulkProcessing = () => {
         .from('bulk_file_processing')
         .update({
           file_path: filePath,
-          [`maker${makerType.slice(-1)}_processed`]: true,
-          [`maker${makerType.slice(-1)}_processed_at`]: new Date().toISOString(),
-          [`maker${makerType.slice(-1)}_user_id`]: currentUserId,
-          status: makerType === 'maker1' ? 'maker1_processed' : 'maker2_processed'
+          [`${makerType}_processed`]: true,
+          [`${makerType}_processed_at`]: new Date().toISOString(),
+          [`${makerType}_user_id`]: currentUserId,
+          status: makerType === 'maker1' 
+            ? 'maker1_processed' 
+            : (file.maker1_processed ? 'bulk_processed_successfully' : 'maker2_processed')
         })
         .eq('id', fileId);
 
@@ -211,7 +221,7 @@ export const useBulkProcessing = () => {
   const handleDownload = async (filePath: string) => {
     try {
       const { data, error } = await supabase.storage
-        .from('bulk-files')  // Fixed bucket name from 'bulk_processing' to 'bulk-files'
+        .from('bulk-files')
         .download(filePath);
 
       if (error) {

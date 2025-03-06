@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import * as XLSX from "https://esm.sh/xlsx@0.18.5";
@@ -94,9 +95,9 @@ serve(async (req) => {
 
     // Validate maker type and file status
     if (makerType === "maker1" && fileDetails.maker1_processed) {
-      console.error("File already processed by Maker 1");
+      console.error("File already processed by Maker");
       return new Response(
-        JSON.stringify({ error: "File already processed by Maker 1" }),
+        JSON.stringify({ error: "File already processed by Maker" }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" }, 
           status: 400 
@@ -105,9 +106,9 @@ serve(async (req) => {
     }
 
     if (makerType === "maker2" && !fileDetails.maker1_processed) {
-      console.error("File must be processed by Maker 1 first");
+      console.error("File must be processed by Maker first");
       return new Response(
-        JSON.stringify({ error: "File must be processed by Maker 1 first" }),
+        JSON.stringify({ error: "File must be processed by Maker first" }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" }, 
           status: 400 
@@ -116,9 +117,9 @@ serve(async (req) => {
     }
 
     if (makerType === "maker2" && fileDetails.maker2_processed) {
-      console.error("File already processed by Maker 2");
+      console.error("File already processed by Checker");
       return new Response(
-        JSON.stringify({ error: "File already processed by Maker 2" }),
+        JSON.stringify({ error: "File already processed by Checker" }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" }, 
           status: 400 
@@ -145,8 +146,8 @@ serve(async (req) => {
     const fileNameWithoutExt = originalFileName.split(".")[0];
     
     const newFileName = makerType === "maker1" 
-      ? `${fileNameWithoutExt}_maker1.xlsx` 
-      : `${fileNameWithoutExt}_maker2.xlsx`;
+      ? `${fileNameWithoutExt}_maker.xlsx` 
+      : `${fileNameWithoutExt}_checker.xlsx`;
     
     const newFilePath = `exports/${newFileName}`;
     
@@ -169,7 +170,7 @@ serve(async (req) => {
     );
     
     const { data: uploadData, error: uploadError } = await adminSupabase.storage
-      .from("bulk-files") // Changed from "bulk-files" to "bulk-files" for consistency
+      .from("bulk-files")
       .upload(newFilePath, excelOutput, {
         contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         upsert: false
@@ -190,8 +191,13 @@ serve(async (req) => {
 
     // Get public URL for the file
     const { data: publicUrl } = adminSupabase.storage
-      .from("bulk-files") // Changed from "bulk-files" to "bulk-files" for consistency
+      .from("bulk-files")
       .getPublicUrl(newFilePath);
+
+    // Determine the status based on the processing state
+    let newStatus = makerType === "maker1" 
+      ? "processed_by_maker" 
+      : "bulk_processed_successfully";
 
     // Update the bulk_file_processing record
     const updateData = makerType === "maker1" 
@@ -199,13 +205,13 @@ serve(async (req) => {
           maker1_processed: true,
           maker1_processed_at: new Date().toISOString(),
           maker1_user_id: userId,
-          status: "processed_by_maker1"
+          status: newStatus
         }
       : {
           maker2_processed: true,
           maker2_processed_at: new Date().toISOString(),
           maker2_user_id: userId,
-          status: "processed_by_maker2"
+          status: newStatus
         };
 
     console.log("Updating bulk_file_processing record:", updateData);
@@ -231,7 +237,7 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({ 
-        message: `File processed successfully by ${makerType}`, 
+        message: `File processed successfully by ${makerType === "maker1" ? "Maker" : "Checker"}`, 
         file_path: newFilePath,
         file_url: publicUrl.publicUrl
       }),
