@@ -34,7 +34,10 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
     setUploadingFileId(fileId);
 
     try {
-      const filePath = `bulk_uploads/${fileId}/${makerType}_${file.name}`;
+      // Replace spaces with underscores in the file name
+      const sanitizedFileName = file.name.replace(/\s+/g, "_");
+      
+      const filePath = `bulk_uploads/${fileId}/${makerType}_${sanitizedFileName}`;
       const { error: uploadError } = await supabase.storage
         .from('bulk-files')
         .upload(filePath, file, {
