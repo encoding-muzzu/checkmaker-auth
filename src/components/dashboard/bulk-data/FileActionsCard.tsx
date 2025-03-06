@@ -10,10 +10,10 @@ interface FileActionsCardProps {
   currentUserId: string | null;
   isUploading: boolean;
   uploadingFileId: string | null;
-  canCurrentUserUploadAsMaker1: boolean;
-  canCurrentUserUploadAsMaker2: boolean;
-  isCurrentUserMaker1: boolean;
-  isCurrentUserMaker2: boolean;
+  canCurrentUserUploadAsMaker: boolean;
+  canCurrentUserUploadAsChecker: boolean;
+  isCurrentUserMaker: boolean;
+  isCurrentUserChecker: boolean;
   fileInputRefs: React.MutableRefObject<{ [key: string]: HTMLInputElement | null }>;
   handleDownload: (filePath: string) => void;
   handleUploadClick: (fileId: string, inputRef: React.RefObject<HTMLInputElement>) => void;
@@ -25,10 +25,10 @@ export const FileActionsCard = ({
   currentUserId,
   isUploading,
   uploadingFileId,
-  canCurrentUserUploadAsMaker1,
-  canCurrentUserUploadAsMaker2,
-  isCurrentUserMaker1,
-  isCurrentUserMaker2,
+  canCurrentUserUploadAsMaker,
+  canCurrentUserUploadAsChecker,
+  isCurrentUserMaker,
+  isCurrentUserChecker,
   fileInputRefs,
   handleDownload,
   handleUploadClick,
@@ -44,10 +44,10 @@ export const FileActionsCard = ({
           currentUserId={currentUserId}
           isUploading={isUploading}
           uploadingFileId={uploadingFileId}
-          canCurrentUserUploadAsMaker1={canCurrentUserUploadAsMaker1}
-          canCurrentUserUploadAsMaker2={canCurrentUserUploadAsMaker2}
-          isCurrentUserMaker1={isCurrentUserMaker1}
-          isCurrentUserMaker2={isCurrentUserMaker2}
+          canCurrentUserUploadAsMaker={canCurrentUserUploadAsMaker}
+          canCurrentUserUploadAsChecker={canCurrentUserUploadAsChecker}
+          isCurrentUserMaker={isCurrentUserMaker}
+          isCurrentUserChecker={isCurrentUserChecker}
           fileInputRefs={fileInputRefs}
           handleUploadClick={handleUploadClick}
           handleFileChange={handleFileChange}

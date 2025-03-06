@@ -21,7 +21,7 @@ serve(async (req) => {
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const fileId = formData.get("fileId") as string;
-    const makerType = formData.get("makerType") as string; // maker1 or maker2
+    const makerType = formData.get("makerType") as string; // maker or checker
     
     console.log(`Processing ${makerType} upload for file ID: ${fileId}`);
     
@@ -94,7 +94,7 @@ serve(async (req) => {
     console.log("File details:", fileDetails);
 
     // Validate maker type and file status
-    if (makerType === "maker1" && fileDetails.maker1_processed) {
+    if (makerType === "maker" && fileDetails.maker_processed) {
       console.error("File already processed by Maker");
       return new Response(
         JSON.stringify({ error: "File already processed by Maker" }),
@@ -105,7 +105,7 @@ serve(async (req) => {
       );
     }
 
-    if (makerType === "maker2" && !fileDetails.maker1_processed) {
+    if (makerType === "checker" && !fileDetails.maker_processed) {
       console.error("File must be processed by Maker first");
       return new Response(
         JSON.stringify({ error: "File must be processed by Maker first" }),
@@ -116,7 +116,7 @@ serve(async (req) => {
       );
     }
 
-    if (makerType === "maker2" && fileDetails.maker2_processed) {
+    if (makerType === "checker" && fileDetails.checker_processed) {
       console.error("File already processed by Checker");
       return new Response(
         JSON.stringify({ error: "File already processed by Checker" }),
@@ -145,7 +145,7 @@ serve(async (req) => {
     const originalFileName = pathParts[pathParts.length - 1];
     const fileNameWithoutExt = originalFileName.split(".")[0];
     
-    const newFileName = makerType === "maker1" 
+    const newFileName = makerType === "maker" 
       ? `${fileNameWithoutExt}_maker.xlsx` 
       : `${fileNameWithoutExt}_checker.xlsx`;
     
@@ -195,22 +195,22 @@ serve(async (req) => {
       .getPublicUrl(newFilePath);
 
     // Determine the status based on the processing state
-    let newStatus = makerType === "maker1" 
+    let newStatus = makerType === "maker" 
       ? "processed_by_maker" 
       : "bulk_processed_successfully";
 
     // Update the bulk_file_processing record
-    const updateData = makerType === "maker1" 
+    const updateData = makerType === "maker" 
       ? {
-          maker1_processed: true,
-          maker1_processed_at: new Date().toISOString(),
-          maker1_user_id: userId,
+          maker_processed: true,
+          maker_processed_at: new Date().toISOString(),
+          maker_user_id: userId,
           status: newStatus
         }
       : {
-          maker2_processed: true,
-          maker2_processed_at: new Date().toISOString(),
-          maker2_user_id: userId,
+          checker_processed: true,
+          checker_processed_at: new Date().toISOString(),
+          checker_user_id: userId,
           status: newStatus
         };
 
@@ -237,7 +237,7 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({ 
-        message: `File processed successfully by ${makerType === "maker1" ? "Maker" : "Checker"}`, 
+        message: `File processed successfully by ${makerType === "maker" ? "Maker" : "Checker"}`, 
         file_path: newFilePath,
         file_url: publicUrl.publicUrl
       }),

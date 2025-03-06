@@ -24,33 +24,33 @@ export const FileDownloadActions = ({ file, onDownload }: FileDownloadActionsPro
           Original
         </Button>
         
-        {file.maker1_processed && (
+        {file.maker_processed && (
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
-              const maker1FilePath = file.file_path.replace('.xlsx', '_maker1.xlsx');
-              onDownload(maker1FilePath);
+              const makerFilePath = file.file_path.replace('.xlsx', '_maker.xlsx');
+              onDownload(makerFilePath);
             }}
             className="flex items-center gap-1 border-yellow-200 text-yellow-700 hover:bg-yellow-50"
           >
             <DownloadIcon size={16} />
-            Maker 1
+            Maker
           </Button>
         )}
         
-        {file.maker2_processed && (
+        {file.checker_processed && (
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
-              const maker2FilePath = file.file_path.replace('.xlsx', '_maker2.xlsx');
-              onDownload(maker2FilePath);
+              const checkerFilePath = file.file_path.replace('.xlsx', '_checker.xlsx');
+              onDownload(checkerFilePath);
             }}
             className="flex items-center gap-1 border-green-200 text-green-700 hover:bg-green-50"
           >
             <DownloadIcon size={16} />
-            Maker 2
+            Checker
           </Button>
         )}
       </div>

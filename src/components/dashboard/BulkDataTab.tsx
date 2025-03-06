@@ -12,10 +12,10 @@ export const BulkDataTab = () => {
     isUploading,
     uploadingFileId,
     fileInputRefs,
-    canCurrentUserUploadAsMaker1,
-    canCurrentUserUploadAsMaker2,
-    isCurrentUserMaker1,
-    isCurrentUserMaker2,
+    canCurrentUserUploadAsMaker,
+    canCurrentUserUploadAsChecker,
+    isCurrentUserMaker,
+    isCurrentUserChecker,
     currentPage,
     totalPages,
     handleNextPage,
@@ -42,10 +42,10 @@ export const BulkDataTab = () => {
           onNextPage={handleNextPage}
           onPreviousPage={handlePreviousPage}
           fileInputRefs={fileInputRefs}
-          canCurrentUserUploadAsMaker1={canCurrentUserUploadAsMaker1}
-          canCurrentUserUploadAsMaker2={canCurrentUserUploadAsMaker2}
-          isCurrentUserMaker1={isCurrentUserMaker1}
-          isCurrentUserMaker2={isCurrentUserMaker2}
+          canCurrentUserUploadAsMaker={canCurrentUserUploadAsMaker}
+          canCurrentUserUploadAsChecker={canCurrentUserUploadAsChecker}
+          isCurrentUserMaker={isCurrentUserMaker}
+          isCurrentUserChecker={isCurrentUserChecker}
           handleDownload={handleDownload}
           handleUploadClick={handleUploadClick}
           handleFileChange={handleFileChange}

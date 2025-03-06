@@ -12,12 +12,12 @@ export interface BulkFile {
   created_at: string;
   status: string;
   record_count: number | null;
-  maker1_processed: boolean;
-  maker1_processed_at: string | null;
-  maker1_user_id: string | null;
-  maker2_processed: boolean;
-  maker2_processed_at: string | null;
-  maker2_user_id: string | null;
+  maker_processed: boolean;
+  maker_processed_at: string | null;
+  maker_user_id: string | null;
+  checker_processed: boolean;
+  checker_processed_at: string | null;
+  checker_user_id: string | null;
 }
 
 export const useBulkProcessing = () => {
@@ -88,9 +88,9 @@ export const useBulkProcessing = () => {
         // 2. Files they've processed as maker
         // 3. Files that are ready for maker processing
         filteredData = data.filter(file => {
-          const isOriginalFile = !file.maker1_processed && !file.maker2_processed;
-          const isOwnProcessedFile = file.maker1_user_id === currentUserId;
-          const isReadyForMakerProcessing = !file.maker1_processed;
+          const isOriginalFile = !file.maker_processed && !file.checker_processed;
+          const isOwnProcessedFile = file.maker_user_id === currentUserId;
+          const isReadyForMakerProcessing = !file.maker_processed;
           
           return isOriginalFile || isOwnProcessedFile || isReadyForMakerProcessing;
         });
@@ -101,8 +101,8 @@ export const useBulkProcessing = () => {
         // 1. Files that have been processed by makers and are ready for checker processing
         // 2. Files they've processed as checker
         filteredData = data.filter(file => {
-          const isReadyForCheckerProcessing = file.maker1_processed && !file.maker2_processed;
-          const isOwnProcessedFile = file.maker2_user_id === currentUserId;
+          const isReadyForCheckerProcessing = file.maker_processed && !file.checker_processed;
+          const isOwnProcessedFile = file.checker_user_id === currentUserId;
           
           return isReadyForCheckerProcessing || isOwnProcessedFile;
         });
@@ -129,27 +129,27 @@ export const useBulkProcessing = () => {
     }
   };
 
-  const canCurrentUserUploadAsMaker1 = (file: BulkFile) => {
+  const canCurrentUserUploadAsMaker = (file: BulkFile) => {
     // Makers can upload only if:
     // 1. User has maker role
     // 2. File hasn't been processed by a maker yet
-    return isMaker && !file.maker1_processed;
+    return isMaker && !file.maker_processed;
   };
 
-  const canCurrentUserUploadAsMaker2 = (file: BulkFile) => {
+  const canCurrentUserUploadAsChecker = (file: BulkFile) => {
     // Checkers can upload only if:
     // 1. User has checker role
     // 2. File has been processed by a maker
     // 3. File hasn't been processed by a checker yet
-    return isChecker && file.maker1_processed && !file.maker2_processed;
+    return isChecker && file.maker_processed && !file.checker_processed;
   };
 
-  const isCurrentUserMaker1 = (file: BulkFile) => {
-    return file.maker1_user_id === currentUserId;
+  const isCurrentUserMaker = (file: BulkFile) => {
+    return file.maker_user_id === currentUserId;
   };
 
-  const isCurrentUserMaker2 = (file: BulkFile) => {
-    return file.maker2_user_id === currentUserId;
+  const isCurrentUserChecker = (file: BulkFile) => {
+    return file.checker_user_id === currentUserId;
   };
 
   const handleUploadClick = (fileId: string, inputRef: React.RefObject<HTMLInputElement>) => {
@@ -186,24 +186,32 @@ export const useBulkProcessing = () => {
         throw uploadError;
       }
 
+      const updateData: any = {
+        file_path: filePath,
+      };
+      
+      if (makerType === 'maker') {
+        updateData.maker_processed = true;
+        updateData.maker_processed_at = new Date().toISOString();
+        updateData.maker_user_id = currentUserId;
+        updateData.status = 'maker_processed';
+      } else if (makerType === 'checker') {
+        updateData.checker_processed = true;
+        updateData.checker_processed_at = new Date().toISOString();
+        updateData.checker_user_id = currentUserId;
+        updateData.status = 'bulk_processed_successfully';
+      }
+
       const { error: dbError } = await supabase
         .from('bulk_file_processing')
-        .update({
-          file_path: filePath,
-          [`${makerType}_processed`]: true,
-          [`${makerType}_processed_at`]: new Date().toISOString(),
-          [`${makerType}_user_id`]: currentUserId,
-          status: makerType === 'maker1' 
-            ? 'maker1_processed' 
-            : (file.maker1_processed ? 'bulk_processed_successfully' : 'maker2_processed')
-        })
+        .update(updateData)
         .eq('id', fileId);
 
       if (dbError) {
         throw dbError;
       }
 
-      sonnerToast.success(`File uploaded successfully as ${makerType === 'maker1' ? 'Maker' : 'Checker'}!`);
+      sonnerToast.success(`File uploaded successfully as ${makerType === 'maker' ? 'Maker' : 'Checker'}!`);
       refetch();
     } catch (error: any) {
       console.error("File upload error:", error);
@@ -262,10 +270,10 @@ export const useBulkProcessing = () => {
     isUploading,
     uploadingFileId,
     fileInputRefs,
-    canCurrentUserUploadAsMaker1,
-    canCurrentUserUploadAsMaker2,
-    isCurrentUserMaker1,
-    isCurrentUserMaker2,
+    canCurrentUserUploadAsMaker,
+    canCurrentUserUploadAsChecker,
+    isCurrentUserMaker,
+    isCurrentUserChecker,
     handleUploadClick,
     handleFileChange,
     handleDownload,

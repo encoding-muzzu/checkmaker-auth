@@ -9,10 +9,10 @@ interface FileUploadActionsProps {
   currentUserId: string | null;
   isUploading: boolean;
   uploadingFileId: string | null;
-  canCurrentUserUploadAsMaker1: boolean;
-  canCurrentUserUploadAsMaker2: boolean;
-  isCurrentUserMaker1: boolean;
-  isCurrentUserMaker2: boolean;
+  canCurrentUserUploadAsMaker: boolean;
+  canCurrentUserUploadAsChecker: boolean;
+  isCurrentUserMaker: boolean;
+  isCurrentUserChecker: boolean;
   fileInputRefs: React.MutableRefObject<{ [key: string]: HTMLInputElement | null }>;
   handleUploadClick: (fileId: string, inputRef: React.RefObject<HTMLInputElement>) => void;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>, fileId: string, makerType: string) => void;
@@ -23,10 +23,10 @@ export const FileUploadActions = ({
   currentUserId,
   isUploading,
   uploadingFileId,
-  canCurrentUserUploadAsMaker1,
-  canCurrentUserUploadAsMaker2,
-  isCurrentUserMaker1,
-  isCurrentUserMaker2,
+  canCurrentUserUploadAsMaker,
+  canCurrentUserUploadAsChecker,
+  isCurrentUserMaker,
+  isCurrentUserChecker,
   fileInputRefs,
   handleUploadClick,
   handleFileChange
@@ -35,26 +35,26 @@ export const FileUploadActions = ({
   // Add debugging console logs
   console.log("File Upload Actions Props:", {
     fileId: file.id,
-    canUploadAsMaker1: canCurrentUserUploadAsMaker1,
-    canUploadAsMaker2: canCurrentUserUploadAsMaker2,
-    isCurrentUserMaker1,
-    isCurrentUserMaker2,
-    maker1_processed: file.maker1_processed,
-    maker2_processed: file.maker2_processed
+    canUploadAsMaker: canCurrentUserUploadAsMaker,
+    canUploadAsChecker: canCurrentUserUploadAsChecker,
+    isCurrentUserMaker,
+    isCurrentUserChecker,
+    maker_processed: file.maker_processed,
+    checker_processed: file.checker_processed
   });
 
   // Don't show upload actions if user can't upload in any role or if they've already processed
-  if (!canCurrentUserUploadAsMaker1 && !canCurrentUserUploadAsMaker2) {
+  if (!canCurrentUserUploadAsMaker && !canCurrentUserUploadAsChecker) {
     return (
       <div className="mt-2 flex justify-end">
-        {isCurrentUserMaker1 && (
+        {isCurrentUserMaker && (
           <div className="text-green-600 text-xs flex items-center gap-1 font-medium">
             <CheckCircle2 size={14} />
             You've already processed this as Maker
           </div>
         )}
         
-        {isCurrentUserMaker2 && (
+        {isCurrentUserChecker && (
           <div className="text-green-600 text-xs flex items-center gap-1 font-medium">
             <CheckCircle2 size={14} />
             You've already processed this as Checker
@@ -68,19 +68,19 @@ export const FileUploadActions = ({
     <div className="flex flex-col gap-2 items-end ml-3 border-l border-gray-200 pl-3">
       <h4 className="text-xs font-medium text-gray-500 w-full text-right">Upload Actions:</h4>
       <div className="flex gap-2">
-        {canCurrentUserUploadAsMaker1 && (
+        {canCurrentUserUploadAsMaker && (
           <>
             <input
               type="file"
-              ref={el => fileInputRefs.current[`maker1_${file.id}`] = el}
-              onChange={(e) => handleFileChange(e, file.id, "maker1")}
+              ref={el => fileInputRefs.current[`maker_${file.id}`] = el}
+              onChange={(e) => handleFileChange(e, file.id, "maker")}
               className="hidden"
               accept=".xlsx, .xls"
             />
             <Button
               variant="default"
               size="sm"
-              onClick={() => handleUploadClick(file.id, { current: fileInputRefs.current[`maker1_${file.id}`] })}
+              onClick={() => handleUploadClick(file.id, { current: fileInputRefs.current[`maker_${file.id}`] })}
               disabled={isUploading && uploadingFileId === file.id}
               className="flex items-center gap-1 bg-black text-white hover:bg-gray-800"
             >
@@ -90,19 +90,19 @@ export const FileUploadActions = ({
           </>
         )}
         
-        {canCurrentUserUploadAsMaker2 && (
+        {canCurrentUserUploadAsChecker && (
           <>
             <input
               type="file"
-              ref={el => fileInputRefs.current[`maker2_${file.id}`] = el}
-              onChange={(e) => handleFileChange(e, file.id, "maker2")}
+              ref={el => fileInputRefs.current[`checker_${file.id}`] = el}
+              onChange={(e) => handleFileChange(e, file.id, "checker")}
               className="hidden"
               accept=".xlsx, .xls"
             />
             <Button
               variant="default"
               size="sm"
-              onClick={() => handleUploadClick(file.id, { current: fileInputRefs.current[`maker2_${file.id}`] })}
+              onClick={() => handleUploadClick(file.id, { current: fileInputRefs.current[`checker_${file.id}`] })}
               disabled={isUploading && uploadingFileId === file.id}
               className="flex items-center gap-1 bg-black text-white hover:bg-gray-800"
             >
@@ -114,14 +114,14 @@ export const FileUploadActions = ({
       </div>
       
       <div className="mt-2 flex justify-end">
-        {isCurrentUserMaker1 && (
+        {isCurrentUserMaker && (
           <div className="text-green-600 text-xs flex items-center gap-1 font-medium">
             <CheckCircle2 size={14} />
             You've already processed this as Maker
           </div>
         )}
         
-        {isCurrentUserMaker2 && (
+        {isCurrentUserChecker && (
           <div className="text-green-600 text-xs flex items-center gap-1 font-medium">
             <CheckCircle2 size={14} />
             You've already processed this as Checker

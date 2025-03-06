@@ -20,10 +20,10 @@ interface BulkDataTableProps {
   onNextPage: () => void;
   onPreviousPage: () => void;
   fileInputRefs: React.MutableRefObject<{ [key: string]: HTMLInputElement | null }>;
-  canCurrentUserUploadAsMaker1: (file: BulkFile) => boolean;
-  canCurrentUserUploadAsMaker2: (file: BulkFile) => boolean;
-  isCurrentUserMaker1: (file: BulkFile) => boolean;
-  isCurrentUserMaker2: (file: BulkFile) => boolean;
+  canCurrentUserUploadAsMaker: (file: BulkFile) => boolean;
+  canCurrentUserUploadAsChecker: (file: BulkFile) => boolean;
+  isCurrentUserMaker: (file: BulkFile) => boolean;
+  isCurrentUserChecker: (file: BulkFile) => boolean;
   handleDownload: (filePath: string) => void;
   handleUploadClick: (fileId: string, inputRef: React.RefObject<HTMLInputElement>) => void;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>, fileId: string, makerType: string) => void;
@@ -41,10 +41,10 @@ export const BulkDataTable = ({
   onNextPage,
   onPreviousPage,
   fileInputRefs,
-  canCurrentUserUploadAsMaker1,
-  canCurrentUserUploadAsMaker2,
-  isCurrentUserMaker1,
-  isCurrentUserMaker2,
+  canCurrentUserUploadAsMaker,
+  canCurrentUserUploadAsChecker,
+  isCurrentUserMaker,
+  isCurrentUserChecker,
   handleDownload,
   handleUploadClick,
   handleFileChange
@@ -100,10 +100,10 @@ export const BulkDataTable = ({
                 currentUserId={currentUserId}
                 isUploading={isUploading}
                 uploadingFileId={uploadingFileId}
-                canCurrentUserUploadAsMaker1={canCurrentUserUploadAsMaker1(file)}
-                canCurrentUserUploadAsMaker2={canCurrentUserUploadAsMaker2(file)}
-                isCurrentUserMaker1={isCurrentUserMaker1(file)}
-                isCurrentUserMaker2={isCurrentUserMaker2(file)}
+                canCurrentUserUploadAsMaker={canCurrentUserUploadAsMaker(file)}
+                canCurrentUserUploadAsChecker={canCurrentUserUploadAsChecker(file)}
+                isCurrentUserMaker={isCurrentUserMaker(file)}
+                isCurrentUserChecker={isCurrentUserChecker(file)}
                 fileInputRefs={fileInputRefs}
                 handleDownload={handleDownload}
                 handleUploadClick={handleUploadClick}
