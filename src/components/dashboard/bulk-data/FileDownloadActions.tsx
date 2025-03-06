@@ -24,6 +24,7 @@ export const FileDownloadActions = ({ file, onDownload, userRole }: FileDownload
           size="sm"
           onClick={() => onDownload(file.file_path)}
           className="flex items-center gap-1 border-gray-200 hover:bg-gray-50"
+          title="Download filtered file with key columns only"
         >
           <DownloadIcon size={16} />
           Original
@@ -39,6 +40,7 @@ export const FileDownloadActions = ({ file, onDownload, userRole }: FileDownload
               onDownload(makerFilePath);
             }}
             className="flex items-center gap-1 border-yellow-200 text-yellow-700 hover:bg-yellow-50"
+            title="Download filtered file with key columns only"
           >
             <DownloadIcon size={16} />
             Maker
@@ -55,6 +57,7 @@ export const FileDownloadActions = ({ file, onDownload, userRole }: FileDownload
               onDownload(checkerFilePath);
             }}
             className="flex items-center gap-1 border-green-200 text-green-700 hover:bg-green-50"
+            title="Download filtered file with key columns only"
           >
             <DownloadIcon size={16} />
             Checker

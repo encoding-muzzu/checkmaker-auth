@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { toast as sonnerToast } from "sonner";
 import { ProcessingRole } from "@/types/bulk-processing";
+import * as XLSX from "xlsx";
 
 export const useFileOperations = (currentUserId: string | null, refreshFiles: () => void) => {
   const [isUploading, setIsUploading] = useState(false);
@@ -95,10 +96,36 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
         throw error;
       }
 
-      const url = window.URL.createObjectURL(data);
+      // Read the Excel file
+      const arrayBuffer = await data.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      
+      // Convert worksheet to JSON
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+      
+      // Filter to only include the required columns
+      const filteredData = jsonData.map((row: any) => ({
+        arn: row.arn,
+        pan_number: row.pan_number,
+        itr_flag: row.itr_flag,
+        lrs_amount_consumed: row.lrs_amount_consumed
+      }));
+      
+      // Create a new workbook with filtered data
+      const newWorkbook = XLSX.utils.book_new();
+      const newWorksheet = XLSX.utils.json_to_sheet(filteredData);
+      XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, "FilteredData");
+      
+      // Generate Excel file and download
+      const excelOutput = XLSX.write(newWorkbook, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([excelOutput], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      
+      const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = filePath.split('/').pop() || 'downloaded_file'; // Extract filename
+      a.download = filePath.split('/').pop() || 'filtered_data.xlsx'; // Extract filename
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
