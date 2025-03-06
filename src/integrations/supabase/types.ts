@@ -63,7 +63,6 @@ export type Database = {
         Row: {
           application_number: string | null
           arn: string
-          assigned_to: string | null
           card_type: string
           created_at: string | null
           customer_name: string
@@ -78,13 +77,13 @@ export type Database = {
           product_variant: string
           status: string
           status_id: number | null
+          tcs_amount: string | null
           total_amount_loaded: number
           updated_at: string | null
         }
         Insert: {
           application_number?: string | null
           arn: string
-          assigned_to?: string | null
           card_type: string
           created_at?: string | null
           customer_name: string
@@ -99,13 +98,13 @@ export type Database = {
           product_variant: string
           status?: string
           status_id?: number | null
+          tcs_amount?: string | null
           total_amount_loaded: number
           updated_at?: string | null
         }
         Update: {
           application_number?: string | null
           arn?: string
-          assigned_to?: string | null
           card_type?: string
           created_at?: string | null
           customer_name?: string
@@ -120,17 +119,11 @@ export type Database = {
           product_variant?: string
           status?: string
           status_id?: number | null
+          tcs_amount?: string | null
           total_amount_loaded?: number
           updated_at?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "applications_assigned_to_fkey"
-            columns: ["assigned_to"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "applications_status_id_fkey"
             columns: ["status_id"]

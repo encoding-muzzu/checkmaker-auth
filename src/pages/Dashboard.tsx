@@ -4,7 +4,6 @@ import { useDashboard } from "@/hooks/useDashboard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { SearchControls } from "@/components/dashboard/SearchControls";
-import { EntriesPerPage } from "@/components/dashboard/EntriesPerPage";
 import { DashboardTable } from "@/components/dashboard/DashboardTable";
 import { BulkDataTab } from "@/components/dashboard/BulkDataTab";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,8 +29,6 @@ const Dashboard = () => {
     setSearchColumn,
     searchQuery,
     setSearchQuery,
-    entriesPerPage,
-    setEntriesPerPage,
     currentPage,
     setCurrentPage,
     userRole,
@@ -43,7 +40,9 @@ const Dashboard = () => {
     handleSearch,
     getFilteredApplications,
     searchResults,
-    setSearchResults
+    setSearchResults,
+    totalCount,
+    totalPages
   } = useDashboard();
 
   useEffect(() => {
@@ -68,13 +67,6 @@ const Dashboard = () => {
   useEffect(() => {
     setSearchColumn("application_number");
   }, [setSearchColumn]);
-
-  const pageSize = parseInt(entriesPerPage);
-  const filteredData = getFilteredApplications();
-  const totalPages = Math.ceil(filteredData.length / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const currentData = filteredData.slice(startIndex, endIndex);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -120,11 +112,6 @@ const Dashboard = () => {
         <BulkDataTab />
       ) : (
         <>
-          <EntriesPerPage
-            value={entriesPerPage}
-            onChange={setEntriesPerPage}
-          />
-
           <style>
             {`
               #application-details-sheet {
@@ -135,7 +122,7 @@ const Dashboard = () => {
           </style>
 
           <DashboardTable 
-            data={currentData}
+            data={applications}
             isDense={false}
             currentPage={currentPage}
             totalPages={totalPages}

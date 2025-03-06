@@ -3,11 +3,27 @@ import { useAuth } from "./useAuth";
 import { useApplicationData } from "./useApplicationData";
 import { useApplicationSearch } from "./useApplicationSearch";
 import { useApplicationFilters } from "./useApplicationFilters";
-import { usePagination } from "./usePagination";
+import { useState } from "react";
 
 export const useDashboard = () => {
   const { handleLogout } = useAuth();
-  const { applications, isLoading, handleRefresh } = useApplicationData();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filters, setFilters] = useState({});
+  const {
+    activeTab,
+    setActiveTab,
+    userRole,
+    setUserRole,
+  } = useApplicationFilters();
+  
+  // Server-side pagination with 10 items per page
+  const { 
+    applications, 
+    totalCount, 
+    isLoading, 
+    handleRefresh 
+  } = useApplicationData(currentPage, 10, filters);
+  
   const {
     searchColumn,
     setSearchColumn,
@@ -16,22 +32,14 @@ export const useDashboard = () => {
     searchResults,
     setSearchResults,
     handleSearch
-  } = useApplicationSearch();
-  const {
-    activeTab,
-    setActiveTab,
-    userRole,
-    setUserRole,
-    getFilteredApplications
-  } = useApplicationFilters();
-  const {
-    entriesPerPage,
-    setEntriesPerPage,
-    currentPage,
-    setCurrentPage
-  } = usePagination();
+  } = useApplicationSearch((searchCol, searchVal) => {
+    // Update filters and reset to page 1 when searching
+    setFilters({ [searchCol]: searchVal });
+    setCurrentPage(1);
+  });
 
-  const filteredApplications = () => getFilteredApplications(applications, searchResults);
+  // Calculate total pages
+  const totalPages = Math.ceil(totalCount / 10);
 
   return {
     activeTab,
@@ -40,18 +48,17 @@ export const useDashboard = () => {
     setSearchColumn,
     searchQuery,
     setSearchQuery,
-    entriesPerPage,
-    setEntriesPerPage,
     currentPage,
     setCurrentPage,
     userRole,
     setUserRole,
     applications,
     isLoading,
+    totalCount,
+    totalPages,
     handleLogout,
     handleRefresh,
     handleSearch,
-    getFilteredApplications: filteredApplications,
     searchResults,
     setSearchResults
   };

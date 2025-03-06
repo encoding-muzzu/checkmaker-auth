@@ -1,6 +1,6 @@
 
 import React from "react";
-import { TableCell, TableRow, TableHeader, TableHead, Table, TableBody } from "@/components/ui/table";
+import { TableCell, TableRow, TableHeader, TableHead, Table, TableBody, TableFooter } from "@/components/ui/table";
 import { formatDistanceToNow } from "date-fns";
 import { FileText } from "lucide-react";
 import { BulkFile } from "@/hooks/useBulkProcessing";
@@ -14,6 +14,10 @@ interface BulkDataTableProps {
   currentUserId: string | null;
   isUploading: boolean;
   uploadingFileId: string | null;
+  currentPage: number;
+  totalPages: number;
+  onNextPage: () => void;
+  onPreviousPage: () => void;
   fileInputRefs: React.MutableRefObject<{ [key: string]: HTMLInputElement | null }>;
   canCurrentUserUploadAsMaker1: (file: BulkFile) => boolean;
   canCurrentUserUploadAsMaker2: (file: BulkFile) => boolean;
@@ -30,6 +34,10 @@ export const BulkDataTable = ({
   currentUserId,
   isUploading,
   uploadingFileId,
+  currentPage,
+  totalPages,
+  onNextPage,
+  onPreviousPage,
   fileInputRefs,
   canCurrentUserUploadAsMaker1,
   canCurrentUserUploadAsMaker2,
@@ -95,6 +103,31 @@ export const BulkDataTable = ({
           </TableRow>
         )}
       </TableBody>
+      <TableFooter>
+        <TableRow>
+          <TableCell colSpan={5}>
+            <div className="flex items-center justify-center gap-4 py-2">
+              <button 
+                className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                onClick={onPreviousPage}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              <span className="px-3 py-1 bg-gray-100 rounded">
+                {currentPage} of {totalPages || 1}
+              </span>
+              <button 
+                className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                onClick={onNextPage}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
+          </TableCell>
+        </TableRow>
+      </TableFooter>
     </Table>
   );
 };
