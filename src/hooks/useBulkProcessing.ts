@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useRef } from "react";
@@ -169,7 +168,7 @@ export const useBulkProcessing = () => {
     try {
       const filePath = `bulk_uploads/${fileId}/${makerType}_${file.name}`;
       const { error: uploadError } = await supabase.storage
-        .from('bulk-files')  // Changed from 'bulk_processing' to 'bulk-files'
+        .from('bulk-files')  // Fixed bucket name from 'bulk_processing' to 'bulk-files'
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
@@ -212,7 +211,7 @@ export const useBulkProcessing = () => {
   const handleDownload = async (filePath: string) => {
     try {
       const { data, error } = await supabase.storage
-        .from('bulk_processing')
+        .from('bulk-files')  // Fixed bucket name from 'bulk_processing' to 'bulk-files'
         .download(filePath);
 
       if (error) {
