@@ -64,18 +64,16 @@ export const DashboardTabs = ({
           >
             Search
           </button>
-          {!isChecker && (
-            <button
-              className={activeTab === "bulkData"
-                ? "pb-4 px-1 relative text-black font-medium before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-black"
-                : "pb-4 px-1 relative text-gray-500 hover:text-gray-800 transition-colors"}
-              onClick={() => {
-                setActiveTab("bulkData");
-              }}
-            >
-              Bulk Data
-            </button>
-          )}
+          <button
+            className={activeTab === "bulkData"
+              ? "pb-4 px-1 relative text-black font-medium before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-black"
+              : "pb-4 px-1 relative text-gray-500 hover:text-gray-800 transition-colors"}
+            onClick={() => {
+              setActiveTab("bulkData");
+            }}
+          >
+            Bulk Data
+          </button>
         </div>
         {activeTab !== "search" && activeTab !== "bulkData" && (
           <Button

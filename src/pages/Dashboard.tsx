@@ -38,7 +38,6 @@ const Dashboard = () => {
     handleLogout,
     handleRefresh,
     handleSearch,
-    getFilteredApplications,
     searchResults,
     setSearchResults,
     totalCount,

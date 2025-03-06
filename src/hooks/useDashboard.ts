@@ -4,6 +4,7 @@ import { useApplicationData } from "./useApplicationData";
 import { useApplicationSearch } from "./useApplicationSearch";
 import { useApplicationFilters } from "./useApplicationFilters";
 import { useState } from "react";
+import { ApplicationData } from "@/types/dashboard";
 
 export const useDashboard = () => {
   const { handleLogout } = useAuth();
@@ -14,6 +15,7 @@ export const useDashboard = () => {
     setActiveTab,
     userRole,
     setUserRole,
+    getFilteredApplications
   } = useApplicationFilters();
   
   // Server-side pagination with 10 items per page
@@ -60,6 +62,7 @@ export const useDashboard = () => {
     handleRefresh,
     handleSearch,
     searchResults,
-    setSearchResults
+    setSearchResults,
+    getFilteredApplications
   };
 };
