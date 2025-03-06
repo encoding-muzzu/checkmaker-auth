@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import * as XLSX from "https://esm.sh/xlsx@0.18.5";
@@ -170,7 +169,7 @@ serve(async (req) => {
     );
     
     const { data: uploadData, error: uploadError } = await adminSupabase.storage
-      .from("bulk-files")
+      .from("bulk-files") // Changed from "bulk-files" to "bulk-files" for consistency
       .upload(newFilePath, excelOutput, {
         contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         upsert: false
@@ -191,7 +190,7 @@ serve(async (req) => {
 
     // Get public URL for the file
     const { data: publicUrl } = adminSupabase.storage
-      .from("bulk-files")
+      .from("bulk-files") // Changed from "bulk-files" to "bulk-files" for consistency
       .getPublicUrl(newFilePath);
 
     // Update the bulk_file_processing record

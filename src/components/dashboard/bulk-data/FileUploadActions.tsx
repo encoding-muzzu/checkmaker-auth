@@ -32,6 +32,7 @@ export const FileUploadActions = ({
   handleFileChange
 }: FileUploadActionsProps) => {
   
+  // Don't show upload actions if user can't upload in any role
   if (!canCurrentUserUploadAsMaker1 && !canCurrentUserUploadAsMaker2) {
     return (
       <div className="mt-2 flex justify-end">
@@ -51,6 +52,13 @@ export const FileUploadActions = ({
       </div>
     );
   }
+
+  // Add debugging console logs
+  console.log("File Upload Actions Props:", {
+    canUploadAsMaker1: canCurrentUserUploadAsMaker1,
+    canUploadAsMaker2: canCurrentUserUploadAsMaker2,
+    file
+  });
 
   return (
     <div className="flex flex-col gap-2 items-end ml-3 border-l border-gray-200 pl-3">

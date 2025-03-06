@@ -39,38 +39,20 @@ export const FileActionsCard = ({
       <div className="flex flex-wrap justify-end gap-3">
         <FileDownloadActions file={file} onDownload={handleDownload} />
         
-        {(canCurrentUserUploadAsMaker1 || canCurrentUserUploadAsMaker2) && (
-          <FileUploadActions 
-            file={file}
-            currentUserId={currentUserId}
-            isUploading={isUploading}
-            uploadingFileId={uploadingFileId}
-            canCurrentUserUploadAsMaker1={canCurrentUserUploadAsMaker1}
-            canCurrentUserUploadAsMaker2={canCurrentUserUploadAsMaker2}
-            isCurrentUserMaker1={isCurrentUserMaker1}
-            isCurrentUserMaker2={isCurrentUserMaker2}
-            fileInputRefs={fileInputRefs}
-            handleUploadClick={handleUploadClick}
-            handleFileChange={handleFileChange}
-          />
-        )}
-      </div>
-      
-      {!canCurrentUserUploadAsMaker1 && !canCurrentUserUploadAsMaker2 && (
         <FileUploadActions 
           file={file}
           currentUserId={currentUserId}
           isUploading={isUploading}
           uploadingFileId={uploadingFileId}
-          canCurrentUserUploadAsMaker1={false}
-          canCurrentUserUploadAsMaker2={false}
+          canCurrentUserUploadAsMaker1={canCurrentUserUploadAsMaker1}
+          canCurrentUserUploadAsMaker2={canCurrentUserUploadAsMaker2}
           isCurrentUserMaker1={isCurrentUserMaker1}
           isCurrentUserMaker2={isCurrentUserMaker2}
           fileInputRefs={fileInputRefs}
           handleUploadClick={handleUploadClick}
           handleFileChange={handleFileChange}
         />
-      )}
+      </div>
     </Card>
   );
 };

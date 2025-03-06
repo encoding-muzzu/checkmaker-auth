@@ -169,7 +169,7 @@ export const useBulkProcessing = () => {
     try {
       const filePath = `bulk_uploads/${fileId}/${makerType}_${file.name}`;
       const { error: uploadError } = await supabase.storage
-        .from('bulk_processing')
+        .from('bulk-files')  // Changed from 'bulk_processing' to 'bulk-files'
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
