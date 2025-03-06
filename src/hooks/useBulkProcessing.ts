@@ -64,51 +64,38 @@ export const useBulkProcessing = () => {
       const from = (currentPage - 1) * pageSize;
       const to = from + pageSize - 1;
       
-      let query = supabase
+      const { data, error, count } = await supabase
         .from("bulk_file_processing")
         .select("*", { count: 'exact' })
         .order("created_at", { ascending: false })
         .range(from, to);
       
-      // Filter files based on user role
+      if (error) throw error;
+      
+      let filteredData = data;
+      
       if (isMaker) {
-        // Makers can only see original files and files uploaded by makers
-        const { data, error, count } = await query;
-        
-        if (error) throw error;
-        
-        // Filter files for makers: show only original files and maker-uploaded files
-        const filteredData = data.filter(file => {
-          // Show all files that don't have a maker2_user_id (no checker upload)
-          return file.maker2_user_id === null;
+        filteredData = data.filter(file => {
+          const isOriginal = !file.maker1_processed && !file.maker2_processed;
+          const isProcessedByThisMaker = file.maker1_user_id === currentUserId;
+          return isOriginal || isProcessedByThisMaker;
         });
-        
-        return { data: filteredData as BulkFile[], count: filteredData.length };
       } else if (isChecker) {
-        // Checkers can only see original files and files uploaded by checkers
-        const { data, error, count } = await query;
-        
-        if (error) throw error;
-        
-        // Filter files for checkers: show only original files and checker-uploaded files
-        const filteredData = data.filter(file => {
-          // Show all files that don't have a maker1_user_id (no maker upload)
-          // or files that have maker1_processed = true (ready for checker)
-          return file.maker1_user_id === null || file.maker1_processed === true;
+        filteredData = data.filter(file => {
+          const isProcessedByMaker = file.maker1_processed === true;
+          const isProcessedByThisChecker = file.maker2_user_id === currentUserId;
+          return isProcessedByMaker || isProcessedByThisChecker;
         });
-        
-        return { data: filteredData as BulkFile[], count: filteredData.length };
-      } else {
-        // For other roles or unauthenticated users
-        const { data, error, count } = await query;
-        if (error) throw error;
-        return { data: data as BulkFile[], count: count || 0 };
       }
+      
+      return { 
+        data: filteredData as BulkFile[], 
+        count: filteredData.length 
+      };
     },
     enabled: !!session,
   });
 
-  // Calculate total pages
   const totalPages = Math.ceil((bulkFiles?.count || 0) / pageSize);
 
   const handleNextPage = () => {
@@ -124,16 +111,11 @@ export const useBulkProcessing = () => {
   };
 
   const canCurrentUserUploadAsMaker1 = (file: BulkFile) => {
-    // Implement new logic: Makers can upload only if no maker has uploaded yet
-    return isMaker && !file.maker1_processed && file.maker1_user_id === null;
+    return isMaker && !file.maker1_processed;
   };
 
   const canCurrentUserUploadAsMaker2 = (file: BulkFile) => {
-    // Implement new logic: Checkers can upload only if maker has processed but no checker has uploaded yet
-    return isChecker && 
-      file.maker1_processed && 
-      !file.maker2_processed && 
-      file.maker2_user_id === null;
+    return isChecker && file.maker1_processed && !file.maker2_processed;
   };
 
   const isCurrentUserMaker1 = (file: BulkFile) => {
@@ -168,7 +150,7 @@ export const useBulkProcessing = () => {
     try {
       const filePath = `bulk_uploads/${fileId}/${makerType}_${file.name}`;
       const { error: uploadError } = await supabase.storage
-        .from('bulk-files')  // Fixed bucket name from 'bulk_processing' to 'bulk-files'
+        .from('bulk-files')
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
@@ -211,7 +193,7 @@ export const useBulkProcessing = () => {
   const handleDownload = async (filePath: string) => {
     try {
       const { data, error } = await supabase.storage
-        .from('bulk-files')  // Fixed bucket name from 'bulk_processing' to 'bulk-files'
+        .from('bulk-files')
         .download(filePath);
 
       if (error) {
@@ -221,7 +203,7 @@ export const useBulkProcessing = () => {
       const url = window.URL.createObjectURL(data);
       const a = document.createElement('a');
       a.href = url;
-      a.download = filePath.split('/').pop() || 'downloaded_file'; // Extract filename
+      a.download = filePath.split('/').pop() || 'downloaded_file';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
