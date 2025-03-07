@@ -41,7 +41,8 @@ const Dashboard = () => {
     searchResults,
     setSearchResults,
     totalCount,
-    totalPages
+    totalPages,
+    filteredApplications
   } = useDashboard();
 
   useEffect(() => {
@@ -121,7 +122,7 @@ const Dashboard = () => {
           </style>
 
           <DashboardTable 
-            data={applications}
+            data={activeTab === "search" ? searchResults : filteredApplications}
             isDense={false}
             currentPage={currentPage}
             totalPages={totalPages}

@@ -40,6 +40,9 @@ export const useDashboard = () => {
     setCurrentPage(1);
   });
 
+  // Get filtered applications based on active tab and user role
+  const filteredApplications = getFilteredApplications(applications, searchResults);
+
   // Calculate total pages
   const totalPages = Math.ceil(totalCount / 10);
 
@@ -63,6 +66,6 @@ export const useDashboard = () => {
     handleSearch,
     searchResults,
     setSearchResults,
-    getFilteredApplications
+    filteredApplications
   };
 };

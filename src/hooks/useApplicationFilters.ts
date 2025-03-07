@@ -22,7 +22,7 @@ export const useApplicationFilters = () => {
         default:
           return [];
       }
-    } else {
+    } else { // Maker role
       switch (activeTab) {
         case "pending":
           return applications.filter(app => app.status_id === 0);
