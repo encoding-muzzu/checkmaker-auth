@@ -91,6 +91,7 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
 
   const handleDownload = async (filePath: string) => {
     try {
+      // Download the file directly using the provided path without modifying it
       const { data, error } = await supabase.storage
         .from('bulk-files')
         .download(filePath);

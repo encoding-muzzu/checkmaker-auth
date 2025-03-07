@@ -35,10 +35,7 @@ export const FileDownloadActions = ({ file, onDownload, userRole }: FileDownload
           <Button
             variant="outline"
             size="sm"
-            onClick={() => {
-              const makerFilePath = file.file_path.replace('.xlsx', '_maker.xlsx');
-              onDownload(makerFilePath);
-            }}
+            onClick={() => onDownload(file.file_path)}
             className="flex items-center gap-1 border-yellow-200 text-yellow-700 hover:bg-yellow-50"
             title="Download filtered file with key columns only"
           >
@@ -52,10 +49,7 @@ export const FileDownloadActions = ({ file, onDownload, userRole }: FileDownload
           <Button
             variant="outline"
             size="sm"
-            onClick={() => {
-              const checkerFilePath = file.file_path.replace('.xlsx', '_checker.xlsx');
-              onDownload(checkerFilePath);
-            }}
+            onClick={() => onDownload(file.file_path)}
             className="flex items-center gap-1 border-green-200 text-green-700 hover:bg-green-50"
             title="Download filtered file with key columns only"
           >
