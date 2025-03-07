@@ -28,12 +28,17 @@ export const BulkDataTab = () => {
     refetch
   } = useBulkProcessing();
 
+  // Create a handler function that calls refetch
+  const handleRefresh = () => {
+    refetch();
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
       <div className="flex justify-between items-center mb-6">
         <WorkflowInstructions />
         <Button
-          onClick={refetch}
+          onClick={handleRefresh}
           variant="outline"
           size="icon"
           className="flex-shrink-0"

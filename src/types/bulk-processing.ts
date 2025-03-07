@@ -12,6 +12,8 @@ export interface BulkFile {
   checker_processed: boolean;
   checker_processed_at: string | null;
   checker_user_id: string | null;
+  maker_file_path?: string | null;
+  checker_file_path?: string | null;
 }
 
 export type ProcessingRole = 'maker' | 'checker';
