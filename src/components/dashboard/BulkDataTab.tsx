@@ -2,6 +2,8 @@
 import { useBulkProcessing } from "@/hooks/useBulkProcessing";
 import { WorkflowInstructions } from "./bulk-data/WorkflowInstructions";
 import { BulkDataTable } from "./bulk-data/BulkDataTable";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 export const BulkDataTab = () => {
   const {
@@ -22,12 +24,23 @@ export const BulkDataTab = () => {
     handlePreviousPage,
     handleDownload,
     handleUploadClick,
-    handleFileChange
+    handleFileChange,
+    refetch
   } = useBulkProcessing();
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
-      <WorkflowInstructions />
+      <div className="flex justify-between items-center mb-6">
+        <WorkflowInstructions />
+        <Button
+          onClick={refetch}
+          variant="outline"
+          size="icon"
+          className="flex-shrink-0"
+        >
+          <RefreshCw className="h-4 w-4" />
+        </Button>
+      </div>
       
       <div className="mt-6">
         <BulkDataTable
