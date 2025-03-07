@@ -19,14 +19,21 @@ export const useBulkFiles = (
       const from = (currentPage - 1) * pageSize;
       const to = from + pageSize - 1;
       
+      // First, get the total count of records
+      const { count: totalCount, error: countError } = await supabase
+        .from("bulk_file_processing")
+        .select("*", { count: 'exact', head: true });
+      
+      if (countError) throw countError;
+      
+      // Then get the paginated data
       let query = supabase
         .from("bulk_file_processing")
-        .select("*", { count: 'exact' })
-        .order('created_at', { ascending: true }) // Changed to ascending
+        .select("*")
+        .order('created_at', { ascending: true })
         .range(from, to);
       
-      // Get all files first, then filter on client side based on role
-      const { data, error, count } = await query;
+      const { data, error } = await query;
       
       if (error) throw error;
       
@@ -35,8 +42,10 @@ export const useBulkFiles = (
       // Apply role-based filtering
       const filteredData = filterFilesByRole(transformedData, isMaker, isChecker, currentUserId);
       
-      console.log(`Role: ${userRole}, Filtered files count: ${filteredData.length}, Original count: ${data.length}`);
-      return { data: filteredData, count: filteredData.length };
+      return { 
+        data: filteredData, 
+        count: totalCount
+      };
     },
     enabled: !!currentUserId,
   });

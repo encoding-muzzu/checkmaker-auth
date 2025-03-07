@@ -11,6 +11,7 @@ interface DashboardTabsProps {
   userRole: string | null;
   onRefresh: () => void;
   setSearchResults: (results: ApplicationData[]) => void;
+  bulkDataCount: number;
 }
 
 export const DashboardTabs = ({
@@ -19,9 +20,21 @@ export const DashboardTabs = ({
   applications,
   userRole,
   onRefresh,
-  setSearchResults
+  setSearchResults,
+  bulkDataCount
 }: DashboardTabsProps) => {
   const isChecker = userRole === 'checker';
+
+  // Calculate counts for each tab based on status_id
+  const pendingCount = isChecker
+    ? (applications?.filter(app => app.status_id === 1 || app.status_id === 4).length || 0)
+    : (applications?.filter(app => app.status_id === 0).length || 0);
+
+  const completedCount = isChecker
+    ? (applications?.filter(app => app.status_id === 2 || app.status_id === 3).length || 0)
+    : (applications?.filter(app => app.status_id === 1 || app.status_id === 2 || app.status_id === 4).length || 0);
+
+  const reopenedCount = applications?.filter(app => app.status_id === 3).length || 0;
 
   return (
     <div className="border-b mb-8">
@@ -30,26 +43,20 @@ export const DashboardTabs = ({
           <TabButton
             isActive={activeTab === "pending"}
             label="Pending"
-            count={isChecker
-              ? (applications?.filter(app => app.status_id === 1 || app.status_id === 4).length || 0)
-              : (applications?.filter(app => app.status_id === 0).length || 0)
-            }
+            count={pendingCount}
             onClick={() => setActiveTab("pending")}
           />
           <TabButton
             isActive={activeTab === "completed"}
             label="Completed"
-            count={isChecker
-              ? (applications?.filter(app => app.status_id === 2 || app.status_id === 3).length || 0)
-              : (applications?.filter(app => app.status_id === 1 || app.status_id === 2 || app.status_id === 4).length || 0)
-            }
+            count={completedCount}
             onClick={() => setActiveTab("completed")}
           />
           {!isChecker && (
             <TabButton
               isActive={activeTab === "reopened"}
               label="Returned By Checker"
-              count={applications?.filter(app => app.status_id === 3).length || 0}
+              count={reopenedCount}
               onClick={() => setActiveTab("reopened")}
             />
           )}
@@ -64,16 +71,12 @@ export const DashboardTabs = ({
           >
             Search
           </button>
-          <button
-            className={activeTab === "bulkData"
-              ? "pb-4 px-1 relative text-black font-medium before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-black"
-              : "pb-4 px-1 relative text-gray-500 hover:text-gray-800 transition-colors"}
-            onClick={() => {
-              setActiveTab("bulkData");
-            }}
-          >
-            Bulk Data
-          </button>
+          <TabButton
+            isActive={activeTab === "bulkData"}
+            label="Bulk Data"
+            count={bulkDataCount}
+            onClick={() => setActiveTab("bulkData")}
+          />
         </div>
         {activeTab !== "search" && activeTab !== "bulkData" && (
           <Button

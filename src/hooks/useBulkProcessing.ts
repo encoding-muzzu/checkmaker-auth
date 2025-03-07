@@ -20,7 +20,15 @@ export const useBulkProcessing = () => {
     filterFilesByRole
   } = useProcessingPermissions(currentUserId, isMaker, isChecker);
   
-  // Set up pagination
+  // Fetch bulk files with pagination (initially with 0 count)
+  const { 
+    bulkFiles, 
+    totalCount, 
+    isLoading, 
+    refetch 
+  } = useBulkFiles(1, 10, currentUserId, userRole, filterFilesByRole);
+  
+  // Set up pagination with the actual total count
   const { 
     currentPage, 
     setCurrentPage, 
@@ -28,14 +36,14 @@ export const useBulkProcessing = () => {
     handleNextPage, 
     handlePreviousPage,
     pageSize
-  } = useBulkPagination(0, 10); // We'll update the count after fetching data
+  } = useBulkPagination(totalCount, 10);
   
-  // Fetch bulk files with pagination
+  // Refetch with the current page once pagination is set up
   const { 
-    bulkFiles, 
-    totalCount, 
-    isLoading, 
-    refetch 
+    bulkFiles: paginatedBulkFiles, 
+    totalCount: paginatedTotalCount, 
+    isLoading: isPaginatedLoading, 
+    refetch: refetchPaginated 
   } = useBulkFiles(currentPage, pageSize, currentUserId, userRole, filterFilesByRole);
   
   // Set up file operations (upload, download)
@@ -46,18 +54,18 @@ export const useBulkProcessing = () => {
     handleUploadClick,
     handleFileChange,
     handleDownload
-  } = useFileOperations(currentUserId, refetch);
+  } = useFileOperations(currentUserId, refetchPaginated);
 
   // Return everything needed by the components
   return {
-    bulkFiles,
-    totalCount,
+    bulkFiles: paginatedBulkFiles,
+    totalCount: paginatedTotalCount,
     totalPages,
     currentPage,
     setCurrentPage,
     handleNextPage,
     handlePreviousPage,
-    isLoading,
+    isLoading: isPaginatedLoading,
     currentUserId,
     userRole,
     isUploading,
@@ -70,6 +78,6 @@ export const useBulkProcessing = () => {
     handleUploadClick,
     handleFileChange,
     handleDownload,
-    refetch
+    refetch: refetchPaginated
   };
 };

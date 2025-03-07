@@ -7,6 +7,7 @@ import { SearchControls } from "@/components/dashboard/SearchControls";
 import { DashboardTable } from "@/components/dashboard/DashboardTable";
 import { BulkDataTab } from "@/components/dashboard/BulkDataTab";
 import { supabase } from "@/integrations/supabase/client";
+import { useBulkProcessing } from "@/hooks/useBulkProcessing";
 
 const searchableColumns = [
   { value: "application_number", label: "Application Number" },
@@ -44,6 +45,9 @@ const Dashboard = () => {
     totalPages,
     filteredApplications
   } = useDashboard();
+
+  // Get bulk data count for the tab display
+  const { totalCount: bulkDataCount } = useBulkProcessing();
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -91,6 +95,7 @@ const Dashboard = () => {
         userRole={userRole}
         onRefresh={handleRefresh}
         setSearchResults={setSearchResults}
+        bulkDataCount={bulkDataCount}
       />
 
       {activeTab === "search" && (

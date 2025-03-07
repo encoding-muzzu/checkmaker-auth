@@ -5,7 +5,7 @@ export const useBulkPagination = (totalCount: number, pageSize: number = 10) => 
   const [currentPage, setCurrentPage] = useState(1);
   
   // Calculate total pages
-  const totalPages = Math.ceil(totalCount / pageSize);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
