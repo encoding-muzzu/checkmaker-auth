@@ -6,14 +6,14 @@ import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
-export const useApplicationData = (page = 1, pageSize = 10, filters = {}) => {
+export const useApplicationData = (page = 1, pageSize = 10, filters = {}, statusFilter?: number[]) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [totalCount, setTotalCount] = useState(0);
 
   const { data: applications, isLoading, isFetching } = useQuery({
-    queryKey: ['applications', page, pageSize, filters],
+    queryKey: ['applications', page, pageSize, filters, statusFilter],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -47,9 +47,14 @@ export const useApplicationData = (page = 1, pageSize = 10, filters = {}) => {
             name
           )
         `, { count: 'exact' })
-        .order('created_at', { ascending: true }); // Changed to ascending
+        .order('created_at', { ascending: true });
 
-      // Apply any filters
+      // Apply status filter if provided
+      if (statusFilter && statusFilter.length > 0) {
+        query = query.in('status_id', statusFilter);
+      }
+
+      // Apply any search filters
       if (filters && Object.keys(filters).length > 0) {
         Object.entries(filters).forEach(([key, value]) => {
           if (value) {
