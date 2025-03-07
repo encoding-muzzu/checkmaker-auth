@@ -15,25 +15,16 @@ export const useDashboard = () => {
     setActiveTab,
     userRole,
     setUserRole,
-    getStatusIdsForTab,
-    getTabCounts
+    getFilteredApplications
   } = useApplicationFilters();
   
-  // Get status IDs for the current tab
-  const statusIds = getStatusIdsForTab();
-  
-  // Server-side pagination with 10 items per page and status filtering
+  // Server-side pagination with 10 items per page
   const { 
     applications, 
     totalCount, 
     isLoading, 
     handleRefresh 
-  } = useApplicationData(
-    currentPage,
-    10,
-    activeTab === "search" ? filters : {}, // Only apply search filters on search tab
-    activeTab !== "search" && activeTab !== "bulkData" ? statusIds : undefined // Apply status filters on non-search tabs
-  );
+  } = useApplicationData(currentPage, 10, filters);
   
   const {
     searchColumn,
@@ -49,9 +40,9 @@ export const useDashboard = () => {
     setCurrentPage(1);
   });
 
-  // Get tab counts
-  const tabCounts = getTabCounts(applications);
-  
+  // Get filtered applications based on active tab and user role
+  const filteredApplications = getFilteredApplications(applications, searchResults);
+
   // Calculate total pages
   const totalPages = Math.ceil(totalCount / 10);
 
@@ -75,6 +66,6 @@ export const useDashboard = () => {
     handleSearch,
     searchResults,
     setSearchResults,
-    tabCounts
+    filteredApplications
   };
 };

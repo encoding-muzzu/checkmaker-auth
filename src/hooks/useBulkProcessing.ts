@@ -34,7 +34,6 @@ export const useBulkProcessing = () => {
   const { 
     bulkFiles, 
     totalCount, 
-    allFilesCount,
     isLoading, 
     refetch 
   } = useBulkFiles(currentPage, pageSize, currentUserId, userRole, filterFilesByRole);
@@ -53,8 +52,7 @@ export const useBulkProcessing = () => {
   return {
     bulkFiles,
     totalCount,
-    allFilesCount,
-    totalPages: Math.ceil(totalCount / pageSize),
+    totalPages,
     currentPage,
     setCurrentPage,
     handleNextPage,
