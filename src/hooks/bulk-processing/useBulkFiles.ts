@@ -22,7 +22,7 @@ export const useBulkFiles = (
       let query = supabase
         .from("bulk_file_processing")
         .select("*", { count: 'exact' })
-        .order("created_at", { ascending: false })
+        .order('created_at', { ascending: true }) // Changed to ascending
         .range(from, to);
       
       // Get all files first, then filter on client side based on role

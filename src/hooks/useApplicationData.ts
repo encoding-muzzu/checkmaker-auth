@@ -47,7 +47,7 @@ export const useApplicationData = (page = 1, pageSize = 10, filters = {}) => {
             name
           )
         `, { count: 'exact' })
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: true }); // Changed to ascending
 
       // Apply any filters
       if (filters && Object.keys(filters).length > 0) {
