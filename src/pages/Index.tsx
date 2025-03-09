@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Eye, EyeOff, User, Lock, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import {
   Card,
@@ -9,37 +9,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 function Index() {
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-    role: "",
-  });
+  const [prepaidToken, setPrepaidToken] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.username || !formData.password || !formData.role) {
+    if (!prepaidToken) {
       toast({
         variant: "destructive",
-        title: "All fields are required",
-        description: "Please fill in all the required fields",
+        title: "Prepaid token is required",
+        description: "Please enter a valid prepaid token",
       });
       return;
     }
@@ -47,38 +35,41 @@ function Index() {
     setIsLoading(true);
 
     try {
-      // First sign in with Supabase
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: formData.username,
-        password: formData.password,
+      // Call the validate-token edge function
+      const { data, error } = await supabase.functions.invoke("validate-token", {
+        query: { token: prepaidToken }
       });
 
-      if (authError) throw authError;
-
-      // Then fetch the user's profile to verify their role
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', authData.user.id)
-        .single();
-
-      if (profileError) throw profileError;
-
-      // Verify that the selected role matches the user's actual role
-      if (profileData.role !== formData.role) {
-        throw new Error(`Invalid role selected. You are a ${profileData.role}.`);
+      if (error) throw error;
+      
+      if (data.code !== 200) {
+        throw new Error(data.message || "Token validation failed");
       }
+
+      // Store the prepaid token in localStorage
+      localStorage.setItem("prepaid_token", prepaidToken);
+      
+      // Replace the Supabase auth token
+      const accessToken = data.data.access_token.access_token;
+      localStorage.setItem("sb-dhgseybgaswdryynnomz-auth-token", JSON.stringify({
+        access_token: accessToken,
+        expires_at: data.data.access_token.expires_at,
+        expires_in: data.data.access_token.expires_in,
+        refresh_token: data.data.access_token.refresh_token,
+        token_type: data.data.access_token.token_type,
+        user: data.data.access_token.user
+      }));
 
       toast({
         title: "Login successful",
-        description: `Welcome, ${formData.role}`,
+        description: "Welcome to the dashboard",
       });
       navigate("/dashboard");
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Login failed",
-        description: error.message || "Please check your credentials",
+        description: error.message || "Please check your token",
       });
     } finally {
       setIsLoading(false);
@@ -99,13 +90,17 @@ function Index() {
             <div className="flex flex-col gap-4 mt-8">
               <div className="flex items-center gap-3 text-gray-300">
                 <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-                  <Lock className="w-5 h-5" />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                 </div>
                 <p>Streamlined Card Issuance</p>
               </div>
               <div className="flex items-center gap-3 text-gray-300">
                 <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-                  <User className="w-5 h-5" />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
                 </div>
                 <p>Automated System Updates</p>
               </div>
@@ -120,76 +115,21 @@ function Index() {
                 M2P Forex DB Ops Admin Portal
               </CardTitle>
               <CardDescription className="text-center text-gray-600">
-                Sign in to your account
+                Sign in with your prepaid token
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="username" className="text-sm font-medium text-gray-700">Email</Label>
-                  <div className="relative">
-                    <Input
-                      id="username"
-                      type="email"
-                      placeholder="Enter your email"
-                      className="pl-10 h-11 border-gray-200 focus:border-gray-400 focus:ring-gray-400"
-                      value={formData.username}
-                      onChange={(e) =>
-                        setFormData({ ...formData, username: e.target.value })
-                      }
-                      disabled={isLoading}
-                    />
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      className="pl-10 h-11 border-gray-200 focus:border-gray-400 focus:ring-gray-400"
-                      value={formData.password}
-                      onChange={(e) =>
-                        setFormData({ ...formData, password: e.target.value })
-                      }
-                      disabled={isLoading}
-                    />
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                      disabled={isLoading}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="role" className="text-sm font-medium text-gray-700">Role</Label>
-                  <Select
-                    value={formData.role}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, role: value })
-                    }
+                  <Label htmlFor="prepaidToken" className="text-sm font-medium text-gray-700">Prepaid Token</Label>
+                  <Textarea
+                    id="prepaidToken"
+                    placeholder="Enter your prepaid token"
+                    className="h-24 border-gray-200 focus:border-gray-400 focus:ring-gray-400"
+                    value={prepaidToken}
+                    onChange={(e) => setPrepaidToken(e.target.value)}
                     disabled={isLoading}
-                  >
-                    <SelectTrigger className="h-11 border-gray-200 focus:border-gray-400 focus:ring-gray-400">
-                      <SelectValue placeholder="Select your role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="maker">Maker</SelectItem>
-                      <SelectItem value="checker">Checker</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  />
                 </div>
 
                 <Button 

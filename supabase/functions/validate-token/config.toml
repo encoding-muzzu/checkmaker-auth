@@ -1,0 +1,5 @@
+
+project_id = "dhgseybgaswdryynnomz"
+
+[functions.validate-token]
+verify_jwt = false
