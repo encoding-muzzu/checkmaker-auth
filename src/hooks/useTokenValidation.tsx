@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import React from "react";
 
 export const useTokenValidation = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -23,15 +22,12 @@ export const useTokenValidation = () => {
     setIsLoading(true);
 
     try {
-      // Get the Supabase URL which will be used to construct the edge function URL
-      const url = supabase.getUrl(); // Use getUrl() method instead of accessing protected property
-      
-      // Extract the base URL from the Supabase URL
-      const baseUrl = url.split('/auth')[0];
+      // Get the Supabase URL from the client configuration
+      const supabaseUrl = supabase.supabaseUrl;
       
       // Use fetch with the dynamic Supabase URL
       const response = await fetch(
-        `${baseUrl}/functions/v1/validate-token?token=${encodeURIComponent(prepaidToken)}`,
+        `${supabaseUrl}/functions/v1/validate-token?token=${encodeURIComponent(prepaidToken)}`,
         {
           method: 'GET',
           headers: {

@@ -7,17 +7,17 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ApplicationData[]>([]);
   const [isSearchPerformed, setIsSearchPerformed] = useState(false);
+  // Add a lastSearchParams state to track the last search parameters
+  const [lastSearchParams, setLastSearchParams] = useState({ column: "", query: "" });
 
   const handleSearch = () => {
     setIsSearchPerformed(true);
     
-    if (searchQuery.trim() === "") {
-      setSearchResults([]);
-      onSearch(searchColumn, "");
-      return;
-    }
-    
+    // Always call onSearch to trigger the API call, regardless of whether the query has changed
     onSearch(searchColumn, searchQuery);
+    
+    // Update the last search parameters
+    setLastSearchParams({ column: searchColumn, query: searchQuery });
   };
 
   return {
@@ -29,6 +29,7 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     setSearchResults,
     isSearchPerformed,
     setIsSearchPerformed,
-    handleSearch
+    handleSearch,
+    lastSearchParams
   };
 };

@@ -35,12 +35,22 @@ export const useDashboard = () => {
     setSearchResults,
     isSearchPerformed,
     setIsSearchPerformed,
-    handleSearch
+    handleSearch,
+    lastSearchParams
   } = useApplicationSearch((searchCol, searchVal) => {
-    // Update filters and reset to page 1 when searching
-    setFilters({ [searchCol]: searchVal });
-    setCurrentPage(1);
+    // Only update filters for the search tab, not affecting other tabs
+    if (activeTab === "search") {
+      setFilters({ [searchCol]: searchVal });
+      setCurrentPage(1);
+    }
   });
+
+  // Separate function to handle search results update
+  const updateSearchResults = (results: ApplicationData[]) => {
+    if (activeTab === "search" && isSearchPerformed) {
+      setSearchResults(results);
+    }
+  };
 
   // Get filtered applications based on active tab and user role
   const filteredApplications = getFilteredApplications(applications, searchResults);
@@ -74,6 +84,8 @@ export const useDashboard = () => {
     setSearchResults,
     isSearchPerformed,
     setIsSearchPerformed,
-    filteredApplications
+    filteredApplications,
+    updateSearchResults,
+    lastSearchParams
   };
 };

@@ -46,7 +46,8 @@ const Dashboard = () => {
     setIsSearchPerformed,
     totalCount,
     totalPages,
-    filteredApplications
+    filteredApplications,
+    updateSearchResults
   } = useDashboard();
 
   // Get bulk data count for the tab display
@@ -79,6 +80,13 @@ const Dashboard = () => {
     setSearchColumn("application_number");
   }, [setSearchColumn]);
 
+  // Update search results when applications change and we're in search tab
+  useEffect(() => {
+    if (activeTab === "search" && isSearchPerformed && applications.length >= 0) {
+      updateSearchResults(applications);
+    }
+  }, [activeTab, applications, isSearchPerformed, updateSearchResults]);
+
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(prev => prev + 1);
@@ -91,7 +99,7 @@ const Dashboard = () => {
     }
   };
 
-  // When switching to a non-search tab, clear search results
+  // When switching to a non-search tab, clear search results but preserve the tab counts
   useEffect(() => {
     if (activeTab !== "search") {
       setIsSearchPerformed(false);
