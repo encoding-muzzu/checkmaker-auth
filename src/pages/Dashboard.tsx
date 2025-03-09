@@ -8,6 +8,7 @@ import { DashboardTable } from "@/components/dashboard/DashboardTable";
 import { BulkDataTab } from "@/components/dashboard/BulkDataTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useBulkProcessing } from "@/hooks/useBulkProcessing";
+import { useTokenValidation } from "@/hooks/useTokenValidation";
 
 const searchableColumns = [
   { value: "application_number", label: "Application Number" },
@@ -48,8 +49,12 @@ const Dashboard = () => {
 
   // Get bulk data count for the tab display
   const { totalCount: bulkDataCount } = useBulkProcessing();
+  const { checkTokenValidity } = useTokenValidation();
 
   useEffect(() => {
+    // Check token validity on mount
+    checkTokenValidity();
+    
     const fetchUserRole = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
@@ -66,7 +71,7 @@ const Dashboard = () => {
     };
 
     fetchUserRole();
-  }, [setUserRole]);
+  }, [setUserRole, checkTokenValidity]);
 
   useEffect(() => {
     setSearchColumn("application_number");

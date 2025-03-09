@@ -23,12 +23,24 @@ serve(async (req) => {
       );
     }
 
-    // In a real implementation, you would validate the token against a database or service
-    // For this example, we're mocking a successful response
-    
     console.log("Validating token:", token);
     
-    // Mock response data
+    // Here you would implement real token validation logic
+    // For this example, we'll use a simple check to show the concept
+    // In a real implementation, you would check against a database or external service
+    
+    // Simple validation example - check if token is in a valid format
+    if (token.length < 8) {
+      return new Response(
+        JSON.stringify({ code: 401, message: "Invalid token format" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 }
+      );
+    }
+    
+    // Assuming token is valid, return successful response with session data
+    // In a real implementation, this data would come from your authentication system
+    const currentTime = Math.floor(Date.now() / 1000);
+    
     const responseData = {
       code: 200,
       message: "Success",
@@ -37,17 +49,17 @@ serve(async (req) => {
           access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoZ3NleWJnYXN3ZHJ5eW5ub216Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzY1MzcsImV4cCI6MjA1NTA1MjUzN30.nmbxHHpWAOweYiM3OsgcUcfvYn8AO_L4VVesEAOOz-E",
           token_type: "bearer",
           expires_in: 3600,
-          expires_at: Math.floor(Date.now() / 1000) + 3600,
-          refresh_token: "NaV9-0BT6_iTWFoNywh5Bg",
+          expires_at: currentTime + 3600,
+          refresh_token: "token-refresh-placeholder",
           user: {
-            id: "8c657d08-32d8-4a65-a950-e930d4b21d69",
+            id: "user-id-placeholder",
             aud: "authenticated",
             role: "authenticated",
-            email: "1400870@hdfc-temp.com",
-            email_confirmed_at: "2025-03-09T12:31:05.980079Z",
+            email: "user@example.com",
+            email_confirmed_at: new Date().toISOString(),
             phone: "",
-            confirmed_at: "2025-03-09T12:31:05.980079Z",
-            last_sign_in_at: "2025-03-09T14:29:03.701486834Z",
+            confirmed_at: new Date().toISOString(),
+            last_sign_in_at: new Date().toISOString(),
             app_metadata: {
               provider: "email",
               providers: [
@@ -59,24 +71,24 @@ serve(async (req) => {
             },
             identities: [
               {
-                identity_id: "4062b00f-9451-4fb5-88ae-e724a9070ce9",
-                id: "8c657d08-32d8-4a65-a950-e930d4b21d69",
-                user_id: "8c657d08-32d8-4a65-a950-e930d4b21d69",
+                identity_id: "identity-id-placeholder",
+                id: "identity-placeholder",
+                user_id: "user-id-placeholder",
                 identity_data: {
-                  email: "1400870@hdfc-temp.com",
+                  email: "user@example.com",
                   email_verified: false,
                   phone_verified: false,
-                  sub: "8c657d08-32d8-4a65-a950-e930d4b21d69"
+                  sub: "identity-subject-placeholder"
                 },
                 provider: "email",
-                last_sign_in_at: "2025-03-09T12:31:05.977841Z",
-                created_at: "2025-03-09T12:31:05.977911Z",
-                updated_at: "2025-03-09T12:31:05.977911Z",
-                email: "1400870@hdfc-temp.com"
+                last_sign_in_at: new Date().toISOString(),
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                email: "user@example.com"
               }
             ],
-            created_at: "2025-03-09T12:31:05.974004Z",
-            updated_at: "2025-03-09T14:29:03.718941Z",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
             is_anonymous: false
           }
         }

@@ -32,7 +32,7 @@ export const useTokenValidation = () => {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${supabase.auth.getSession().then(({ data }) => data.session?.access_token)}`,
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
           },
         }
       );
@@ -77,8 +77,31 @@ export const useTokenValidation = () => {
     }
   };
 
+  const checkTokenValidity = () => {
+    const prepaidToken = localStorage.getItem("prepaid_token");
+    if (!prepaidToken) {
+      toast({
+        variant: "destructive",
+        title: "Login required",
+        description: "Please login with your prepaid token",
+        action: (
+          <button 
+            className="bg-white text-black px-3 py-1 rounded text-xs"
+            onClick={() => navigate('/')}
+          >
+            Go to Home
+          </button>
+        )
+      });
+      navigate('/');
+      return false;
+    }
+    return true;
+  };
+
   return {
     isLoading,
-    validateToken
+    validateToken,
+    checkTokenValidity
   };
 };
