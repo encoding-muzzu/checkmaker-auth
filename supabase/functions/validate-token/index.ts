@@ -28,6 +28,17 @@ serve(async (req) => {
     
     console.log("Validating token:", token);
     
+    // For demonstration, let's check if the token has "invalid" in it to simulate an error
+    if (token.includes("invalid")) {
+      return new Response(
+        JSON.stringify({ 
+          code: 401, 
+          message: "Invalid token. Please check your credentials and try again." 
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 }
+      );
+    }
+    
     // Mock response data
     const responseData = {
       code: 200,
