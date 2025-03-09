@@ -1,8 +1,6 @@
 
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import { useDashboard } from "@/hooks/useDashboard";
-import { useTokenValidation } from "@/hooks/useTokenValidation";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { SearchControls } from "@/components/dashboard/SearchControls";
@@ -48,25 +46,10 @@ const Dashboard = () => {
     filteredApplications
   } = useDashboard();
 
-  const location = useLocation();
-  const { checkTokenValidity, validateToken } = useTokenValidation();
-
   // Get bulk data count for the tab display
   const { totalCount: bulkDataCount } = useBulkProcessing();
 
   useEffect(() => {
-    // Check if token exists in localStorage
-    if (!checkTokenValidity()) {
-      return;
-    }
-
-    // Check if token is in URL params
-    const queryParams = new URLSearchParams(location.search);
-    const tokenParam = queryParams.get('token');
-    if (tokenParam) {
-      validateToken(tokenParam);
-    }
-
     const fetchUserRole = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
@@ -83,7 +66,7 @@ const Dashboard = () => {
     };
 
     fetchUserRole();
-  }, [setUserRole, location.search, checkTokenValidity, validateToken]);
+  }, [setUserRole]);
 
   useEffect(() => {
     setSearchColumn("application_number");

@@ -1,5 +1,4 @@
 
-import React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -23,17 +22,17 @@ export const useTokenValidation = () => {
     setIsLoading(true);
 
     try {
-      // Get the Supabase URL directly from the environment or from the client's URL
-      const supabaseUrl = "https://dhgseybgaswdryynnomz.supabase.co";
+      // Get the Supabase URL from the client configuration
+      const supabaseUrl = supabase.supabaseUrl;
       
-      // Use fetch with the Supabase URL
+      // Use fetch with the dynamic Supabase URL
       const response = await fetch(
         `${supabaseUrl}/functions/v1/validate-token?token=${encodeURIComponent(prepaidToken)}`,
         {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+            'Authorization': `Bearer ${supabase.auth.getSession().then(({ data }) => data.session?.access_token)}`,
           },
         }
       );
@@ -45,20 +44,6 @@ export const useTokenValidation = () => {
       const data = await response.json();
       
       if (data.code !== 200) {
-        // Show popup with error message and redirect button
-        toast({
-          variant: "destructive",
-          title: "Token validation failed",
-          description: data.message || "Please check your token",
-          action: (
-            <button 
-              className="bg-white text-black px-3 py-1 rounded text-xs"
-              onClick={() => navigate('/')}
-            >
-              Go to Home
-            </button>
-          )
-        });
         throw new Error(data.message || "Token validation failed");
       }
 
@@ -92,31 +77,8 @@ export const useTokenValidation = () => {
     }
   };
 
-  const checkTokenValidity = () => {
-    const prepaidToken = localStorage.getItem("prepaid_token");
-    if (!prepaidToken) {
-      toast({
-        variant: "destructive",
-        title: "Login required",
-        description: "Please login with your prepaid token",
-        action: (
-          <button 
-            className="bg-white text-black px-3 py-1 rounded text-xs"
-            onClick={() => navigate('/')}
-          >
-            Go to Home
-          </button>
-        )
-      });
-      navigate('/');
-      return false;
-    }
-    return true;
-  };
-
   return {
     isLoading,
-    validateToken,
-    checkTokenValidity
+    validateToken
   };
 };
