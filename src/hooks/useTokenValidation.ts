@@ -22,18 +22,23 @@ export const useTokenValidation = () => {
     setIsLoading(true);
 
     try {
-      // Call the validate-token edge function using GET method
-      const { data, error } = await supabase.functions.invoke("validate-token", {
-        method: 'GET',
-        // Pass the token as part of the URL in the query parameter
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        // The correct property is queryParams for Supabase JS v2
-        queryParams: { token: prepaidToken }
-      });
+      // Use fetch instead of the Supabase SDK to call the validate-token edge function
+      const response = await fetch(
+        `https://dhgseybgaswdryynnomz.supabase.co/functions/v1/validate-token?token=${encodeURIComponent(prepaidToken)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabase.auth.getSession().then(({ data }) => data.session?.access_token)}`,
+          },
+        }
+      );
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
       
       if (data.code !== 200) {
         throw new Error(data.message || "Token validation failed");
