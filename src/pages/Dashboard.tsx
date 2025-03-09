@@ -1,6 +1,8 @@
 
 import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useDashboard } from "@/hooks/useDashboard";
+import { useTokenValidation } from "@/hooks/useTokenValidation";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { SearchControls } from "@/components/dashboard/SearchControls";
@@ -23,6 +25,8 @@ const searchableColumns = [
 ];
 
 const Dashboard = () => {
+  const location = useLocation();
+  const { checkTokenValidity, validateToken } = useTokenValidation();
   const {
     activeTab,
     setActiveTab,
@@ -50,6 +54,21 @@ const Dashboard = () => {
   const { totalCount: bulkDataCount } = useBulkProcessing();
 
   useEffect(() => {
+    // Check token in localStorage
+    const isValid = checkTokenValidity();
+    if (!isValid) return;
+
+    // Check for token in URL parameters
+    const queryParams = new URLSearchParams(location.search);
+    const tokenParam = queryParams.get('token');
+    
+    if (tokenParam) {
+      validateToken(tokenParam);
+      // Remove the token from URL after processing
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+
     const fetchUserRole = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
@@ -66,7 +85,7 @@ const Dashboard = () => {
     };
 
     fetchUserRole();
-  }, [setUserRole]);
+  }, [setUserRole, checkTokenValidity, validateToken, location.search]);
 
   useEffect(() => {
     setSearchColumn("application_number");
