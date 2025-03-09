@@ -40,11 +40,13 @@ const Dashboard = () => {
     handleLogout,
     handleRefresh,
     handleSearch,
+    clearSearch,
     searchResults,
     setSearchResults,
     totalCount,
     totalPages,
-    filteredApplications
+    filteredApplications,
+    isSearchPerformed
   } = useDashboard();
 
   // Get bulk data count for the tab display
@@ -89,13 +91,22 @@ const Dashboard = () => {
     }
   };
 
+  const handleTabChange = (tab: string) => {
+    if (tab !== activeTab) {
+      setActiveTab(tab);
+      if (tab !== "search") {
+        clearSearch();
+      }
+    }
+  };
+
   return (
     <div className="p-8 max-w-[1400px] mx-auto">
       <DashboardHeader userRole={userRole} onLogout={handleLogout} />
       
       <DashboardTabs
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleTabChange}
         applications={applications}
         userRole={userRole}
         onRefresh={handleRefresh}
@@ -141,6 +152,7 @@ const Dashboard = () => {
             isLoading={isLoading}
             userRole={userRole}
             activeTab={activeTab}
+            isSearchPerformed={isSearchPerformed && activeTab === "search"}
           />
         </>
       )}

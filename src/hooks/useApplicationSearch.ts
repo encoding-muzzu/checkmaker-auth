@@ -5,15 +5,26 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
   const [searchColumn, setSearchColumn] = useState("application_number");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearchPerformed, setIsSearchPerformed] = useState(false);
 
   const handleSearch = () => {
+    // Always trigger a search, even if the query hasn't changed
+    setIsSearchPerformed(true);
+    
+    // If search query is empty, clear results
     if (searchQuery.trim() === "") {
       setSearchResults([]);
-      onSearch(searchColumn, "");
-      return;
     }
     
+    // Always call onSearch to trigger API call
     onSearch(searchColumn, searchQuery);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    setSearchResults([]);
+    setIsSearchPerformed(false);
+    onSearch("", "");
   };
 
   return {
@@ -23,6 +34,9 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     setSearchQuery,
     searchResults,
     setSearchResults,
-    handleSearch
+    handleSearch,
+    clearSearch,
+    isSearchPerformed,
+    setIsSearchPerformed
   };
 };

@@ -3,7 +3,7 @@ import { useAuth } from "./useAuth";
 import { useApplicationData } from "./useApplicationData";
 import { useApplicationSearch } from "./useApplicationSearch";
 import { useApplicationFilters } from "./useApplicationFilters";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ApplicationData } from "@/types/dashboard";
 
 export const useDashboard = () => {
@@ -24,7 +24,7 @@ export const useDashboard = () => {
     totalCount, 
     isLoading, 
     handleRefresh 
-  } = useApplicationData(currentPage, 10, filters);
+  } = useApplicationData(currentPage, 10, activeTab === "search" ? filters : {});
   
   const {
     searchColumn,
@@ -33,12 +33,23 @@ export const useDashboard = () => {
     setSearchQuery,
     searchResults,
     setSearchResults,
-    handleSearch
+    handleSearch,
+    clearSearch,
+    isSearchPerformed,
+    setIsSearchPerformed
   } = useApplicationSearch((searchCol, searchVal) => {
     // Update filters and reset to page 1 when searching
-    setFilters({ [searchCol]: searchVal });
+    setFilters(searchVal ? { [searchCol]: searchVal } : {});
     setCurrentPage(1);
   });
+
+  // Clear search when switching tabs
+  useEffect(() => {
+    if (activeTab !== "search") {
+      clearSearch();
+      setFilters({});
+    }
+  }, [activeTab]);
 
   // Get filtered applications based on active tab and user role
   const filteredApplications = getFilteredApplications(applications, searchResults);
@@ -64,8 +75,11 @@ export const useDashboard = () => {
     handleLogout,
     handleRefresh,
     handleSearch,
+    clearSearch,
     searchResults,
     setSearchResults,
-    filteredApplications
+    filteredApplications,
+    isSearchPerformed,
+    setIsSearchPerformed
   };
 };
