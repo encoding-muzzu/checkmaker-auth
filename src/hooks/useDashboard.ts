@@ -51,8 +51,17 @@ export const useDashboard = () => {
     }
   }, [activeTab]);
 
+  // Update searchResults with applications when in search tab
+  useEffect(() => {
+    if (activeTab === "search" && !isLoading) {
+      setSearchResults(applications);
+    }
+  }, [activeTab, applications, isLoading]);
+
   // Get filtered applications based on active tab and user role
-  const filteredApplications = getFilteredApplications(applications, searchResults);
+  const filteredApplications = activeTab === "search" 
+    ? searchResults 
+    : getFilteredApplications(applications);
 
   // Calculate total pages
   const totalPages = Math.ceil(totalCount / 10);

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -49,14 +50,14 @@ export const useTokenValidation = () => {
       localStorage.setItem("prepaid_token", prepaidToken);
       
       // Replace the Supabase auth token
-      const accessToken = data.data.access_token.access_token;
+      const accessToken = data.data.access_token;
       localStorage.setItem("sb-dhgseybgaswdryynnomz-auth-token", JSON.stringify({
-        access_token: accessToken,
-        expires_at: data.data.access_token.expires_at,
-        expires_in: data.data.access_token.expires_in,
-        refresh_token: data.data.access_token.refresh_token,
-        token_type: data.data.access_token.token_type,
-        user: data.data.access_token.user
+        access_token: accessToken.access_token,
+        expires_at: accessToken.expires_at,
+        expires_in: accessToken.expires_in,
+        refresh_token: accessToken.refresh_token,
+        token_type: accessToken.token_type,
+        user: accessToken.user
       }));
 
       toast({
