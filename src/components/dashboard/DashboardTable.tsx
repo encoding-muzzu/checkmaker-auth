@@ -20,7 +20,6 @@ interface DashboardTableProps {
   isLoading?: boolean;
   userRole: string | null;
   activeTab: string;
-  isSearchPerformed?: boolean;
 }
 
 export const DashboardTable = ({ 
@@ -32,8 +31,7 @@ export const DashboardTable = ({
   onPreviousPage,
   isLoading = false,
   userRole,
-  activeTab,
-  isSearchPerformed = false
+  activeTab
 }: DashboardTableProps) => {
   const [selectedRow, setSelectedRow] = useState<ApplicationData | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -83,9 +81,6 @@ export const DashboardTable = ({
     handleRejectConfirm();
   };
 
-  // Show "No records found" message when search is performed but no results
-  const showNoRecordsMessage = activeTab === "search" && isSearchPerformed && data.length === 0 && !isLoading;
-
   return (
     <div className="bg-white">
       <Table>
@@ -100,12 +95,6 @@ export const DashboardTable = ({
         <TableBody>
           {isLoading ? (
             <TableSkeleton />
-          ) : showNoRecordsMessage ? (
-            <TableRow>
-              <TableCell colSpan={4} className="text-center py-8 text-gray-500">
-                Record not found
-              </TableCell>
-            </TableRow>
           ) : (
             data.map((row) => (
               <TableRow key={row.id} className={`border-b border-[rgb(224,224,224)] ${isDense ? 'py-6' : 'py-2'}`}>

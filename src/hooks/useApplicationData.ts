@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ApplicationData } from "@/types/dashboard";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export const useApplicationData = (page = 1, pageSize = 10, filters = {}) => {
   const navigate = useNavigate();
@@ -80,16 +80,12 @@ export const useApplicationData = (page = 1, pageSize = 10, filters = {}) => {
         setTotalCount(count);
       }
 
-      const formattedData = data.map((app: any) => ({
-        ...app,
-        status_name: app.application_statuses.name,
-        documents: app.documents || []
-      })) as ApplicationData[];
-
-      console.log("API Response:", formattedData);
-
       return { 
-        data: formattedData,
+        data: data.map((app: any) => ({
+          ...app,
+          status_name: app.application_statuses.name,
+          documents: app.documents || []
+        })) as ApplicationData[],
         count: count || 0 
       };
     }
