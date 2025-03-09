@@ -22,9 +22,10 @@ export const useTokenValidation = () => {
     setIsLoading(true);
 
     try {
-      // Call the validate-token edge function
+      // Call the validate-token edge function using GET method
       const { data, error } = await supabase.functions.invoke("validate-token", {
-        body: { token: prepaidToken }
+        method: 'GET',
+        queryParams: { token: prepaidToken }
       });
 
       if (error) throw error;
