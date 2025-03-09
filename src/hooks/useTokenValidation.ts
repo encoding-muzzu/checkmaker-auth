@@ -22,9 +22,12 @@ export const useTokenValidation = () => {
     setIsLoading(true);
 
     try {
-      // Use fetch instead of the Supabase SDK to call the validate-token edge function
+      // Get the Supabase URL from the client configuration
+      const supabaseUrl = supabase.supabaseUrl;
+      
+      // Use fetch with the dynamic Supabase URL
       const response = await fetch(
-        `https://dhgseybgaswdryynnomz.supabase.co/functions/v1/validate-token?token=${encodeURIComponent(prepaidToken)}`,
+        `${supabaseUrl}/functions/v1/validate-token?token=${encodeURIComponent(prepaidToken)}`,
         {
           method: 'GET',
           headers: {
