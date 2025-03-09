@@ -11,6 +11,7 @@ interface DashboardTabsProps {
   userRole: string | null;
   onRefresh: () => void;
   setSearchResults: (results: ApplicationData[]) => void;
+  setIsSearchPerformed?: (value: boolean) => void;
   bulkDataCount: number;
 }
 
@@ -21,6 +22,7 @@ export const DashboardTabs = ({
   userRole,
   onRefresh,
   setSearchResults,
+  setIsSearchPerformed,
   bulkDataCount
 }: DashboardTabsProps) => {
   const isChecker = userRole === 'checker';
@@ -67,6 +69,9 @@ export const DashboardTabs = ({
             onClick={() => {
               setActiveTab("search");
               setSearchResults([]);
+              if (setIsSearchPerformed) {
+                setIsSearchPerformed(false);
+              }
             }}
           >
             Search

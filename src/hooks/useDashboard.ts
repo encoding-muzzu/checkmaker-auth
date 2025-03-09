@@ -33,6 +33,8 @@ export const useDashboard = () => {
     setSearchQuery,
     searchResults,
     setSearchResults,
+    isSearchPerformed,
+    setIsSearchPerformed,
     handleSearch
   } = useApplicationSearch((searchCol, searchVal) => {
     // Update filters and reset to page 1 when searching
@@ -43,8 +45,12 @@ export const useDashboard = () => {
   // Get filtered applications based on active tab and user role
   const filteredApplications = getFilteredApplications(applications, searchResults);
 
-  // Calculate total pages
-  const totalPages = Math.ceil(totalCount / 10);
+  // Calculate total pages for current tab or search results
+  const totalPages = Math.ceil(
+    activeTab === "search" && searchResults.length > 0 
+      ? searchResults.length / 10 
+      : totalCount / 10
+  ) || 1;
 
   return {
     activeTab,
@@ -66,6 +72,8 @@ export const useDashboard = () => {
     handleSearch,
     searchResults,
     setSearchResults,
+    isSearchPerformed,
+    setIsSearchPerformed,
     filteredApplications
   };
 };

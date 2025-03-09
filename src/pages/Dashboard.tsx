@@ -42,6 +42,8 @@ const Dashboard = () => {
     handleSearch,
     searchResults,
     setSearchResults,
+    isSearchPerformed,
+    setIsSearchPerformed,
     totalCount,
     totalPages,
     filteredApplications
@@ -89,6 +91,14 @@ const Dashboard = () => {
     }
   };
 
+  // When switching to a non-search tab, clear search results
+  useEffect(() => {
+    if (activeTab !== "search") {
+      setIsSearchPerformed(false);
+      setSearchResults([]);
+    }
+  }, [activeTab, setIsSearchPerformed, setSearchResults]);
+
   return (
     <div className="p-8 max-w-[1400px] mx-auto">
       <DashboardHeader userRole={userRole} onLogout={handleLogout} />
@@ -100,6 +110,7 @@ const Dashboard = () => {
         userRole={userRole}
         onRefresh={handleRefresh}
         setSearchResults={setSearchResults}
+        setIsSearchPerformed={setIsSearchPerformed}
         bulkDataCount={bulkDataCount}
       />
 
@@ -141,6 +152,7 @@ const Dashboard = () => {
             isLoading={isLoading}
             userRole={userRole}
             activeTab={activeTab}
+            isSearchPerformed={isSearchPerformed && activeTab === "search"}
           />
         </>
       )}

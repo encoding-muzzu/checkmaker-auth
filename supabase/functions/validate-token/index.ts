@@ -36,11 +36,9 @@ serve(async (req) => {
       );
     }
 
-    // For demo purposes, you can add more validation rules as needed
+    // For demo purposes - we're returning a valid response if the token passes basic validation
     // In a real implementation, you would check the token against your database
     
-    // Return a successful response with real token data
-    // In production, this would come from your actual authentication system
     const currentTime = Math.floor(Date.now() / 1000);
     const expiresIn = 3600; // 1 hour
     
@@ -48,16 +46,14 @@ serve(async (req) => {
       code: 200,
       message: "Success",
       data: {
-        // Return actual token data based on your authentication system
         access_token: {
-          // This should be generated dynamically in production
-          access_token: "valid-access-token",
+          access_token: token + "-validated", // Append suffix to indicate validation
           token_type: "bearer",
           expires_in: expiresIn,
           expires_at: currentTime + expiresIn,
-          refresh_token: "valid-refresh-token",
+          refresh_token: token + "-refresh",
           user: {
-            id: "user-id",
+            id: "user-" + token.substring(0, 8),
             aud: "authenticated",
             role: "authenticated",
             email: "user@example.com",
