@@ -23,27 +23,12 @@ serve(async (req) => {
       );
     }
 
+    // In a real implementation, you would validate the token against a database or service
+    // For this example, we're mocking a successful response
+    
     console.log("Validating token:", token);
     
-    // In a real implementation, you would validate the token against your authentication service
-    // For now, we'll just check if the token exists and return appropriate error codes
-    
-    // This is where you would verify the token with your actual token validation logic
-    // For example, you might make an API call to your authentication service
-    
-    // For demonstration, let's assume token === 'valid_token' is a valid token
-    if (token !== 'valid_token') {
-      return new Response(
-        JSON.stringify({ 
-          code: 401, 
-          message: "Invalid token. Please check your token and try again." 
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 }
-      );
-    }
-    
-    // If token is valid, return success response with access token data
-    // (this is just an example - your real implementation will vary)
+    // Mock response data
     const responseData = {
       code: 200,
       message: "Success",
