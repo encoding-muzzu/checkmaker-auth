@@ -23,13 +23,12 @@ export const useTokenValidation = () => {
     setIsLoading(true);
 
     try {
-      // Get the Supabase URL from the client configuration
-      const supabaseUrl = supabase.authUrl;
-      const supabaseHost = supabaseUrl.split('auth')[0];
+      // Get the Supabase URL directly from the environment or from the client's URL
+      const supabaseUrl = "https://dhgseybgaswdryynnomz.supabase.co";
       
-      // Use fetch with the dynamic Supabase URL
+      // Use fetch with the Supabase URL
       const response = await fetch(
-        `${supabaseHost}functions/v1/validate-token?token=${encodeURIComponent(prepaidToken)}`,
+        `${supabaseUrl}/functions/v1/validate-token?token=${encodeURIComponent(prepaidToken)}`,
         {
           method: 'GET',
           headers: {
