@@ -29,7 +29,8 @@ export const useTokenValidation = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        query: { token: prepaidToken }
+        // The correct property is queryParams for Supabase JS v2
+        queryParams: { token: prepaidToken }
       });
 
       if (error) throw error;
