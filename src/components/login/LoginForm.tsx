@@ -9,7 +9,7 @@ import { useTokenValidation } from "@/hooks/useTokenValidation";
 
 export const LoginForm = () => {
   const [prepaidToken, setPrepaidToken] = useState("");
-  const { isLoading, validateToken } = useTokenValidation();
+  const { isValidating, validateToken } = useTokenValidation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,16 +36,16 @@ export const LoginForm = () => {
               className="h-24 border-gray-200 focus:border-gray-400 focus:ring-gray-400"
               value={prepaidToken}
               onChange={(e) => setPrepaidToken(e.target.value)}
-              disabled={isLoading}
+              disabled={isValidating}
             />
           </div>
 
           <Button 
             type="submit" 
             className="w-full h-11 bg-black hover:bg-gray-800 text-white transition-all duration-300"
-            disabled={isLoading}
+            disabled={isValidating}
           >
-            {isLoading ? (
+            {isValidating ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Signing in...
