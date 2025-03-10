@@ -21,7 +21,6 @@ export const useDashboard = () => {
     setActiveTab,
     userRole,
     setUserRole,
-    getFilteredApplications
   } = useApplicationFilters();
   
   // Get current page based on active tab
@@ -33,7 +32,13 @@ export const useDashboard = () => {
     totalCount, 
     isLoading, 
     handleRefresh 
-  } = useApplicationData(currentPage, 10, activeTab === "search" ? filters : {});
+  } = useApplicationData(
+    currentPage, 
+    10, 
+    activeTab === "search" ? filters : {}, 
+    activeTab, 
+    userRole
+  );
   
   const {
     searchColumn,
@@ -75,11 +80,6 @@ export const useDashboard = () => {
     }
   }, [activeTab, applications, isLoading]);
 
-  // Get filtered applications based on active tab and user role
-  const filteredApplications = activeTab === "search" 
-    ? searchResults 
-    : getFilteredApplications(applications);
-
   // Calculate total pages
   const totalPages = Math.ceil(totalCount / 10);
 
@@ -104,7 +104,6 @@ export const useDashboard = () => {
     clearSearch,
     searchResults,
     setSearchResults,
-    filteredApplications,
     isSearchPerformed,
     setIsSearchPerformed
   };

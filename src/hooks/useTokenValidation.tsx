@@ -1,106 +1,80 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export const useTokenValidation = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-  const navigate = useNavigate();
+    const [isValidating, setIsValidating] = useState(false);
+    const { toast } = useToast();
+    const navigate = useNavigate();
 
-  const validateToken = async (prepaidToken: string) => {
-    if (!prepaidToken) {
-      toast({
-        variant: "destructive",
-        title: "Prepaid token is required",
-        description: "Please enter a valid prepaid token",
-      });
-      return;
-    }
+    // Get the Supabase URL from the client
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://dhgseybgaswdryynnomz.supabase.co";
 
-    setIsLoading(true);
-
-    try {
-      const supabaseUrl = supabase.supabaseUrl;
-      
-      // Use fetch with the supabase URL
-      const response = await fetch(
-        `${supabaseUrl}/functions/v1/validate-token?token=${encodeURIComponent(prepaidToken)}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          },
+    const checkTokenValidity = async () => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                navigate('/');
+                return false;
+            }
+            return true;
+        } catch (error) {
+            console.error('Token validation error:', error);
+            toast({
+                title: "Session Expired",
+                description: "Your session has expired. Please log in again.",
+                variant: "destructive",
+            });
+            navigate('/');
+            return false;
         }
-      );
+    };
 
-      if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`);
-      }
+    const validateToken = async (prepaidToken: string) => {
+        setIsValidating(true);
+        try {
+            const response = await fetch(
+                `${supabaseUrl}/functions/v1/validate-token?token=${encodeURIComponent(prepaidToken)}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+            
+            const result = await response.json();
 
-      const data = await response.json();
-      
-      if (data.code !== 200) {
-        throw new Error(data.message || "Token validation failed");
-      }
+            if (result.code === 200 && result.data?.access_token) {
+                // Set the session
+                const { access_token } = result.data;
+                await supabase.auth.setSession(access_token);
+                
+                // Redirect to dashboard
+                navigate('/dashboard');
+                return true;
+            } else {
+                toast({
+                    title: "Error",
+                    description: result.message || "Invalid token",
+                    variant: "destructive",
+                });
+                return false;
+            }
+        } catch (error: any) {
+            console.error('Token validation error:', error);
+            toast({
+                title: "Error",
+                description: error.message || "An error occurred during token validation",
+                variant: "destructive",
+            });
+            return false;
+        } finally {
+            setIsValidating(false);
+        }
+    };
 
-      // Store the prepaid token in localStorage
-      localStorage.setItem("prepaid_token", prepaidToken);
-      
-      // Replace the Supabase auth token
-      const accessToken = data.data.access_token;
-      localStorage.setItem("sb-dhgseybgaswdryynnomz-auth-token", JSON.stringify({
-        access_token: accessToken.access_token,
-        expires_at: accessToken.expires_at,
-        expires_in: accessToken.expires_in,
-        refresh_token: accessToken.refresh_token,
-        token_type: accessToken.token_type,
-        user: accessToken.user
-      }));
-
-      toast({
-        title: "Login successful",
-        description: "Welcome to the dashboard",
-      });
-      navigate("/dashboard");
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Login failed",
-        description: error.message || "Please check your token",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const checkTokenValidity = () => {
-    const prepaidToken = localStorage.getItem("prepaid_token");
-    if (!prepaidToken) {
-      toast({
-        variant: "destructive",
-        title: "Login required",
-        description: "Please login with your prepaid token",
-        action: (
-          <button 
-            className="bg-white text-black px-3 py-1 rounded text-xs"
-            onClick={() => navigate('/')}
-          >
-            Go to Home
-          </button>
-        )
-      });
-      navigate('/');
-      return false;
-    }
-    return true;
-  };
-
-  return {
-    isLoading,
-    validateToken,
-    checkTokenValidity
-  };
+    return { validateToken, isValidating, checkTokenValidity };
 };

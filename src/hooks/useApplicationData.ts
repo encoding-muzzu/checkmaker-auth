@@ -6,14 +6,45 @@ import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
-export const useApplicationData = (page = 1, pageSize = 10, filters = {}) => {
+export const useApplicationData = (page = 1, pageSize = 10, filters = {}, activeTab = "", userRole = null) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [totalCount, setTotalCount] = useState(0);
 
+  // Get status IDs based on active tab and user role
+  const getStatusIds = (tab: string, role: string | null): number[] => {
+    if (!role) return [];
+    
+    if (role === 'checker') {
+      switch (tab) {
+        case "pending":
+          return [1, 4]; // Pending and Hold for checker
+        case "completed":
+          return [2, 3]; // Completed and Returned for checker
+        default:
+          return [];
+      }
+    } else { // Maker role
+      switch (tab) {
+        case "pending":
+          return [0]; // Draft for maker
+        case "completed":
+          return [1, 2, 4]; // Pending, Completed and Hold for maker
+        case "reopened":
+          return [3]; // Returned for maker
+        default:
+          return [];
+      }
+    }
+  };
+
+  // Only apply status filters for non-search tabs
+  const shouldApplyStatusFilter = activeTab !== "search" && activeTab !== "bulkData";
+  const statusIds = shouldApplyStatusFilter ? getStatusIds(activeTab, userRole) : [];
+
   const { data: applications, isLoading, isFetching } = useQuery({
-    queryKey: ['applications', page, pageSize, filters],
+    queryKey: ['applications', page, pageSize, filters, activeTab, userRole],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -49,8 +80,13 @@ export const useApplicationData = (page = 1, pageSize = 10, filters = {}) => {
         `, { count: 'exact' })
         .order('created_at', { ascending: true }); // Changed to ascending
 
-      // Apply any filters
-      if (filters && Object.keys(filters).length > 0) {
+      // Apply status filters for non-search tabs
+      if (shouldApplyStatusFilter && statusIds.length > 0) {
+        query = query.in('status_id', statusIds);
+      }
+
+      // Apply any search filters
+      if (Object.keys(filters).length > 0) {
         Object.entries(filters).forEach(([key, value]) => {
           if (value) {
             query = query.ilike(key, `%${value}%`);
