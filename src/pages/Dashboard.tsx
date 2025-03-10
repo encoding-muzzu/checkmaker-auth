@@ -10,6 +10,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBulkProcessing } from "@/hooks/useBulkProcessing";
 import { useTokenValidation } from "@/hooks/useTokenValidation";
 
+// Check if bulk data tab is disabled via env variable
+const isBulkDataDisabled = import.meta.env.VITE_DISABLE_BULK_DATA === "true";
+
 const searchableColumns = [
   { value: "application_number", label: "Application Number" },
   { value: "arn", label: "ARN" },
@@ -93,6 +96,10 @@ const Dashboard = () => {
 
   const handleTabChange = (tab: string) => {
     if (tab !== activeTab) {
+      // Don't allow switching to bulkData if disabled
+      if (tab === "bulkData" && isBulkDataDisabled) {
+        return;
+      }
       setActiveTab(tab);
       if (tab !== "search") {
         clearSearch();
@@ -112,6 +119,8 @@ const Dashboard = () => {
         onRefresh={handleRefresh}
         setSearchResults={setSearchResults}
         bulkDataCount={bulkDataCount}
+        totalCount={totalCount}
+        isBulkDataDisabled={isBulkDataDisabled}
       />
 
       {activeTab === "search" && (
@@ -129,7 +138,7 @@ const Dashboard = () => {
         </div>
       )}
 
-      {activeTab === "bulkData" ? (
+      {activeTab === "bulkData" && !isBulkDataDisabled ? (
         <BulkDataTab />
       ) : (
         <>

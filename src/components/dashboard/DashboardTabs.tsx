@@ -10,6 +10,8 @@ interface DashboardTabsProps {
   onRefresh: () => void;
   setSearchResults: (results: ApplicationData[]) => void;
   bulkDataCount: number;
+  totalCount: number;
+  isBulkDataDisabled: boolean;
 }
 
 export const DashboardTabs = ({
@@ -18,7 +20,9 @@ export const DashboardTabs = ({
   applications,
   userRole,
   setSearchResults,
-  bulkDataCount
+  bulkDataCount,
+  totalCount,
+  isBulkDataDisabled
 }: DashboardTabsProps) => {
   const isChecker = userRole === 'checker';
 
@@ -41,12 +45,14 @@ export const DashboardTabs = ({
             isActive={activeTab === "pending"}
             label="Pending"
             count={activeTab === "pending" ? pendingCount : undefined}
+            totalCount={activeTab === "pending" ? totalCount : undefined}
             onClick={() => setActiveTab("pending")}
           />
           <TabButton
             isActive={activeTab === "completed"}
             label="Completed"
             count={activeTab === "completed" ? completedCount : undefined}
+            totalCount={activeTab === "completed" ? totalCount : undefined}
             onClick={() => setActiveTab("completed")}
           />
           {!isChecker && (
@@ -54,6 +60,7 @@ export const DashboardTabs = ({
               isActive={activeTab === "reopened"}
               label="Returned By Checker"
               count={activeTab === "reopened" ? reopenedCount : undefined}
+              totalCount={activeTab === "reopened" ? totalCount : undefined}
               onClick={() => setActiveTab("reopened")}
             />
           )}
@@ -73,6 +80,7 @@ export const DashboardTabs = ({
             label="Bulk Data"
             count={activeTab === "bulkData" ? bulkDataCount : undefined}
             onClick={() => setActiveTab("bulkData")}
+            disabled={isBulkDataDisabled}
           />
         </div>
       </div>
