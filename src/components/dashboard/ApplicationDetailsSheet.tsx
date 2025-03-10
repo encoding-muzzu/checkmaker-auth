@@ -1,14 +1,14 @@
 
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { ApplicationData } from "@/types/dashboard";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Accordion } from "@/components/ui/accordion";
 import { DocumentsSection } from "./dialogs/DocumentsSection";
 import { CustomerDetailsSection } from "./dialogs/CustomerDetailsSection";
 import { CommentsSection } from "./dialogs/CommentsSection";
 import { RefObject, useEffect, useState } from "react";
-import { AlertCircle, X } from "lucide-react";
+import { SheetHeader } from "./sheet/SheetHeader";
+import { RejectForm } from "./sheet/RejectForm";
+import { ActionButtons } from "./sheet/ActionButtons";
 
 interface ApplicationDetailsSheetProps {
   open: boolean;
@@ -120,9 +120,7 @@ export const ApplicationDetailsSheet = ({
         side="right"
       >
         <div className="flex flex-col h-full">
-          <div className="p-6 border-b">
-            <h2 className="text-xl font-semibold text-black">Application Details</h2>
-          </div>
+          <SheetHeader title="Application Details" />
 
           <div className="flex-1 overflow-y-auto p-6">
             <Accordion type="single" collapsible defaultValue="details" className="space-y-4">
@@ -145,95 +143,30 @@ export const ApplicationDetailsSheet = ({
             </Accordion>
 
             {showRejectForm && (
-              <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5 text-red-500" />
-                    <h3 className="text-lg font-semibold text-red-700">
-                      {isChecker ? 'Return Application' : 'Reject Application'}
-                    </h3>
-                  </div>
-                  <button onClick={handleCancelReject} className="text-gray-500 hover:text-gray-700">
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-                <Textarea
-                  value={rejectMessage}
-                  onChange={(e) => {
-                    // Limit to 300 characters
-                    if (e.target.value.length <= 300) {
-                      setRejectMessage(e.target.value);
-                    }
-                  }}
-                  placeholder={`Enter your ${isChecker ? 'return' : 'rejection'} reason here...`}
-                  className="min-h-[120px] resize-none border-red-200 focus:border-red-500 focus:ring-red-500 mb-3"
-                  maxLength={300}
-                />
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-sm text-gray-500">
-                    {rejectMessage.length}/300 characters
-                  </span>
-                </div>
-                <div className="flex justify-end gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={handleCancelReject}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleConfirmReject}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                    disabled={!rejectMessage.trim() || isSubmitting}
-                  >
-                    {isSubmitting ? "Processing..." : isChecker ? "Confirm Return" : "Confirm Reject"}
-                  </Button>
-                </div>
-              </div>
+              <RejectForm
+                isChecker={isChecker}
+                isSubmitting={isSubmitting}
+                rejectMessage={rejectMessage}
+                setRejectMessage={setRejectMessage}
+                onCancel={handleCancelReject}
+                onConfirm={handleConfirmReject}
+              />
             )}
 
-            {exceedsLimit && showButtons && !showRejectForm && (
-              <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-[4px] flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-amber-500" />
-                <p className="text-amber-700 text-sm">
-                  Total Amount + LRS Amount Consumed exceeds $250,000 USD limit ({totalAmount.toFixed(2)} USD)
-                </p>
-              </div>
+            {!showRejectForm && (
+              <ActionButtons 
+                showButtons={showButtons}
+                isSubmitting={isSubmitting}
+                exceedsLimit={exceedsLimit}
+                totalAmount={totalAmount}
+                documentsExist={!!selectedRow?.documents?.length}
+                allDocumentsViewed={allDocumentsViewed}
+                onApprove={handleApprove}
+                onReject={handleRejectClick}
+                isChecker={isChecker}
+              />
             )}
           </div>
-
-          {showButtons && !showRejectForm && (
-            <div className="p-6 border-t bg-white mt-auto">
-              <div className="flex flex-col gap-4">
-                {selectedRow?.documents?.length > 0 && !allDocumentsViewed && (
-                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-[4px] flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5 text-amber-500" />
-                    <p className="text-amber-700 text-sm">
-                      Please view all the documents to approve this application.
-                    </p>
-                  </div>
-                )}
-                <div className="flex justify-end gap-3">
-                  <Button 
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px]" 
-                    onClick={handleApprove}
-                    disabled={isSubmitting || 
-                              (selectedRow?.documents?.length ? !allDocumentsViewed : false) || 
-                              exceedsLimit}
-                  >
-                    {isSubmitting ? "Processing..." : "Approve"}
-                  </Button>
-                  <Button 
-                    className="bg-red-600 hover:bg-red-700 text-white rounded-[4px]" 
-                    onClick={handleRejectClick}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "Processing..." : isChecker ? "Return" : "Reject"}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </SheetContent>
     </Sheet>
