@@ -39,12 +39,12 @@ export const useApplicationData = (page = 1, pageSize = 10, filters = {}, active
     }
   };
 
-  // Only apply status filters for non-search tabs
+  // Only apply status filters for non-search tabs and non-bulk tabs
   const shouldApplyStatusFilter = activeTab !== "search" && activeTab !== "bulkData";
   const statusIds = shouldApplyStatusFilter ? getStatusIds(activeTab, userRole) : [];
 
   const { data: applications, isLoading, isFetching } = useQuery({
-    queryKey: ['applications', page, pageSize, filters, activeTab, userRole],
+    queryKey: ['applications', page, pageSize, filters, activeTab, userRole, statusIds],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -77,10 +77,9 @@ export const useApplicationData = (page = 1, pageSize = 10, filters = {}, active
             id,
             name
           )
-        `, { count: 'exact' })
-        .order('created_at', { ascending: true }); // Changed to ascending
+        `, { count: 'exact' });
 
-      // Apply status filters for non-search tabs
+      // Apply status filters for non-search and non-bulk tabs
       if (shouldApplyStatusFilter && statusIds.length > 0) {
         query = query.in('status_id', statusIds);
       }
@@ -93,6 +92,9 @@ export const useApplicationData = (page = 1, pageSize = 10, filters = {}, active
           }
         });
       }
+
+      // Add ordering - most recent first for all tabs
+      query = query.order('created_at', { ascending: false });
 
       // Apply pagination
       const from = (page - 1) * pageSize;
@@ -124,7 +126,8 @@ export const useApplicationData = (page = 1, pageSize = 10, filters = {}, active
         })) as ApplicationData[],
         count: count || 0 
       };
-    }
+    },
+    refetchOnWindowFocus: false // Disable auto-refresh
   });
 
   const handleRefresh = () => {

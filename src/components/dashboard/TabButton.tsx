@@ -2,7 +2,7 @@
 interface TabButtonProps {
   isActive: boolean;
   label: string;
-  count: number;
+  count?: number;
   onClick: () => void;
 }
 
@@ -14,7 +14,7 @@ export const TabButton = ({ isActive, label, count, onClick }: TabButtonProps) =
         : "pb-4 px-1 relative text-gray-500 hover:text-gray-800 transition-colors"}
       onClick={onClick}
     >
-      {label} ({count})
+      {label} {count !== undefined ? `(${count})` : ''}
     </button>
   );
 };

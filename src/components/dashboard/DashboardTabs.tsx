@@ -40,20 +40,20 @@ export const DashboardTabs = ({
           <TabButton
             isActive={activeTab === "pending"}
             label="Pending"
-            count={pendingCount}
+            count={activeTab === "pending" ? pendingCount : undefined}
             onClick={() => setActiveTab("pending")}
           />
           <TabButton
             isActive={activeTab === "completed"}
             label="Completed"
-            count={completedCount}
+            count={activeTab === "completed" ? completedCount : undefined}
             onClick={() => setActiveTab("completed")}
           />
           {!isChecker && (
             <TabButton
               isActive={activeTab === "reopened"}
               label="Returned By Checker"
-              count={reopenedCount}
+              count={activeTab === "reopened" ? reopenedCount : undefined}
               onClick={() => setActiveTab("reopened")}
             />
           )}
@@ -71,11 +71,10 @@ export const DashboardTabs = ({
           <TabButton
             isActive={activeTab === "bulkData"}
             label="Bulk Data"
-            count={bulkDataCount}
+            count={activeTab === "bulkData" ? bulkDataCount : undefined}
             onClick={() => setActiveTab("bulkData")}
           />
         </div>
-        {/* Auto-refresh button removed as per requirements */}
       </div>
     </div>
   );

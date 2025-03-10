@@ -85,7 +85,7 @@ export const useDashboard = () => {
   const totalPages = Math.ceil(totalCount / 10);
 
   // Get filtered applications based on active tab and user role
-  const filteredApplications = getFilteredApplications(applications);
+  const filteredApplications = applications; // We're now doing server-side filtering
 
   return {
     activeTab,
