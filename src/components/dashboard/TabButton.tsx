@@ -20,6 +20,10 @@ export const TabButton = ({
   activeTab,
   tabName
 }: TabButtonProps) => {
+  // Only show count for the current active tab
+  const showCount = isActive && (tabName !== "search" && tabName !== "bulkData");
+  const showBulkCount = isActive && tabName === "bulkData";
+
   return (
     <button
       className={isActive
@@ -30,9 +34,9 @@ export const TabButton = ({
       style={{ opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
     >
       {label} {
-        (tabName !== "search" && tabName !== "bulkData") && totalCount !== undefined
+        showCount && totalCount !== undefined
           ? `(${totalCount})` 
-          : tabName === "bulkData" && count !== undefined
+          : showBulkCount && count !== undefined
             ? `(${count})`
             : ''
       }

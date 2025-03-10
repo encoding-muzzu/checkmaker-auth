@@ -38,7 +38,7 @@ export const DashboardTabs = ({
   const reopenedCount = applications?.filter(app => app.status_id === 3).length || 0;
 
   return (
-    <div className="border-b mb-8">
+    <div className="border-b mb-8 border-[rgb(224, 224, 224)]">
       <div className="flex justify-between items-center">
         <div className="flex gap-8">
           <TabButton
@@ -70,17 +70,16 @@ export const DashboardTabs = ({
               tabName="reopened"
             />
           )}
-          <button
-            className={activeTab === "search"
-              ? "pb-4 px-1 relative text-black font-medium before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-black"
-              : "pb-4 px-1 relative text-gray-500 hover:text-gray-800 transition-colors"}
+          <TabButton
+            isActive={activeTab === "search"}
+            label="Search"
             onClick={() => {
               setActiveTab("search");
               setSearchResults([]);
             }}
-          >
-            Search
-          </button>
+            activeTab={activeTab}
+            tabName="search"
+          />
           {!isBulkDataDisabled && (
             <TabButton
               isActive={activeTab === "bulkData"}
