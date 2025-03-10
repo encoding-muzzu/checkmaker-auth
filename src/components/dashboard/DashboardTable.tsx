@@ -61,6 +61,7 @@ export const DashboardTable = ({
     { label: "Customer Name", value: selectedRow.customer_name },
     { label: "PAN", value: selectedRow.pan_number },
     { label: "Total Amount Loaded (USD)", value: selectedRow.total_amount_loaded.toFixed(2) },
+    { label: "TCS Amount", value: selectedRow.tcs_amount || '-' },
     { label: "Customer Type", value: selectedRow.customer_type },
     { label: "Product Variant", value: selectedRow.product_variant },
     { label: "Card Type", value: selectedRow.card_type },

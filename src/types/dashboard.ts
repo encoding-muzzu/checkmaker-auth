@@ -19,6 +19,7 @@ export interface ApplicationData {
   lrs_amount_consumed: number;
   assigned_to?: string;
   application_number?: string | null;
+  tcs_amount?: string | null;
   documents: {
     name: string;
     path: string;
