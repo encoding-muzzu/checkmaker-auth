@@ -6,6 +6,8 @@ interface TabButtonProps {
   totalCount?: number;
   onClick: () => void;
   disabled?: boolean;
+  activeTab?: string;
+  tabName: string;
 }
 
 export const TabButton = ({ 
@@ -14,7 +16,9 @@ export const TabButton = ({
   count, 
   totalCount, 
   onClick, 
-  disabled = false 
+  disabled = false,
+  activeTab,
+  tabName
 }: TabButtonProps) => {
   return (
     <button
@@ -25,8 +29,13 @@ export const TabButton = ({
       disabled={disabled}
       style={{ opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
     >
-      {label} {count !== undefined ? `(${count})` : ''} 
-      {totalCount !== undefined && totalCount > 0 && count !== undefined ? ` / ${totalCount}` : ''}
+      {label} {
+        (tabName !== "search" && tabName !== "bulkData") && totalCount !== undefined
+          ? `(${totalCount})` 
+          : tabName === "bulkData" && count !== undefined
+            ? `(${count})`
+            : ''
+      }
     </button>
   );
 };

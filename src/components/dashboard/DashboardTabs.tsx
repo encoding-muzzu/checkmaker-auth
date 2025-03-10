@@ -44,24 +44,30 @@ export const DashboardTabs = ({
           <TabButton
             isActive={activeTab === "pending"}
             label="Pending"
-            count={activeTab === "pending" ? pendingCount : undefined}
-            totalCount={activeTab === "pending" ? totalCount : undefined}
+            count={pendingCount}
+            totalCount={totalCount}
             onClick={() => setActiveTab("pending")}
+            activeTab={activeTab}
+            tabName="pending"
           />
           <TabButton
             isActive={activeTab === "completed"}
             label="Completed"
-            count={activeTab === "completed" ? completedCount : undefined}
-            totalCount={activeTab === "completed" ? totalCount : undefined}
+            count={completedCount}
+            totalCount={totalCount}
             onClick={() => setActiveTab("completed")}
+            activeTab={activeTab}
+            tabName="completed"
           />
           {!isChecker && (
             <TabButton
               isActive={activeTab === "reopened"}
               label="Returned By Checker"
-              count={activeTab === "reopened" ? reopenedCount : undefined}
-              totalCount={activeTab === "reopened" ? totalCount : undefined}
+              count={reopenedCount}
+              totalCount={totalCount}
               onClick={() => setActiveTab("reopened")}
+              activeTab={activeTab}
+              tabName="reopened"
             />
           )}
           <button
@@ -75,13 +81,17 @@ export const DashboardTabs = ({
           >
             Search
           </button>
-          <TabButton
-            isActive={activeTab === "bulkData"}
-            label="Bulk Data"
-            count={activeTab === "bulkData" ? bulkDataCount : undefined}
-            onClick={() => setActiveTab("bulkData")}
-            disabled={isBulkDataDisabled}
-          />
+          {!isBulkDataDisabled && (
+            <TabButton
+              isActive={activeTab === "bulkData"}
+              label="Bulk Data"
+              count={bulkDataCount}
+              onClick={() => setActiveTab("bulkData")}
+              disabled={false}
+              activeTab={activeTab}
+              tabName="bulkData"
+            />
+          )}
         </div>
       </div>
     </div>
