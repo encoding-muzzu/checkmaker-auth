@@ -8,7 +8,13 @@ import { ApplicationData } from "@/types/dashboard";
 
 export const useDashboard = () => {
   const { handleLogout } = useAuth();
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPages, setCurrentPages] = useState({
+    pending: 1,
+    completed: 1,
+    reopened: 1,
+    search: 1,
+    bulkData: 1
+  });
   const [filters, setFilters] = useState({});
   const {
     activeTab,
@@ -17,6 +23,9 @@ export const useDashboard = () => {
     setUserRole,
     getFilteredApplications
   } = useApplicationFilters();
+  
+  // Get current page based on active tab
+  const currentPage = currentPages[activeTab as keyof typeof currentPages] || 1;
   
   // Server-side pagination with 10 items per page
   const { 
@@ -40,8 +49,16 @@ export const useDashboard = () => {
   } = useApplicationSearch((searchCol, searchVal) => {
     // Update filters and reset to page 1 when searching
     setFilters(searchVal ? { [searchCol]: searchVal } : {});
-    setCurrentPage(1);
+    updateCurrentPage("search", 1);
   });
+
+  // Update page for a specific tab
+  const updateCurrentPage = (tab: string, page: number) => {
+    setCurrentPages(prev => ({
+      ...prev,
+      [tab]: page
+    }));
+  };
 
   // Clear search when switching tabs
   useEffect(() => {
@@ -74,7 +91,7 @@ export const useDashboard = () => {
     searchQuery,
     setSearchQuery,
     currentPage,
-    setCurrentPage,
+    updateCurrentPage,
     userRole,
     setUserRole,
     applications,

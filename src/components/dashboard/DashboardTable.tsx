@@ -21,6 +21,7 @@ interface DashboardTableProps {
   userRole: string | null;
   activeTab: string;
   isSearchPerformed?: boolean;
+  showPagination?: boolean;
 }
 
 export const DashboardTable = ({ 
@@ -33,7 +34,8 @@ export const DashboardTable = ({
   isLoading = false,
   userRole,
   activeTab,
-  isSearchPerformed = false
+  isSearchPerformed = false,
+  showPagination = true
 }: DashboardTableProps) => {
   const [selectedRow, setSelectedRow] = useState<ApplicationData | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -143,31 +145,33 @@ export const DashboardTable = ({
             ))
           )}
         </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={4}>
-              <div className="flex items-center justify-center gap-4 py-2">
-                <button 
-                  className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
-                  onClick={onPreviousPage}
-                  disabled={currentPage === 1}
-                >
-                  Previous
-                </button>
-                <span className="px-3 py-1 bg-gray-100 rounded">
-                  {currentPage} of {totalPages || 1}
-                </span>
-                <button 
-                  className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
-                  onClick={onNextPage}
-                  disabled={currentPage === totalPages}
-                >
-                  Next
-                </button>
-              </div>
-            </TableCell>
-          </TableRow>
-        </TableFooter>
+        {showPagination && (
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={4}>
+                <div className="flex items-center justify-center gap-4 py-2">
+                  <button 
+                    className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                    onClick={onPreviousPage}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+                  <span className="px-3 py-1 bg-gray-100 rounded">
+                    {currentPage} of {totalPages || 1}
+                  </span>
+                  <button 
+                    className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                    onClick={onNextPage}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        )}
       </Table>
 
       <ApplicationDetailsSheet

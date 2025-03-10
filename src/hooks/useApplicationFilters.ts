@@ -6,12 +6,8 @@ export const useApplicationFilters = () => {
   const [activeTab, setActiveTab] = useState("pending");
   const [userRole, setUserRole] = useState<string | null>(null);
 
-  const getFilteredApplications = (applications: ApplicationData[] | undefined, searchResults: ApplicationData[]) => {
+  const getFilteredApplications = (applications: ApplicationData[] | undefined) => {
     if (!applications || !userRole) return [];
-
-    if (activeTab === "search") {
-      return searchResults;
-    }
     
     if (userRole === 'checker') {
       switch (activeTab) {

@@ -1,7 +1,5 @@
 
 import { TabButton } from "@/components/dashboard/TabButton";
-import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
 import { ApplicationData } from "@/types/dashboard";
 
 interface DashboardTabsProps {
@@ -19,7 +17,6 @@ export const DashboardTabs = ({
   setActiveTab,
   applications,
   userRole,
-  onRefresh,
   setSearchResults,
   bulkDataCount
 }: DashboardTabsProps) => {
@@ -78,16 +75,7 @@ export const DashboardTabs = ({
             onClick={() => setActiveTab("bulkData")}
           />
         </div>
-        {activeTab !== "search" && activeTab !== "bulkData" && (
-          <Button
-            onClick={onRefresh}
-            variant="outline"
-            size="icon"
-            className="mr-4"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-        )}
+        {/* Auto-refresh button removed as per requirements */}
       </div>
     </div>
   );

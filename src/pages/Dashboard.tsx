@@ -32,7 +32,7 @@ const Dashboard = () => {
     searchQuery,
     setSearchQuery,
     currentPage,
-    setCurrentPage,
+    updateCurrentPage,
     userRole,
     setUserRole,
     applications,
@@ -81,13 +81,13 @@ const Dashboard = () => {
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      setCurrentPage(prev => prev + 1);
+      updateCurrentPage(activeTab, currentPage + 1);
     }
   };
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
-      setCurrentPage(prev => prev - 1);
+      updateCurrentPage(activeTab, currentPage - 1);
     }
   };
 
@@ -153,6 +153,7 @@ const Dashboard = () => {
             userRole={userRole}
             activeTab={activeTab}
             isSearchPerformed={isSearchPerformed && activeTab === "search"}
+            showPagination={activeTab !== "search"}
           />
         </>
       )}
