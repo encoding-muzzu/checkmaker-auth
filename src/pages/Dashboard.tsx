@@ -25,9 +25,8 @@ const searchableColumns = [
   { value: "product_variant", label: "Product Variant" },
   { value: "card_type", label: "Card Type" },
   { value: "processing_type", label: "Processing Type" },
-  { value: "status", label: "Status" },
-  { value: "date_range", label: "Date Range" },
   { value: "application_type", label: "Application Type" }
+  // Removed "status" and "date_range" from dropdown as they're now separate controls
 ];
 
 const Dashboard = () => {
@@ -57,7 +56,9 @@ const Dashboard = () => {
     dateRange,
     setDateRange,
     handleColumnChange,
-    previousColumn
+    previousColumn,
+    statusFilter,
+    setStatusFilter
   } = useDashboard();
 
   // Get bulk data count for the tab display
@@ -142,7 +143,7 @@ const Dashboard = () => {
 
       {activeTab === "search" && (
         <div className="bg-white border-b border-[#e0e0e0] mb-6">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 py-6">
+          <div className="flex flex-col gap-6 py-6">
             <SearchControls
               searchColumn={searchColumn}
               searchQuery={searchQuery}
@@ -153,6 +154,8 @@ const Dashboard = () => {
               dateRange={dateRange}
               setDateRange={setDateRange}
               previousColumn={previousColumn}
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
             />
           </div>
         </div>

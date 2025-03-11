@@ -1,5 +1,5 @@
 
-import { Search, Calendar } from "lucide-react";
+import { Search, Calendar, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -19,6 +19,8 @@ interface SearchControlsProps {
   dateRange: { from: Date | undefined; to: Date | undefined };
   setDateRange: (range: { from: Date | undefined; to: Date | undefined }) => void;
   previousColumn?: string | null;
+  statusFilter: string;
+  onStatusFilterChange: (value: string) => void;
 }
 
 export const SearchControls = ({
@@ -30,7 +32,9 @@ export const SearchControls = ({
   searchableColumns,
   dateRange,
   setDateRange,
-  previousColumn
+  previousColumn,
+  statusFilter,
+  onStatusFilterChange
 }: SearchControlsProps) => {
   
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -43,6 +47,15 @@ export const SearchControls = ({
       onSearchQueryChange("online"); // Set default value when switching to application_type
     }
   }, [searchColumn, previousColumn, onSearchQueryChange]);
+
+  // Set today's date as default if no date is selected
+  useEffect(() => {
+    if (!dateRange.from && !dateRange.to) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      setDateRange({ from: today, to: today });
+    }
+  }, [dateRange, setDateRange]);
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -68,7 +81,7 @@ export const SearchControls = ({
     } else if (dateRange.from) {
       return `From: ${format(dateRange.from, 'PP')}`;
     }
-    return "Select date range";
+    return "Today";
   };
 
   // Handle application type change and update the search query
@@ -77,29 +90,68 @@ export const SearchControls = ({
     onSearchQueryChange(value);
   };
 
-  // Show date range picker if "date_range" is selected
-  const showDateRangePicker = searchColumn === "date_range";
+  // Filter out the date range and status options from searchable columns
+  const filteredColumns = searchableColumns.filter(
+    column => column.value !== "date_range" && column.value !== "status"
+  );
+
   // Show application type dropdown if "application_type" is selected
   const showApplicationTypeDropdown = searchColumn === "application_type";
   
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
-      <div className="flex items-center gap-2 w-full sm:w-auto">
-        <Select value={searchColumn} onValueChange={onSearchColumnChange}>
-          <SelectTrigger className="w-[180px] bg-white border-gray-200">
-            <SelectValue placeholder="Select field" />
-          </SelectTrigger>
-          <SelectContent className="bg-white">
-            {searchableColumns.map(column => (
-              <SelectItem key={column.value} value={column.value}>
-                {column.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+    <div className="flex flex-col gap-4 w-full">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Select value={searchColumn} onValueChange={onSearchColumnChange}>
+            <SelectTrigger className="w-[180px] bg-white border-gray-200">
+              <SelectValue placeholder="Select field" />
+            </SelectTrigger>
+            <SelectContent className="bg-white">
+              {filteredColumns.map(column => (
+                <SelectItem key={column.value} value={column.value}>
+                  {column.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          {showApplicationTypeDropdown ? (
+            <Select value={applicationType} onValueChange={handleApplicationTypeChange}>
+              <SelectTrigger className="w-full sm:w-[240px] bg-white border-gray-200">
+                <SelectValue placeholder="Select application type" />
+              </SelectTrigger>
+              <SelectContent className="bg-white z-50">
+                <SelectItem value="online">Online</SelectItem>
+                <SelectItem value="bulk">Bulk</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
+            <div className="relative flex-1 sm:flex-initial">
+              <Input
+                type="search"
+                placeholder="Search..."
+                className="pl-9 pr-4 py-2 bg-white border-gray-200 w-full sm:w-[240px]"
+                value={searchQuery}
+                onChange={(e) => onSearchQueryChange(e.target.value)}
+                onKeyPress={handleKeyPress}
+              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            </div>
+          )}
+          <Button 
+            onClick={onSearch}
+            className="bg-black hover:bg-gray-800 text-white"
+          >
+            Search
+          </Button>
+        </div>
       </div>
-      <div className="flex items-center gap-2 w-full sm:w-auto">
-        {showDateRangePicker ? (
+
+      {/* Date Range and Status Filters (moved outside dropdown) */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
+        {/* Date Range Picker */}
+        <div className="flex items-center gap-2">
           <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -126,35 +178,27 @@ export const SearchControls = ({
               />
             </PopoverContent>
           </Popover>
-        ) : showApplicationTypeDropdown ? (
-          <Select value={applicationType} onValueChange={handleApplicationTypeChange}>
+        </div>
+
+        {/* Status Filter */}
+        <div className="flex items-center gap-2">
+          <Select value={statusFilter} onValueChange={onStatusFilterChange}>
             <SelectTrigger className="w-full sm:w-[240px] bg-white border-gray-200">
-              <SelectValue placeholder="Select application type" />
+              <div className="flex items-center">
+                <Filter className="mr-2 h-4 w-4" />
+                <span>{statusFilter === "" ? "All Statuses" : `Status: ${statusFilter}`}</span>
+              </div>
             </SelectTrigger>
             <SelectContent className="bg-white z-50">
-              <SelectItem value="online">Online</SelectItem>
-              <SelectItem value="bulk">Bulk</SelectItem>
+              <SelectItem value="">All Statuses</SelectItem>
+              <SelectItem value="0">New Entry</SelectItem>
+              <SelectItem value="1">Pending Approval</SelectItem>
+              <SelectItem value="2">Approved</SelectItem>
+              <SelectItem value="3">Rejected</SelectItem>
+              <SelectItem value="4">On Hold</SelectItem>
             </SelectContent>
           </Select>
-        ) : (
-          <div className="relative flex-1 sm:flex-initial">
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="pl-9 pr-4 py-2 bg-white border-gray-200 w-full sm:w-[240px]"
-              value={searchQuery}
-              onChange={(e) => onSearchQueryChange(e.target.value)}
-              onKeyPress={handleKeyPress}
-            />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          </div>
-        )}
-        <Button 
-          onClick={onSearch}
-          className="bg-black hover:bg-gray-800 text-white"
-        >
-          Search
-        </Button>
+        </div>
       </div>
     </div>
   );
