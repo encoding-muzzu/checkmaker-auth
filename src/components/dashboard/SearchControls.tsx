@@ -1,5 +1,5 @@
 
-import { Search, Calendar, Filter } from "lucide-react";
+import { Search, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -35,17 +35,6 @@ export const SearchControls = ({
   
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [applicationType, setApplicationType] = useState<string>("online");
-  const [status, setStatus] = useState<string>("");
-  
-  // Set default date to today if no dates are selected
-  useEffect(() => {
-    if (!dateRange.from && !dateRange.to) {
-      setDateRange({ 
-        from: new Date(), 
-        to: undefined 
-      });
-    }
-  }, []);
   
   // Reset application type when switching to application_type from a different search column
   useEffect(() => {
@@ -88,28 +77,29 @@ export const SearchControls = ({
     onSearchQueryChange(value);
   };
 
-  // Handle status change
-  const handleStatusChange = (value: string) => {
-    setStatus(value);
-    // Only update the search if status is the current search column
-    if (searchColumn === "status") {
-      onSearchQueryChange(value);
-    }
-  };
-
-  // Filter searchable columns to exclude date_range and status
-  const filteredSearchableColumns = searchableColumns.filter(
-    column => column.value !== "date_range" && column.value !== "status"
-  );
-  
+  // Show date range picker if "date_range" is selected
+  const showDateRangePicker = searchColumn === "date_range";
   // Show application type dropdown if "application_type" is selected
   const showApplicationTypeDropdown = searchColumn === "application_type";
   
   return (
-    <div className="flex flex-col gap-4 w-full">
-      {/* Date Range and Status Row */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
+      <div className="flex items-center gap-2 w-full sm:w-auto">
+        <Select value={searchColumn} onValueChange={onSearchColumnChange}>
+          <SelectTrigger className="w-[180px] bg-white border-gray-200">
+            <SelectValue placeholder="Select field" />
+          </SelectTrigger>
+          <SelectContent className="bg-white">
+            {searchableColumns.map(column => (
+              <SelectItem key={column.value} value={column.value}>
+                {column.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex items-center gap-2 w-full sm:w-auto">
+        {showDateRangePicker ? (
           <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -123,7 +113,7 @@ export const SearchControls = ({
                 {formatDateRange()}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-white z-50" align="start">
+            <PopoverContent className="w-auto p-0 bg-white" align="start">
               <CalendarComponent
                 mode="single"
                 selected={dateRange.to || dateRange.from}
@@ -136,72 +126,35 @@ export const SearchControls = ({
               />
             </PopoverContent>
           </Popover>
-        </div>
-
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Select value={status} onValueChange={handleStatusChange}>
+        ) : showApplicationTypeDropdown ? (
+          <Select value={applicationType} onValueChange={handleApplicationTypeChange}>
             <SelectTrigger className="w-full sm:w-[240px] bg-white border-gray-200">
-              <SelectValue placeholder="Select status" />
+              <SelectValue placeholder="Select application type" />
             </SelectTrigger>
             <SelectContent className="bg-white z-50">
-              <SelectItem value="">All Statuses</SelectItem>
-              <SelectItem value="0">Draft</SelectItem>
-              <SelectItem value="1">Pending</SelectItem>
-              <SelectItem value="2">Completed</SelectItem>
-              <SelectItem value="3">Returned</SelectItem>
-              <SelectItem value="4">On Hold</SelectItem>
+              <SelectItem value="online">Online</SelectItem>
+              <SelectItem value="bulk">Bulk</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-      </div>
-
-      {/* Search Controls Row */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Select value={searchColumn} onValueChange={onSearchColumnChange}>
-            <SelectTrigger className="w-[180px] bg-white border-gray-200">
-              <SelectValue placeholder="Select field" />
-            </SelectTrigger>
-            <SelectContent className="bg-white z-50">
-              {filteredSearchableColumns.map(column => (
-                <SelectItem key={column.value} value={column.value}>
-                  {column.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          {showApplicationTypeDropdown ? (
-            <Select value={applicationType} onValueChange={handleApplicationTypeChange}>
-              <SelectTrigger className="w-full sm:w-[240px] bg-white border-gray-200">
-                <SelectValue placeholder="Select application type" />
-              </SelectTrigger>
-              <SelectContent className="bg-white z-50">
-                <SelectItem value="online">Online</SelectItem>
-                <SelectItem value="bulk">Bulk</SelectItem>
-              </SelectContent>
-            </Select>
-          ) : (
-            <div className="relative flex-1 sm:flex-initial">
-              <Input
-                type="search"
-                placeholder="Search..."
-                className="pl-9 pr-4 py-2 bg-white border-gray-200 w-full sm:w-[240px]"
-                value={searchQuery}
-                onChange={(e) => onSearchQueryChange(e.target.value)}
-                onKeyPress={handleKeyPress}
-              />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            </div>
-          )}
-          <Button 
-            onClick={onSearch}
-            className="bg-black hover:bg-gray-800 text-white"
-          >
-            Search
-          </Button>
-        </div>
+        ) : (
+          <div className="relative flex-1 sm:flex-initial">
+            <Input
+              type="search"
+              placeholder="Search..."
+              className="pl-9 pr-4 py-2 bg-white border-gray-200 w-full sm:w-[240px]"
+              value={searchQuery}
+              onChange={(e) => onSearchQueryChange(e.target.value)}
+              onKeyPress={handleKeyPress}
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          </div>
+        )}
+        <Button 
+          onClick={onSearch}
+          className="bg-black hover:bg-gray-800 text-white"
+        >
+          Search
+        </Button>
       </div>
     </div>
   );
