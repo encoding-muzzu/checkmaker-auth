@@ -84,14 +84,21 @@ export const useApplicationData = (page = 1, pageSize = 10, filters = {}, active
         query = query.in('status_id', statusIds);
       }
 
-      // Apply any search filters
-      if (Object.keys(filters).length > 0) {
-        Object.entries(filters).forEach(([key, value]) => {
-          if (value) {
-            query = query.ilike(key, `%${value}%`);
-          }
-        });
+      // Apply date range filters if they exist
+      if (filters.from_dt) {
+        query = query.gte('created_at', filters.from_dt);
       }
+      
+      if (filters.to_dt) {
+        query = query.lte('created_at', filters.to_dt);
+      }
+
+      // Apply any other search filters
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value && key !== 'from_dt' && key !== 'to_dt') {
+          query = query.ilike(key, `%${value}%`);
+        }
+      });
 
       // Add ordering - most recent first for all tabs
       query = query.order('created_at', { ascending: false });

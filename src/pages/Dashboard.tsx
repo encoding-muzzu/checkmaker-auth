@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useDashboard } from "@/hooks/useDashboard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -23,7 +24,8 @@ const searchableColumns = [
   { value: "product_variant", label: "Product Variant" },
   { value: "card_type", label: "Card Type" },
   { value: "processing_type", label: "Processing Type" },
-  { value: "status", label: "Status" }
+  { value: "status", label: "Status" },
+  { value: "date_range", label: "Date Range" } // Add new date range option
 ];
 
 const Dashboard = () => {
@@ -49,7 +51,9 @@ const Dashboard = () => {
     totalCount,
     totalPages,
     filteredApplications,
-    isSearchPerformed
+    isSearchPerformed,
+    dateRange,
+    setDateRange
   } = useDashboard();
 
   // Get bulk data count for the tab display
@@ -130,6 +134,8 @@ const Dashboard = () => {
               onSearchQueryChange={setSearchQuery}
               onSearch={handleSearch}
               searchableColumns={searchableColumns}
+              dateRange={dateRange}
+              setDateRange={setDateRange}
             />
           </div>
         </div>

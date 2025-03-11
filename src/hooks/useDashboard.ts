@@ -15,7 +15,7 @@ export const useDashboard = () => {
     search: 1,
     bulkData: 1
   });
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState<Record<string, any>>({});
   const {
     activeTab,
     setActiveTab,
@@ -51,10 +51,32 @@ export const useDashboard = () => {
     handleSearch,
     clearSearch,
     isSearchPerformed,
-    setIsSearchPerformed
-  } = useApplicationSearch((searchCol, searchVal) => {
-    // Update filters and reset to page 1 when searching
-    setFilters(searchVal ? { [searchCol]: searchVal } : {});
+    setIsSearchPerformed,
+    dateRange,
+    setDateRange
+  } = useApplicationSearch((searchCol, searchVal, dateRange) => {
+    // Handle date range search
+    if (searchCol === "date_range" && (dateRange.from || dateRange.to)) {
+      const newFilters: Record<string, any> = {};
+      
+      if (dateRange.from) {
+        newFilters.from_dt = dateRange.from.toISOString();
+      }
+      
+      if (dateRange.to) {
+        // Set the time to end of day
+        const toDate = new Date(dateRange.to);
+        toDate.setHours(23, 59, 59, 999);
+        newFilters.to_dt = toDate.toISOString();
+      }
+      
+      setFilters(newFilters);
+    } else {
+      // Regular search field handling
+      setFilters(searchVal ? { [searchCol]: searchVal } : {});
+    }
+    
+    // Reset to page 1 when searching
     updateCurrentPage("search", 1);
   });
 
@@ -110,6 +132,8 @@ export const useDashboard = () => {
     setSearchResults,
     isSearchPerformed,
     setIsSearchPerformed,
-    filteredApplications
+    filteredApplications,
+    dateRange,
+    setDateRange
   };
 };
