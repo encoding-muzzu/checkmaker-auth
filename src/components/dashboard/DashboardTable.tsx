@@ -95,6 +95,7 @@ export const DashboardTable = ({
           <TableRow>
             <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Created At</TableHead>
             <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Application Number</TableHead>
+            <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Application Type</TableHead>
             <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Status</TableHead>
             <TableHead className="text-[0.8125rem] text-[rgba(0,0,0,0.87)] font-medium">Action</TableHead>
           </TableRow>
@@ -104,13 +105,13 @@ export const DashboardTable = ({
             <TableSkeleton />
           ) : showNoRecordsMessage ? (
             <TableRow>
-              <TableCell colSpan={4} className="text-center py-8 text-gray-500">
+              <TableCell colSpan={5} className="text-center py-8 text-gray-500">
                 No records found. Please try a different search.
               </TableCell>
             </TableRow>
           ) : data.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={4} className="text-center py-8 text-gray-500">
+              <TableCell colSpan={5} className="text-center py-8 text-gray-500">
                 No records available.
               </TableCell>
             </TableRow>
@@ -122,6 +123,9 @@ export const DashboardTable = ({
                 </TableCell>
                 <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>
                   {row.application_number || '-'}
+                </TableCell>
+                <TableCell className={`text-[0.8125rem] leading-[1.43] text-[rgba(0,0,0,0.87)] ${isDense ? 'py-6' : 'py-4'}`}>
+                  {row.application_type ? (row.application_type.charAt(0).toUpperCase() + row.application_type.slice(1)) : '-'}
                 </TableCell>
                 <TableCell className={`text-[0.8125rem] leading-[1.43] ${isDense ? 'py-6' : 'py-4'}`}>
                   <span className={`px-[10px] py-[3px] rounded-[10px] ${getStatusColor(row.status_id)}`}>
@@ -149,7 +153,7 @@ export const DashboardTable = ({
         {showPagination && (
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={4}>
+              <TableCell colSpan={5}>
                 <div className="flex items-center justify-center gap-4 py-2">
                   <button 
                     className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
