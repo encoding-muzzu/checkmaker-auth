@@ -26,7 +26,6 @@ const searchableColumns = [
   { value: "card_type", label: "Card Type" },
   { value: "processing_type", label: "Processing Type" },
   { value: "status", label: "Status" },
-  { value: "date_range", label: "Date Range" },
   { value: "application_type", label: "Application Type" }
 ];
 
@@ -57,7 +56,9 @@ const Dashboard = () => {
     dateRange,
     setDateRange,
     handleColumnChange,
-    previousColumn
+    previousColumn,
+    applicationStatus,
+    setApplicationStatus
   } = useDashboard();
 
   // Get bulk data count for the tab display
@@ -153,6 +154,8 @@ const Dashboard = () => {
               dateRange={dateRange}
               setDateRange={setDateRange}
               previousColumn={previousColumn}
+              applicationStatus={applicationStatus}
+              onApplicationStatusChange={setApplicationStatus}
             />
           </div>
         </div>

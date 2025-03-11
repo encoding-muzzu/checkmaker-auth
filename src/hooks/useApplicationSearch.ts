@@ -1,17 +1,25 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuery: string, dateRange: {from: Date | undefined, to: Date | undefined}) => void) => {
+export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuery: string, dateRange: {from: Date | undefined, to: Date | undefined}, applicationStatus: string) => void) => {
   const [searchColumn, setSearchColumn] = useState("application_number");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearchPerformed, setIsSearchPerformed] = useState(false);
   const [dateRange, setDateRange] = useState<{from: Date | undefined, to: Date | undefined}>({
-    from: undefined,
+    from: new Date(), // Default to today's date
     to: undefined
   });
   // Track if application type was previously selected
   const [previousColumn, setPreviousColumn] = useState<string | null>(null);
+  const [applicationStatus, setApplicationStatus] = useState<string>("all");
+
+  // Initialize with today's date
+  useEffect(() => {
+    if (!dateRange.from) {
+      setDateRange({ from: new Date(), to: undefined });
+    }
+  }, []);
 
   const handleSearch = () => {
     // Always trigger a search, even if the query hasn't changed
@@ -22,17 +30,18 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
       setSearchResults([]);
     }
     
-    // Always call onSearch to trigger API call
-    onSearch(searchColumn, searchQuery, dateRange);
+    // Always call onSearch to trigger API call with all parameters
+    onSearch(searchColumn, searchQuery, dateRange, applicationStatus);
   };
 
   const clearSearch = () => {
     setSearchQuery("");
     setSearchResults([]);
     setIsSearchPerformed(false);
-    setDateRange({ from: undefined, to: undefined });
+    setDateRange({ from: new Date(), to: undefined }); // Reset to today's date
     setPreviousColumn(null);
-    onSearch("", "", { from: undefined, to: undefined });
+    setApplicationStatus("all");
+    onSearch("", "", { from: new Date(), to: undefined }, "all");
   };
 
   // Add a new method to handle column changes properly
@@ -46,11 +55,6 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     // Reset the search query when switching from application_type to another field
     if (searchColumn === "application_type" && newColumn !== "application_type") {
       setSearchQuery("");
-    }
-    
-    // Reset date range when switching from date_range
-    if (searchColumn === "date_range" && newColumn !== "date_range") {
-      setDateRange({ from: undefined, to: undefined });
     }
   };
 
@@ -68,6 +72,8 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     dateRange,
     setDateRange,
     handleColumnChange,
-    previousColumn
+    previousColumn,
+    applicationStatus,
+    setApplicationStatus
   };
 };

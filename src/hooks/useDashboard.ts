@@ -54,28 +54,36 @@ export const useDashboard = () => {
     dateRange,
     setDateRange,
     handleColumnChange,
-    previousColumn
-  } = useApplicationSearch((searchCol, searchVal, dateRange) => {
+    previousColumn,
+    applicationStatus,
+    setApplicationStatus
+  } = useApplicationSearch((searchCol, searchVal, dateRange, appStatus) => {
+    // Create new filters object
+    const newFilters: Record<string, any> = {};
+    
     // Handle date range search
-    if (searchCol === "date_range" && (dateRange.from || dateRange.to)) {
-      const newFilters: Record<string, any> = {};
-      
-      if (dateRange.from) {
-        newFilters.from_dt = dateRange.from.toISOString();
-      }
-      
-      if (dateRange.to) {
-        // Set the time to end of day
-        const toDate = new Date(dateRange.to);
-        toDate.setHours(23, 59, 59, 999);
-        newFilters.to_dt = toDate.toISOString();
-      }
-      
-      setFilters(newFilters);
-    } else {
-      // Regular search field handling
-      setFilters(searchVal ? { [searchCol]: searchVal } : {});
+    if (dateRange.from) {
+      newFilters.from_dt = dateRange.from.toISOString();
     }
+    
+    if (dateRange.to) {
+      // Set the time to end of day
+      const toDate = new Date(dateRange.to);
+      toDate.setHours(23, 59, 59, 999);
+      newFilters.to_dt = toDate.toISOString();
+    }
+    
+    // Handle application status filter if not "all"
+    if (appStatus !== "all") {
+      newFilters.application_type = appStatus;
+    }
+    
+    // Add the search column/value filter
+    if (searchVal && searchCol) {
+      newFilters[searchCol] = searchVal;
+    }
+    
+    setFilters(newFilters);
     
     // Reset to page 1 when searching
     updateCurrentPage("search", 1);
@@ -137,6 +145,8 @@ export const useDashboard = () => {
     dateRange,
     setDateRange,
     handleColumnChange,
-    previousColumn
+    previousColumn,
+    applicationStatus,
+    setApplicationStatus
   };
 };
