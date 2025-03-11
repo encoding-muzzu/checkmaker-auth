@@ -95,7 +95,8 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
       
       // For search tab, handle status filter from the search controls
       if (activeTab === "search" && filters.status_id) {
-        query = query.eq('status_id', filters.status_id);
+        // Convert string to number for the status_id filter
+        query = query.eq('status_id', parseInt(filters.status_id));
       }
 
       // Apply date range filters if they exist
