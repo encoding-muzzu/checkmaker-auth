@@ -101,8 +101,8 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
         query = query.lte('created_at', filters.to_dt);
       }
       
-      // Apply application type filter if it exists
-      if (filters.application_type) {
+      // Apply application type filter if it exists and not 'all'
+      if (filters.application_type && filters.application_type !== 'all') {
         query = query.eq('application_type', filters.application_type);
       }
 

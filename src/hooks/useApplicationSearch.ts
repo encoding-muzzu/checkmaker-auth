@@ -25,12 +25,7 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     // Always trigger a search, even if the query hasn't changed
     setIsSearchPerformed(true);
     
-    // If search query is empty and no date range is selected, clear results
-    if (searchQuery.trim() === "" && !dateRange.from && !dateRange.to) {
-      setSearchResults([]);
-    }
-    
-    // Always call onSearch to trigger API call with all parameters
+    // Call onSearch to trigger API call with all parameters
     onSearch(searchColumn, searchQuery, dateRange, applicationStatus);
   };
 

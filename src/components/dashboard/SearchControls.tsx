@@ -113,12 +113,12 @@ export const SearchControls = ({
             <Button
               variant="outline"
               className={cn(
-                "w-full sm:w-[200px] justify-start text-left font-normal bg-white border-gray-200",
+                "w-full sm:w-[230px] justify-start text-left font-normal bg-white border-gray-200 truncate overflow-hidden",
                 !dateRange.from && "text-muted-foreground"
               )}
             >
-              <Calendar className="mr-2 h-4 w-4" />
-              {formatDateRange()}
+              <Calendar className="mr-2 h-4 w-4 flex-shrink-0" />
+              <span className="truncate">{formatDateRange()}</span>
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0 bg-white" align="start">
