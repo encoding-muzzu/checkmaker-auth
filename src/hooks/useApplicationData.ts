@@ -11,7 +11,6 @@ interface FiltersType {
   from_dt?: string;
   to_dt?: string;
   application_type?: string;
-  status_id?: string;
   [key: string]: any; // Allow for other filter properties
 }
 
@@ -107,19 +106,9 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
         query = query.eq('application_type', filters.application_type);
       }
 
-      // Apply status filter for search tab
-      if (activeTab === 'search' && filters.status_id) {
-        // Convert string to number for the query
-        query = query.eq('status_id', parseInt(filters.status_id));
-      }
-
       // Apply any other search filters
       Object.entries(filters).forEach(([key, value]) => {
-        if (value && 
-            key !== 'from_dt' && 
-            key !== 'to_dt' && 
-            key !== 'application_type' && 
-            key !== 'status_id') {
+        if (value && key !== 'from_dt' && key !== 'to_dt' && key !== 'application_type') {
           query = query.ilike(key, `%${value}%`);
         }
       });
