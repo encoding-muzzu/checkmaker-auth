@@ -62,6 +62,7 @@ export type Database = {
       applications: {
         Row: {
           application_number: string | null
+          application_type: string
           arn: string
           card_type: string
           created_at: string | null
@@ -83,6 +84,7 @@ export type Database = {
         }
         Insert: {
           application_number?: string | null
+          application_type?: string
           arn: string
           card_type: string
           created_at?: string | null
@@ -104,6 +106,7 @@ export type Database = {
         }
         Update: {
           application_number?: string | null
+          application_type?: string
           arn?: string
           card_type?: string
           created_at?: string | null

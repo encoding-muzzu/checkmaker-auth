@@ -32,6 +32,7 @@ export const SearchControls = ({
 }: SearchControlsProps) => {
   
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [applicationType, setApplicationType] = useState<string>("online");
   
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -60,8 +61,16 @@ export const SearchControls = ({
     return "Select date range";
   };
 
+  // Handle application type change and update the search query
+  const handleApplicationTypeChange = (value: string) => {
+    setApplicationType(value);
+    onSearchQueryChange(value);
+  };
+
   // Show date range picker if "date_range" is selected
   const showDateRangePicker = searchColumn === "date_range";
+  // Show application type dropdown if "application_type" is selected
+  const showApplicationTypeDropdown = searchColumn === "application_type";
   
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
@@ -70,6 +79,9 @@ export const SearchControls = ({
           onSearchColumnChange(value);
           if (value === "date_range") {
             setDateRange({ from: undefined, to: undefined });
+          } else if (value === "application_type") {
+            setApplicationType("online");
+            onSearchQueryChange("online");
           }
         }}>
           <SelectTrigger className="w-[180px] bg-white border-gray-200">
@@ -112,6 +124,16 @@ export const SearchControls = ({
               />
             </PopoverContent>
           </Popover>
+        ) : showApplicationTypeDropdown ? (
+          <Select value={applicationType} onValueChange={handleApplicationTypeChange}>
+            <SelectTrigger className="w-full sm:w-[240px] bg-white border-gray-200">
+              <SelectValue placeholder="Select application type" />
+            </SelectTrigger>
+            <SelectContent className="bg-white z-50">
+              <SelectItem value="online">Online</SelectItem>
+              <SelectItem value="bulk">Bulk</SelectItem>
+            </SelectContent>
+          </Select>
         ) : (
           <div className="relative flex-1 sm:flex-initial">
             <Input

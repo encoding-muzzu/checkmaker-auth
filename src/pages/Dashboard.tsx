@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useDashboard } from "@/hooks/useDashboard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -25,7 +24,8 @@ const searchableColumns = [
   { value: "card_type", label: "Card Type" },
   { value: "processing_type", label: "Processing Type" },
   { value: "status", label: "Status" },
-  { value: "date_range", label: "Date Range" } // Add new date range option
+  { value: "date_range", label: "Date Range" },
+  { value: "application_type", label: "Application Type" }
 ];
 
 const Dashboard = () => {

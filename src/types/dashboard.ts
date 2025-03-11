@@ -20,6 +20,7 @@ export interface ApplicationData {
   assigned_to?: string;
   application_number?: string | null;
   tcs_amount?: string | null;
+  application_type: string;
   documents: {
     name: string;
     path: string;

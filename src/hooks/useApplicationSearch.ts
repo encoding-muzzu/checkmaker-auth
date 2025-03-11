@@ -16,7 +16,7 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     setIsSearchPerformed(true);
     
     // If search query is empty and no date range is selected, clear results
-    if (searchQuery.trim() === "" && !dateRange.from && !dateRange.to) {
+    if (searchQuery.trim() === "" && !dateRange.from && !dateRange.to && searchColumn !== "application_type") {
       setSearchResults([]);
     }
     
