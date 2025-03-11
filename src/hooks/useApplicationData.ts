@@ -6,7 +6,14 @@ import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
-export const useApplicationData = (page = 1, pageSize = 10, filters = {}, activeTab = "", userRole = null) => {
+// Define an interface for the filters object
+interface FiltersType {
+  from_dt?: string;
+  to_dt?: string;
+  [key: string]: any; // Allow for other filter properties
+}
+
+export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType = {}, activeTab = "", userRole = null) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
