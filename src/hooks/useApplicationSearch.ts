@@ -26,7 +26,7 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     setIsSearchPerformed(true);
     
     // If search query is empty and no date range is selected, clear results
-    if (searchQuery.trim() === "" && !dateRange.from && !dateRange.to && searchColumn !== "application_type") {
+    if (searchQuery.trim() === "" && !dateRange.from && !dateRange.to) {
       setSearchResults([]);
     }
     
@@ -52,8 +52,8 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     // Update the column
     setSearchColumn(newColumn);
     
-    // Reset the search query when switching from application_type to another field
-    if (searchColumn === "application_type" && newColumn !== "application_type") {
+    // Reset the search query when switching columns
+    if (searchColumn !== newColumn) {
       setSearchQuery("");
     }
   };

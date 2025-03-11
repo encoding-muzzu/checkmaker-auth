@@ -133,9 +133,9 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
         return { data: [], count: 0 };
       }
 
-      // Update total count
+      // Update total count - ensure it's a number
       if (count !== null) {
-        setTotalCount(count);
+        setTotalCount(count !== null ? Number(count) : 0);
       }
 
       return { 
@@ -144,7 +144,7 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
           status_name: app.application_statuses.name,
           documents: app.documents || []
         })) as ApplicationData[],
-        count: count || 0 
+        count: count !== null ? Number(count) : 0 
       };
     },
     refetchOnWindowFocus: false // Disable auto-refresh

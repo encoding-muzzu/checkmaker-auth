@@ -38,16 +38,7 @@ export const SearchControls = ({
 }: SearchControlsProps) => {
   
   const [calendarOpen, setCalendarOpen] = useState(false);
-  const [applicationType, setApplicationType] = useState<string>("online");
   
-  // Reset application type when switching to application_type from a different search column
-  useEffect(() => {
-    if (searchColumn === "application_type" && previousColumn !== "application_type") {
-      setApplicationType("online");
-      onSearchQueryChange("online"); // Set default value when switching to application_type
-    }
-  }, [searchColumn, previousColumn, onSearchQueryChange]);
-
   // Initialize today's date for the date picker if none is set
   useEffect(() => {
     if (!dateRange.from) {
@@ -81,15 +72,9 @@ export const SearchControls = ({
     }
     return "Select date range";
   };
-
-  // Handle application type change and update the search query
-  const handleApplicationTypeChange = (value: string) => {
-    setApplicationType(value);
-    onSearchQueryChange(value);
-  };
   
-  // Show application type dropdown if "application_type" is selected
-  const showApplicationTypeDropdown = searchColumn === "application_type";
+  // Filter out the application_type option from searchableColumns
+  const filteredSearchColumns = searchableColumns.filter(column => column.value !== "application_type");
   
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full flex-wrap">
@@ -99,7 +84,7 @@ export const SearchControls = ({
             <SelectValue placeholder="Select field" />
           </SelectTrigger>
           <SelectContent className="bg-white">
-            {searchableColumns.map(column => (
+            {filteredSearchColumns.map(column => (
               <SelectItem key={column.value} value={column.value}>
                 {column.label}
               </SelectItem>
@@ -108,29 +93,17 @@ export const SearchControls = ({
         </Select>
       </div>
       <div className="flex items-center gap-2 w-full sm:w-auto">
-        {showApplicationTypeDropdown ? (
-          <Select value={applicationType} onValueChange={handleApplicationTypeChange}>
-            <SelectTrigger className="w-full sm:w-[240px] bg-white border-gray-200">
-              <SelectValue placeholder="Select application type" />
-            </SelectTrigger>
-            <SelectContent className="bg-white z-50">
-              <SelectItem value="online">Online</SelectItem>
-              <SelectItem value="bulk">Bulk</SelectItem>
-            </SelectContent>
-          </Select>
-        ) : (
-          <div className="relative flex-1 sm:flex-initial">
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="pl-9 pr-4 py-2 bg-white border-gray-200 w-full sm:w-[240px]"
-              value={searchQuery}
-              onChange={(e) => onSearchQueryChange(e.target.value)}
-              onKeyPress={handleKeyPress}
-            />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          </div>
-        )}
+        <div className="relative flex-1 sm:flex-initial">
+          <Input
+            type="search"
+            placeholder="Search..."
+            className="pl-9 pr-4 py-2 bg-white border-gray-200 w-full sm:w-[240px]"
+            value={searchQuery}
+            onChange={(e) => onSearchQueryChange(e.target.value)}
+            onKeyPress={handleKeyPress}
+          />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        </div>
       </div>
 
       {/* Date Range Picker - Always visible */}
@@ -186,4 +159,3 @@ export const SearchControls = ({
     </div>
   );
 };
-

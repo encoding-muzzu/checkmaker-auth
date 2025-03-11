@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useDashboard } from "@/hooks/useDashboard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -25,8 +24,7 @@ const searchableColumns = [
   { value: "product_variant", label: "Product Variant" },
   { value: "card_type", label: "Card Type" },
   { value: "processing_type", label: "Processing Type" },
-  { value: "status", label: "Status" },
-  { value: "application_type", label: "Application Type" }
+  { value: "status", label: "Status" }
 ];
 
 const Dashboard = () => {
