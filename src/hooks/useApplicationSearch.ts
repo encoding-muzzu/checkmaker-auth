@@ -44,12 +44,12 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     setSearchColumn(newColumn);
     
     // Reset the search query when switching from application_type to another field
-    if (previousColumn === "application_type" && newColumn !== "application_type") {
+    if (searchColumn === "application_type" && newColumn !== "application_type") {
       setSearchQuery("");
     }
     
     // Reset date range when switching from date_range
-    if (previousColumn === "date_range" && newColumn !== "date_range") {
+    if (searchColumn === "date_range" && newColumn !== "date_range") {
       setDateRange({ from: undefined, to: undefined });
     }
   };

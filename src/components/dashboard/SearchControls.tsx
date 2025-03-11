@@ -36,12 +36,13 @@ export const SearchControls = ({
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [applicationType, setApplicationType] = useState<string>("online");
   
-  // Reset application type when switching from a different search column
+  // Reset application type when switching to application_type from a different search column
   useEffect(() => {
     if (searchColumn === "application_type" && previousColumn !== "application_type") {
       setApplicationType("online");
+      onSearchQueryChange("online"); // Set default value when switching to application_type
     }
-  }, [searchColumn, previousColumn]);
+  }, [searchColumn, previousColumn, onSearchQueryChange]);
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
