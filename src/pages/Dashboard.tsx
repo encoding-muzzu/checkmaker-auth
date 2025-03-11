@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useDashboard } from "@/hooks/useDashboard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -10,8 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBulkProcessing } from "@/hooks/useBulkProcessing";
 import { useTokenValidation } from "@/hooks/useTokenValidation";
 
-// Check if bulk data tab is disabled (default) unless explicitly enabled
-const isBulkDataEnabled = import.meta.env.VITE_ENABLE_BULK_DATA === "true";
+// Always enable the bulk data tab
+const isBulkDataEnabled = true;
 
 // Create a searchable columns array for the search tab
 const searchableColumns = [
@@ -97,10 +96,7 @@ const Dashboard = () => {
 
   const handleTabChange = (tab: string) => {
     if (tab !== activeTab) {
-      // Don't allow switching to bulkData if disabled
-      if (tab === "bulkData" && !isBulkDataEnabled) {
-        return;
-      }
+      // Always allow switching to bulkData tab since it's enabled
       setActiveTab(tab);
       if (tab !== "search") {
         clearSearch();
@@ -121,7 +117,7 @@ const Dashboard = () => {
         setSearchResults={setSearchResults}
         bulkDataCount={bulkDataCount}
         totalCount={totalCount}
-        isBulkDataDisabled={!isBulkDataEnabled}
+        isBulkDataDisabled={false}
       />
 
       {activeTab === "search" && (
@@ -139,7 +135,7 @@ const Dashboard = () => {
         </div>
       )}
 
-      {activeTab === "bulkData" && isBulkDataEnabled ? (
+      {activeTab === "bulkData" ? (
         <BulkDataTab />
       ) : (
         <>

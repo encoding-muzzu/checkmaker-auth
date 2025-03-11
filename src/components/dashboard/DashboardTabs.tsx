@@ -80,17 +80,16 @@ export const DashboardTabs = ({
             activeTab={activeTab}
             tabName="search"
           />
-          {!isBulkDataDisabled && (
-            <TabButton
-              isActive={activeTab === "bulkData"}
-              label="Bulk Data"
-              count={bulkDataCount}
-              onClick={() => setActiveTab("bulkData")}
-              disabled={false}
-              activeTab={activeTab}
-              tabName="bulkData"
-            />
-          )}
+          {/* Always show the Bulk Data tab by removing the condition check */}
+          <TabButton
+            isActive={activeTab === "bulkData"}
+            label="Bulk Data"
+            count={bulkDataCount}
+            onClick={() => setActiveTab("bulkData")}
+            disabled={false}
+            activeTab={activeTab}
+            tabName="bulkData"
+          />
         </div>
       </div>
     </div>
