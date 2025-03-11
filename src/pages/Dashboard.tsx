@@ -104,7 +104,7 @@ const Dashboard = () => {
 
   const handleTabChange = (tab: string) => {
     if (tab !== activeTab) {
-      // Check if the tab is bulkData and it's not disabled
+      // Only allow switching to bulkData tab if it's not disabled
       if (tab === "bulkData" && !isBulkDataDisabled) {
         setActiveTab(tab);
       } else if (tab !== "bulkData") {
@@ -116,6 +116,13 @@ const Dashboard = () => {
       }
     }
   };
+
+  // If user is on the bulk data tab and it gets disabled, redirect them to pending tab
+  useEffect(() => {
+    if (isBulkDataDisabled && activeTab === "bulkData") {
+      setActiveTab("pending");
+    }
+  }, [isBulkDataDisabled, activeTab, setActiveTab]);
 
   return (
     <div className="p-8 max-w-[1400px] mx-auto">
@@ -151,7 +158,8 @@ const Dashboard = () => {
         </div>
       )}
 
-      {activeTab === "bulkData" ? (
+      {/* Only render BulkDataTab if the tab is not disabled */}
+      {activeTab === "bulkData" && !isBulkDataDisabled ? (
         <BulkDataTab />
       ) : (
         <>

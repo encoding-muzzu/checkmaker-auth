@@ -43,9 +43,6 @@ export const DashboardTabs = ({
   // Check if the current tab should show the refresh button
   const shouldShowRefreshButton = activeTab !== "search" && activeTab !== "bulkData";
 
-  // Get bulk data disabled status from environment variable
-  const isBulkDataTabDisabled = isBulkDataDisabled;
-
   return (
     <div className="border-b mb-8 border-[rgb(224, 224, 224)]">
       <div className="flex justify-between items-center">
@@ -89,8 +86,8 @@ export const DashboardTabs = ({
             activeTab={activeTab}
             tabName="search"
           />
-          {/* Render Bulk Data tab only if it's not disabled */}
-          {!isBulkDataTabDisabled && (
+          {/* Completely hide the Bulk Data tab when disabled */}
+          {!isBulkDataDisabled && (
             <TabButton
               isActive={activeTab === "bulkData"}
               label="Bulk Data"
