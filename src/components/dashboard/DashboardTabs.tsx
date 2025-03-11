@@ -1,6 +1,8 @@
 
 import { TabButton } from "@/components/dashboard/TabButton";
 import { ApplicationData } from "@/types/dashboard";
+import { Button } from "@/components/ui/button";
+import { RefreshCcw } from "lucide-react";
 
 interface DashboardTabsProps {
   activeTab: string;
@@ -19,6 +21,7 @@ export const DashboardTabs = ({
   setActiveTab,
   applications,
   userRole,
+  onRefresh,
   setSearchResults,
   bulkDataCount,
   totalCount,
@@ -36,6 +39,12 @@ export const DashboardTabs = ({
     : (applications?.filter(app => app.status_id === 1 || app.status_id === 2 || app.status_id === 4).length || 0);
 
   const reopenedCount = applications?.filter(app => app.status_id === 3).length || 0;
+
+  // Check if the current tab should show the refresh button
+  const shouldShowRefreshButton = activeTab !== "search" && activeTab !== "bulkData";
+
+  // Get bulk data disabled status from environment variable
+  const isBulkDataTabDisabled = isBulkDataDisabled;
 
   return (
     <div className="border-b mb-8 border-[rgb(224, 224, 224)]">
@@ -80,17 +89,32 @@ export const DashboardTabs = ({
             activeTab={activeTab}
             tabName="search"
           />
-          {/* Always show the Bulk Data tab by removing the condition check */}
-          <TabButton
-            isActive={activeTab === "bulkData"}
-            label="Bulk Data"
-            count={bulkDataCount}
-            onClick={() => setActiveTab("bulkData")}
-            disabled={false}
-            activeTab={activeTab}
-            tabName="bulkData"
-          />
+          {/* Render Bulk Data tab only if it's not disabled */}
+          {!isBulkDataTabDisabled && (
+            <TabButton
+              isActive={activeTab === "bulkData"}
+              label="Bulk Data"
+              count={bulkDataCount}
+              onClick={() => setActiveTab("bulkData")}
+              disabled={false}
+              activeTab={activeTab}
+              tabName="bulkData"
+            />
+          )}
         </div>
+        
+        {/* Add refresh button for non-search/bulk tabs */}
+        {shouldShowRefreshButton && (
+          <Button 
+            onClick={onRefresh}
+            variant="outline" 
+            size="sm"
+            className="flex gap-2 items-center border-gray-200"
+          >
+            <RefreshCcw size={16} />
+            Refresh
+          </Button>
+        )}
       </div>
     </div>
   );
