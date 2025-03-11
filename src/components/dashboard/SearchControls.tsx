@@ -123,14 +123,26 @@ export const SearchControls = ({
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0 bg-white" align="start">
             <CalendarComponent
-              mode="single"
-              selected={dateRange.to || dateRange.from}
-              onSelect={handleDateSelect}
+              mode="range"
+              selected={{
+                from: dateRange.from,
+                to: dateRange.to
+              }}
+              onSelect={(range) => {
+                if (range) {
+                  setDateRange({
+                    from: range.from,
+                    to: range.to
+                  });
+                  if (range.to) {
+                    setCalendarOpen(false);
+                  }
+                }
+              }}
               initialFocus
+              numberOfMonths={1}
               className="p-3 pointer-events-auto"
-              disabled={date => 
-                (dateRange.from && date < dateRange.from)
-              }
+              fixedWeeks
             />
           </PopoverContent>
         </Popover>
