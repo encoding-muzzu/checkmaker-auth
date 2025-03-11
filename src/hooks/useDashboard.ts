@@ -4,7 +4,6 @@ import { useApplicationData } from "./useApplicationData";
 import { useApplicationSearch } from "./useApplicationSearch";
 import { useApplicationFilters } from "./useApplicationFilters";
 import { useState, useEffect } from "react";
-import { ApplicationData } from "@/types/dashboard";
 
 export const useDashboard = () => {
   const { handleLogout } = useAuth();
@@ -53,7 +52,9 @@ export const useDashboard = () => {
     isSearchPerformed,
     setIsSearchPerformed,
     dateRange,
-    setDateRange
+    setDateRange,
+    handleColumnChange,
+    previousColumn
   } = useApplicationSearch((searchCol, searchVal, dateRange) => {
     // Handle date range search
     if (searchCol === "date_range" && (dateRange.from || dateRange.to)) {
@@ -134,6 +135,8 @@ export const useDashboard = () => {
     setIsSearchPerformed,
     filteredApplications,
     dateRange,
-    setDateRange
+    setDateRange,
+    handleColumnChange,
+    previousColumn
   };
 };

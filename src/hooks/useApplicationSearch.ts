@@ -10,6 +10,8 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     from: undefined,
     to: undefined
   });
+  // Track if application type was previously selected
+  const [previousColumn, setPreviousColumn] = useState<string | null>(null);
 
   const handleSearch = () => {
     // Always trigger a search, even if the query hasn't changed
@@ -29,7 +31,27 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     setSearchResults([]);
     setIsSearchPerformed(false);
     setDateRange({ from: undefined, to: undefined });
+    setPreviousColumn(null);
     onSearch("", "", { from: undefined, to: undefined });
+  };
+
+  // Add a new method to handle column changes properly
+  const handleColumnChange = (newColumn: string) => {
+    // Store the previous column before changing
+    setPreviousColumn(searchColumn);
+    
+    // Update the column
+    setSearchColumn(newColumn);
+    
+    // Reset the search query when switching from application_type to another field
+    if (previousColumn === "application_type" && newColumn !== "application_type") {
+      setSearchQuery("");
+    }
+    
+    // Reset date range when switching from date_range
+    if (previousColumn === "date_range" && newColumn !== "date_range") {
+      setDateRange({ from: undefined, to: undefined });
+    }
   };
 
   return {
@@ -44,6 +66,8 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     isSearchPerformed,
     setIsSearchPerformed,
     dateRange,
-    setDateRange
+    setDateRange,
+    handleColumnChange,
+    previousColumn
   };
 };

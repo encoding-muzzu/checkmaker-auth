@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useDashboard } from "@/hooks/useDashboard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -53,7 +54,9 @@ const Dashboard = () => {
     filteredApplications,
     isSearchPerformed,
     dateRange,
-    setDateRange
+    setDateRange,
+    handleColumnChange,
+    previousColumn
   } = useDashboard();
 
   // Get bulk data count for the tab display
@@ -130,12 +133,13 @@ const Dashboard = () => {
             <SearchControls
               searchColumn={searchColumn}
               searchQuery={searchQuery}
-              onSearchColumnChange={setSearchColumn}
+              onSearchColumnChange={handleColumnChange}
               onSearchQueryChange={setSearchQuery}
               onSearch={handleSearch}
               searchableColumns={searchableColumns}
               dateRange={dateRange}
               setDateRange={setDateRange}
+              previousColumn={previousColumn}
             />
           </div>
         </div>

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,7 @@ interface SearchControlsProps {
   searchableColumns: Array<{ value: string; label: string }>;
   dateRange: { from: Date | undefined; to: Date | undefined };
   setDateRange: (range: { from: Date | undefined; to: Date | undefined }) => void;
+  previousColumn?: string | null;
 }
 
 export const SearchControls = ({
@@ -28,12 +29,20 @@ export const SearchControls = ({
   onSearch,
   searchableColumns,
   dateRange,
-  setDateRange
+  setDateRange,
+  previousColumn
 }: SearchControlsProps) => {
   
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [applicationType, setApplicationType] = useState<string>("online");
   
+  // Reset application type when switching from a different search column
+  useEffect(() => {
+    if (searchColumn === "application_type" && previousColumn !== "application_type") {
+      setApplicationType("online");
+    }
+  }, [searchColumn, previousColumn]);
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       onSearch();
@@ -75,15 +84,7 @@ export const SearchControls = ({
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
       <div className="flex items-center gap-2 w-full sm:w-auto">
-        <Select value={searchColumn} onValueChange={(value) => {
-          onSearchColumnChange(value);
-          if (value === "date_range") {
-            setDateRange({ from: undefined, to: undefined });
-          } else if (value === "application_type") {
-            setApplicationType("online");
-            onSearchQueryChange("online");
-          }
-        }}>
+        <Select value={searchColumn} onValueChange={onSearchColumnChange}>
           <SelectTrigger className="w-[180px] bg-white border-gray-200">
             <SelectValue placeholder="Select field" />
           </SelectTrigger>
