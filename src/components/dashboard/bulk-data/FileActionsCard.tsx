@@ -5,6 +5,16 @@ import { BulkFile } from "@/types/bulk-processing";
 import { FileDownloadActions } from "./FileDownloadActions";
 import { FileUploadActions } from "./FileUploadActions";
 
+interface ValidationResults {
+  fileName: string;
+  totalRecords: number;
+  validRecords: number;
+  invalidRecords: number;
+  rowErrors: { row: number; error: string }[];
+  validationFilePath: string;
+  validationFileUrl: string;
+}
+
 interface FileActionsCardProps {
   file: BulkFile;
   currentUserId: string | null;
@@ -19,6 +29,8 @@ interface FileActionsCardProps {
   handleDownload: (filePath: string) => void;
   handleUploadClick: (fileId: string, inputRef: React.RefObject<HTMLInputElement>) => void;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>, fileId: string, makerType: string) => void;
+  validationResults: ValidationResults | null;
+  setValidationResults: (results: ValidationResults | null) => void;
 }
 
 export const FileActionsCard = ({
@@ -34,7 +46,9 @@ export const FileActionsCard = ({
   fileInputRefs,
   handleDownload,
   handleUploadClick,
-  handleFileChange
+  handleFileChange,
+  validationResults,
+  setValidationResults
 }: FileActionsCardProps) => {
   return (
     <Card className="border border-gray-100 shadow-sm p-3 rounded-md">
@@ -57,6 +71,9 @@ export const FileActionsCard = ({
           fileInputRefs={fileInputRefs}
           handleUploadClick={handleUploadClick}
           handleFileChange={handleFileChange}
+          handleDownload={handleDownload}
+          validationResults={validationResults}
+          setValidationResults={setValidationResults}
         />
       </div>
     </Card>

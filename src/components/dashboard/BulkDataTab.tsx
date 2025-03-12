@@ -1,11 +1,26 @@
 
+import { useState } from "react";
 import { useBulkProcessing } from "@/hooks/useBulkProcessing";
 import { WorkflowInstructions } from "./bulk-data/WorkflowInstructions";
 import { BulkDataTable } from "./bulk-data/BulkDataTable";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 
+interface ValidationResults {
+  fileName: string;
+  totalRecords: number;
+  validRecords: number;
+  invalidRecords: number;
+  rowErrors: { row: number; error: string }[];
+  validationFilePath: string;
+  validationFileUrl: string;
+}
+
 export const BulkDataTab = () => {
+  const [validationResults, setValidationResults] = useState<ValidationResults | null>(null);
+  const [validationDialogOpen, setValidationDialogOpen] = useState(false);
+  const [activeFileId, setActiveFileId] = useState<string | null>(null);
+
   const {
     bulkFiles,
     isLoading,
@@ -31,6 +46,11 @@ export const BulkDataTab = () => {
   // Create a handler function that calls refetch
   const handleRefresh = () => {
     refetch();
+  };
+
+  const openValidationDialog = (fileId: string) => {
+    setActiveFileId(fileId);
+    setValidationDialogOpen(true);
   };
 
   return (
@@ -67,6 +87,9 @@ export const BulkDataTab = () => {
           handleDownload={handleDownload}
           handleUploadClick={handleUploadClick}
           handleFileChange={handleFileChange}
+          validationResults={validationResults}
+          setValidationResults={setValidationResults}
+          openValidationDialog={openValidationDialog}
         />
       </div>
     </div>

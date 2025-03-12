@@ -1,4 +1,5 @@
-import React from "react";
+
+import React, { useState } from "react";
 import { TableCell, TableRow, TableHeader, TableHead, Table, TableBody, TableFooter } from "@/components/ui/table";
 import { formatDistanceToNow } from "date-fns";
 import { FileText } from "lucide-react";
@@ -6,6 +7,16 @@ import { BulkFile } from "@/hooks/useBulkProcessing";
 import { FileStatusBadge } from "./FileStatusBadge";
 import { FileActionsCard } from "./FileActionsCard";
 import { TableSkeleton } from "../TableSkeleton";
+
+interface ValidationResults {
+  fileName: string;
+  totalRecords: number;
+  validRecords: number;
+  invalidRecords: number;
+  rowErrors: { row: number; error: string }[];
+  validationFilePath: string;
+  validationFileUrl: string;
+}
 
 interface BulkDataTableProps {
   bulkFiles: BulkFile[] | null;
@@ -26,6 +37,9 @@ interface BulkDataTableProps {
   handleDownload: (filePath: string) => void;
   handleUploadClick: (fileId: string, inputRef: React.RefObject<HTMLInputElement>) => void;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>, fileId: string, makerType: string) => void;
+  validationResults: ValidationResults | null;
+  setValidationResults: (results: ValidationResults | null) => void;
+  openValidationDialog: (fileId: string) => void;
 }
 
 export const BulkDataTable = ({
@@ -46,7 +60,10 @@ export const BulkDataTable = ({
   isCurrentUserChecker,
   handleDownload,
   handleUploadClick,
-  handleFileChange
+  handleFileChange,
+  validationResults,
+  setValidationResults,
+  openValidationDialog
 }: BulkDataTableProps) => {
   if (isLoading) return <TableSkeleton />;
 
@@ -107,6 +124,8 @@ export const BulkDataTable = ({
                 handleDownload={handleDownload}
                 handleUploadClick={handleUploadClick}
                 handleFileChange={handleFileChange}
+                validationResults={validationResults}
+                setValidationResults={setValidationResults}
               />
             </TableCell>
           </TableRow>

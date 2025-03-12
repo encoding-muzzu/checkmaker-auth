@@ -1,8 +1,19 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { UploadIcon, CheckCircle2 } from "lucide-react";
 import { BulkFile } from "@/hooks/useBulkProcessing";
+import { ValidationResultsDialog } from "./ValidationResultsDialog";
+
+interface ValidationResults {
+  fileName: string;
+  totalRecords: number;
+  validRecords: number;
+  invalidRecords: number;
+  rowErrors: { row: number; error: string }[];
+  validationFilePath: string;
+  validationFileUrl: string;
+}
 
 interface FileUploadActionsProps {
   file: BulkFile;
@@ -16,6 +27,9 @@ interface FileUploadActionsProps {
   fileInputRefs: React.MutableRefObject<{ [key: string]: HTMLInputElement | null }>;
   handleUploadClick: (fileId: string, inputRef: React.RefObject<HTMLInputElement>) => void;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>, fileId: string, makerType: string) => void;
+  handleDownload: (filePath: string) => void;
+  validationResults: ValidationResults | null;
+  setValidationResults: (results: ValidationResults | null) => void;
 }
 
 export const FileUploadActions = ({
@@ -29,8 +43,12 @@ export const FileUploadActions = ({
   isCurrentUserChecker,
   fileInputRefs,
   handleUploadClick,
-  handleFileChange
+  handleFileChange,
+  handleDownload,
+  validationResults,
+  setValidationResults
 }: FileUploadActionsProps) => {
+  const [validationDialogOpen, setValidationDialogOpen] = useState(false);
   
   // Add debugging console logs
   console.log("File Upload Actions Props:", {
@@ -42,6 +60,22 @@ export const FileUploadActions = ({
     maker_processed: file.maker_processed,
     checker_processed: file.checker_processed
   });
+
+  const handleCloseValidationDialog = () => {
+    setValidationDialogOpen(false);
+  };
+
+  const handleReupload = () => {
+    // Close the dialog first
+    setValidationDialogOpen(false);
+    
+    // Trigger the upload click for the appropriate role
+    if (canCurrentUserUploadAsMaker) {
+      handleUploadClick(file.id, { current: fileInputRefs.current[`maker_${file.id}`] });
+    } else if (canCurrentUserUploadAsChecker) {
+      handleUploadClick(file.id, { current: fileInputRefs.current[`checker_${file.id}`] });
+    }
+  };
 
   // Don't show upload actions if user can't upload in any role or if they've already processed
   if (!canCurrentUserUploadAsMaker && !canCurrentUserUploadAsChecker) {
@@ -132,6 +166,17 @@ export const FileUploadActions = ({
       <div className="text-xs text-gray-500 mt-1 italic">
         Note: Files must have valid itr_flag ('Y'/'N') and numeric lrs_amount values
       </div>
+
+      {/* Validation Results Dialog */}
+      {validationResults && (
+        <ValidationResultsDialog
+          isOpen={validationDialogOpen}
+          onClose={handleCloseValidationDialog}
+          results={validationResults}
+          onDownloadValidation={handleDownload}
+          onReupload={handleReupload}
+        />
+      )}
     </div>
   );
 };

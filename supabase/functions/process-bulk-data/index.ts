@@ -8,10 +8,16 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Validate Excel data function
+// Enhanced validation function that returns detailed validation results
 function validateExcelData(data: any[]) {
   if (!data || data.length === 0) {
-    return { valid: false, error: "File is empty or could not be parsed" };
+    return { 
+      valid: false, 
+      error: "File is empty or could not be parsed",
+      validRecords: 0,
+      invalidRecords: 0,
+      rowErrors: [] 
+    };
   }
 
   // Check for required columns
@@ -20,39 +26,64 @@ function validateExcelData(data: any[]) {
   
   for (const column of requiredColumns) {
     if (!(column in firstRow)) {
-      return { valid: false, error: `Required column '${column}' is missing` };
+      return { 
+        valid: false, 
+        error: `Required column '${column}' is missing`,
+        validRecords: 0,
+        invalidRecords: data.length,
+        rowErrors: []
+      };
     }
   }
 
-  // Validate itr_flag values (should be Y or N)
+  let validRecords = 0;
+  let invalidRecords = 0;
+  const rowErrors = [];
+
+  // Validate each row and track errors
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
+    const rowIndex = i + 2; // Excel row number (1-based + header row)
+    let rowError = "";
+    
+    // Validate itr_flag values (should be Y or N)
     const itrFlag = String(row.itr_flag).trim().toUpperCase();
+    const isItrFlagValid = itrFlag === 'Y' || itrFlag === 'N';
     
-    if (itrFlag !== 'Y' && itrFlag !== 'N') {
-      return { 
-        valid: false, 
-        error: "Invalid value in itr_flag column. Values must be 'Y' or 'N'." 
-      };
-    }
-  }
-
-  // Validate lrs_amount_consumed values (should be numeric)
-  for (let i = 0; i < data.length; i++) {
-    const row = data[i];
+    // Validate lrs_amount_consumed values (should be numeric)
     const lrsAmount = row.lrs_amount_consumed;
+    const isLrsAmountValid = !(lrsAmount === undefined || lrsAmount === null || 
+      (typeof lrsAmount !== 'number' && isNaN(Number(lrsAmount))));
     
-    // Check if the value is a number or can be converted to one
-    if (lrsAmount === undefined || lrsAmount === null || 
-        (typeof lrsAmount !== 'number' && isNaN(Number(lrsAmount)))) {
-      return { 
-        valid: false, 
-        error: "Invalid value in lrs_amount column. Values must be numeric or decimal." 
-      };
+    // Create error message based on validation results
+    if (!isItrFlagValid && !isLrsAmountValid) {
+      rowError = "itr_flag is not correct and lrs_amount should be numeric or decimal values";
+    } else if (!isItrFlagValid) {
+      rowError = "itr_flag is not correct";
+    } else if (!isLrsAmountValid) {
+      rowError = "lrs_amount should be numeric or decimal values";
+    }
+    
+    // Add the error to the row in the data
+    if (rowError) {
+      row.Errors = rowError;
+      invalidRecords++;
+      rowErrors.push({
+        row: rowIndex,
+        error: rowError
+      });
+    } else {
+      validRecords++;
     }
   }
 
-  return { valid: true, error: null };
+  return { 
+    valid: invalidRecords === 0, 
+    error: invalidRecords > 0 ? `Found ${invalidRecords} records with validation errors` : null,
+    validRecords,
+    invalidRecords,
+    rowErrors
+  };
 }
 
 serve(async (req) => {
@@ -190,18 +221,78 @@ serve(async (req) => {
     
     console.log(`Parsed ${data.length} rows from Excel file`);
 
-    // Validate the data before proceeding
+    // Validate the data with enhanced validation
     const validation = validateExcelData(data);
+    
+    // If there are validation errors, return the updated file with errors column
     if (!validation.valid) {
-      console.error("Data validation error:", validation.error);
+      console.log("Validation errors found:", validation.invalidRecords);
+      
+      // Create a new workbook with the updated data (including errors column)
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(data);
+      XLSX.utils.book_append_sheet(wb, ws, "Applications");
+      
+      // Generate Excel file with errors
+      const excelOutput = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+      
+      // Generate a validation filename
+      const originalFileName = file.name;
+      const validationFileName = `validation_${originalFileName}`;
+      const validationPath = `validations/${fileId}/${validationFileName}`;
+      
+      // Upload the validation file
+      const adminSupabase = createClient(
+        supabaseUrl,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+      );
+      
+      const { data: uploadData, error: uploadError } = await adminSupabase.storage
+        .from("bulk-files")
+        .upload(validationPath, excelOutput, {
+          contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          upsert: true
+        });
+
+      if (uploadError) {
+        console.error("Error uploading validation file:", uploadError);
+        return new Response(
+          JSON.stringify({ error: "Failed to upload validation file", details: uploadError }),
+          { 
+            headers: { ...corsHeaders, "Content-Type": "application/json" }, 
+            status: 500 
+          }
+        );
+      }
+      
+      // Get public URL for the validation file
+      const { data: publicUrl } = adminSupabase.storage
+        .from("bulk-files")
+        .getPublicUrl(validationPath);
+      
       return new Response(
-        JSON.stringify({ error: validation.error }),
+        JSON.stringify({ 
+          valid: false,
+          message: validation.error,
+          validationResults: {
+            fileName: originalFileName,
+            totalRecords: data.length,
+            validRecords: validation.validRecords,
+            invalidRecords: validation.invalidRecords,
+            rowErrors: validation.rowErrors,
+            validationFilePath: validationPath,
+            validationFileUrl: publicUrl.publicUrl
+          }
+        }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" }, 
-          status: 400 
+          status: 200 
         }
       );
     }
+
+    // If validation passes, proceed with normal processing
+    console.log("Validation passed, proceeding with file processing");
 
     // Generate a new filename
     const originalPath = fileDetails.file_path;
@@ -301,6 +392,7 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({ 
+        valid: true,
         message: `File processed successfully by ${makerType === "maker" ? "Maker" : "Checker"}`, 
         file_path: newFilePath,
         file_url: publicUrl.publicUrl

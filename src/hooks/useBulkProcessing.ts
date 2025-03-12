@@ -4,6 +4,7 @@ import { useProcessingPermissions } from "./bulk-processing/useProcessingPermiss
 import { useFileOperations } from "./bulk-processing/useFileOperations";
 import { useBulkPagination } from "./bulk-processing/useBulkPagination";
 import { useBulkFiles } from "./bulk-processing/useBulkFiles";
+import { useState } from "react";
 
 export type { BulkFile } from "@/types/bulk-processing";
 
@@ -51,6 +52,11 @@ export const useBulkProcessing = () => {
     isUploading,
     uploadingFileId,
     fileInputRefs,
+    validationResults,
+    setValidationResults,
+    validationDialogOpen,
+    openValidationDialog,
+    closeValidationDialog,
     handleUploadClick,
     handleFileChange,
     handleDownload
@@ -71,6 +77,11 @@ export const useBulkProcessing = () => {
     isUploading,
     uploadingFileId,
     fileInputRefs,
+    validationResults,
+    setValidationResults,
+    validationDialogOpen,
+    openValidationDialog,
+    closeValidationDialog,
     canCurrentUserUploadAsMaker: canUploadAsMaker,
     canCurrentUserUploadAsChecker: canUploadAsChecker,
     isCurrentUserMaker,
