@@ -38,10 +38,28 @@ export const SearchControls = ({
 }: SearchControlsProps) => {
   
   const [calendarOpen, setCalendarOpen] = useState(false);
+  
+  // Initialize today's date for the date picker if none is set
+  useEffect(() => {
+    if (!dateRange.from) {
+      setDateRange({ from: new Date(), to: undefined });
+    }
+  }, []);
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       onSearch();
+    }
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!dateRange.from) {
+      setDateRange({ ...dateRange, from: date });
+    } else if (!dateRange.to && date && date > dateRange.from) {
+      setDateRange({ ...dateRange, to: date });
+      setCalendarOpen(false);
+    } else {
+      setDateRange({ from: date, to: undefined });
     }
   };
 
@@ -122,7 +140,7 @@ export const SearchControls = ({
                 }
               }}
               initialFocus
-              numberOfMonths={2}
+              numberOfMonths={1}
               className="p-3 pointer-events-auto"
               fixedWeeks
             />
