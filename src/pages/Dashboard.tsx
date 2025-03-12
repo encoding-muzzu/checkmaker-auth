@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useDashboard } from "@/hooks/useDashboard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -88,6 +89,13 @@ const Dashboard = () => {
   useEffect(() => {
     setSearchColumn("application_number");
   }, [setSearchColumn]);
+
+  // Trigger search automatically when switching to search tab
+  useEffect(() => {
+    if (activeTab === "search") {
+      handleSearch();
+    }
+  }, [activeTab]);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {

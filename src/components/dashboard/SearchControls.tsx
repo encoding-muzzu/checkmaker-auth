@@ -38,13 +38,6 @@ export const SearchControls = ({
 }: SearchControlsProps) => {
   
   const [calendarOpen, setCalendarOpen] = useState(false);
-  
-  // Initialize today's date for the date picker if none is set
-  useEffect(() => {
-    if (!dateRange.from) {
-      setDateRange({ from: new Date(), to: undefined });
-    }
-  }, []);
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -52,21 +45,20 @@ export const SearchControls = ({
     }
   };
 
-  const handleDateSelect = (date: Date | undefined) => {
-    if (!dateRange.from) {
-      setDateRange({ ...dateRange, from: date });
-    } else if (!dateRange.to && date && date > dateRange.from) {
-      setDateRange({ ...dateRange, to: date });
-      setCalendarOpen(false);
-    } else {
-      setDateRange({ from: date, to: undefined });
-    }
-  };
-
   // Format the date range for display
   const formatDateRange = () => {
     if (dateRange.from && dateRange.to) {
-      return `${format(dateRange.from, 'PP')} - ${format(dateRange.to, 'PP')}`;
+      if (
+        dateRange.from.getDate() === dateRange.to.getDate() &&
+        dateRange.from.getMonth() === dateRange.to.getMonth() &&
+        dateRange.from.getFullYear() === dateRange.to.getFullYear()
+      ) {
+        // Same day selected
+        return `${format(dateRange.from, 'PP')}`;
+      } else {
+        // Date range
+        return `${format(dateRange.from, 'PP')} - ${format(dateRange.to, 'PP')}`;
+      }
     } else if (dateRange.from) {
       return `From: ${format(dateRange.from, 'PP')}`;
     }
@@ -130,11 +122,22 @@ export const SearchControls = ({
               }}
               onSelect={(range) => {
                 if (range) {
-                  setDateRange({
-                    from: range.from,
-                    to: range.to
-                  });
-                  if (range.to) {
+                  // If only from date is selected, set both from and to to the same date
+                  if (range.from && !range.to) {
+                    const endOfDay = new Date(range.from);
+                    endOfDay.setHours(23, 59, 59, 999);
+                    setDateRange({
+                      from: range.from,
+                      to: endOfDay
+                    });
+                  } else {
+                    setDateRange({
+                      from: range.from,
+                      to: range.to
+                    });
+                  }
+                  
+                  if (range.to || (range.from && !range.to)) {
                     setCalendarOpen(false);
                   }
                 }

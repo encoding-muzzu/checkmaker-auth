@@ -26,6 +26,16 @@ export const useDashboard = () => {
   // Get current page based on active tab
   const currentPage = currentPages[activeTab as keyof typeof currentPages] || 1;
   
+  // Initialize with today's date range
+  const today = new Date();
+  const todayEnd = new Date(today);
+  todayEnd.setHours(23, 59, 59, 999);
+  
+  const initialFilters = {
+    from_dt: today.toISOString(),
+    to_dt: todayEnd.toISOString()
+  };
+  
   // Server-side pagination with 10 items per page
   const { 
     applications, 
@@ -35,7 +45,7 @@ export const useDashboard = () => {
   } = useApplicationData(
     currentPage, 
     10, 
-    activeTab === "search" ? filters : {}, 
+    activeTab === "search" ? {...filters, ...initialFilters} : {}, 
     activeTab, 
     userRole
   );
