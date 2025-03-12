@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useDashboard } from "@/hooks/useDashboard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -95,10 +94,9 @@ const Dashboard = () => {
     if (activeTab === "search") {
       // This will automatically search with today's date since
       // the dateRange state is initialized with today's date
-      console.log("Auto triggering search on tab change");
       handleSearch();
     }
-  }, [activeTab, handleSearch]);
+  }, [activeTab]);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {

@@ -98,7 +98,6 @@ export const useDashboard = () => {
       newFilters[searchCol] = searchVal;
     }
     
-    console.log("Setting search filters:", newFilters);
     setFilters(newFilters);
     
     // Reset to page 1 when searching
