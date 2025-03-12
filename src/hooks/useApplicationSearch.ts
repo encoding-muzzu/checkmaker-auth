@@ -7,11 +7,12 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearchPerformed, setIsSearchPerformed] = useState(false);
   
-  // Set both from and to date to today by default
+  // Set default dates with time at beginning/end of day
   const today = new Date();
+  today.setHours(0, 0, 0, 0); // Start of day (midnight)
+  
   const todayEnd = new Date(today);
-  // Set the time to the end of the day for today (23:59:59.999)
-  todayEnd.setHours(23, 59, 59, 999);
+  todayEnd.setHours(23, 59, 59, 999); // End of day
   
   const [dateRange, setDateRange] = useState<{from: Date | undefined, to: Date | undefined}>({
     from: today,
@@ -37,8 +38,10 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     
     // Reset to today's date for both from and to
     const resetToday = new Date();
+    resetToday.setHours(0, 0, 0, 0); // Start of day
+    
     const resetTodayEnd = new Date(resetToday);
-    resetTodayEnd.setHours(23, 59, 59, 999);
+    resetTodayEnd.setHours(23, 59, 59, 999); // End of day
     
     setDateRange({ from: resetToday, to: resetTodayEnd });
     setPreviousColumn(null);

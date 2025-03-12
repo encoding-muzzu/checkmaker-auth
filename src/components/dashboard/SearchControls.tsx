@@ -45,7 +45,7 @@ export const SearchControls = ({
     }
   };
 
-  // Format the date range for display
+  // Format the date range for display - focus on date only (not time)
   const formatDateRange = () => {
     if (dateRange.from && dateRange.to) {
       if (
@@ -53,10 +53,10 @@ export const SearchControls = ({
         dateRange.from.getMonth() === dateRange.to.getMonth() &&
         dateRange.from.getFullYear() === dateRange.to.getFullYear()
       ) {
-        // Same day selected
+        // Same day selected - show only one date
         return `${format(dateRange.from, 'PP')}`;
       } else {
-        // Date range
+        // Date range - show start and end dates
         return `${format(dateRange.from, 'PP')} - ${format(dateRange.to, 'PP')}`;
       }
     } else if (dateRange.from) {
@@ -124,16 +124,29 @@ export const SearchControls = ({
                 if (range) {
                   // If only from date is selected, set both from and to to the same date
                   if (range.from && !range.to) {
+                    // Create date at start of day
+                    const startOfDay = new Date(range.from);
+                    startOfDay.setHours(0, 0, 0, 0);
+                    
+                    // Create date at end of day 
                     const endOfDay = new Date(range.from);
                     endOfDay.setHours(23, 59, 59, 999);
+                    
                     setDateRange({
-                      from: range.from,
+                      from: startOfDay,
                       to: endOfDay
                     });
                   } else {
+                    // Set proper start/end of day for date ranges
+                    const startDate = range.from ? new Date(range.from) : undefined;
+                    if (startDate) startDate.setHours(0, 0, 0, 0);
+                    
+                    const endDate = range.to ? new Date(range.to) : undefined;
+                    if (endDate) endDate.setHours(23, 59, 59, 999);
+                    
                     setDateRange({
-                      from: range.from,
-                      to: range.to
+                      from: startDate,
+                      to: endDate
                     });
                   }
                   

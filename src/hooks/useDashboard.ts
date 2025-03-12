@@ -26,10 +26,12 @@ export const useDashboard = () => {
   // Get current page based on active tab
   const currentPage = currentPages[activeTab as keyof typeof currentPages] || 1;
   
-  // Initialize with today's date range
+  // Initialize with today's date range - start and end of day
   const today = new Date();
+  today.setHours(0, 0, 0, 0); // Start of day
+  
   const todayEnd = new Date(today);
-  todayEnd.setHours(23, 59, 59, 999);
+  todayEnd.setHours(23, 59, 59, 999); // End of day
   
   const initialFilters = {
     from_dt: today.toISOString(),
@@ -71,13 +73,16 @@ export const useDashboard = () => {
     // Create new filters object
     const newFilters: Record<string, any> = {};
     
-    // Handle date range search
+    // Handle date range search - ensure proper start/end of day
     if (dateRange.from) {
-      newFilters.from_dt = dateRange.from.toISOString();
+      // Set time to start of day (00:00:00.000)
+      const fromDate = new Date(dateRange.from);
+      fromDate.setHours(0, 0, 0, 0);
+      newFilters.from_dt = fromDate.toISOString();
     }
     
     if (dateRange.to) {
-      // Set the time to end of day
+      // Set time to end of day (23:59:59.999)
       const toDate = new Date(dateRange.to);
       toDate.setHours(23, 59, 59, 999);
       newFilters.to_dt = toDate.toISOString();
@@ -128,7 +133,7 @@ export const useDashboard = () => {
   // Get filtered applications based on active tab and user role
   const filteredApplications = applications; // We're now doing server-side filtering
 
-  return {
+  return { 
     activeTab,
     setActiveTab,
     searchColumn,
