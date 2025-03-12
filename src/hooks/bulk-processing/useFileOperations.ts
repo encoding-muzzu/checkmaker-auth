@@ -18,53 +18,6 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
     }
   };
 
-  // Validate Excel data
-  const validateExcelData = (data: any[]) => {
-    if (!data || data.length === 0) {
-      return { valid: false, error: "File is empty or could not be parsed" };
-    }
-
-    // Check for required columns
-    const firstRow = data[0];
-    const requiredColumns = ["itr_flag", "lrs_amount_consumed"];
-    
-    for (const column of requiredColumns) {
-      if (!(column in firstRow)) {
-        return { valid: false, error: `Required column '${column}' is missing` };
-      }
-    }
-
-    // Validate itr_flag values (should be Y or N)
-    for (let i = 0; i < data.length; i++) {
-      const row = data[i];
-      const itrFlag = String(row.itr_flag).trim().toUpperCase();
-      
-      if (itrFlag !== 'Y' && itrFlag !== 'N') {
-        return { 
-          valid: false, 
-          error: "itr_flag is not correct" 
-        };
-      }
-    }
-
-    // Validate lrs_amount_consumed values (should be numeric)
-    for (let i = 0; i < data.length; i++) {
-      const row = data[i];
-      const lrsAmount = row.lrs_amount_consumed;
-      
-      // Check if the value is a number or can be converted to one
-      if (lrsAmount === undefined || lrsAmount === null || 
-          (typeof lrsAmount !== 'number' && isNaN(Number(lrsAmount)))) {
-        return { 
-          valid: false, 
-          error: "lrs_amount should be numeric or decimal values" 
-        };
-      }
-    }
-
-    return { valid: true, error: null };
-  };
-
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, fileId: string, makerType: ProcessingRole) => {
     const file = e.target.files?.[0];
 
@@ -81,19 +34,6 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
     setUploadingFileId(fileId);
 
     try {
-      // Validate Excel file content before uploading
-      const fileBuffer = await file.arrayBuffer();
-      const workbook = XLSX.read(fileBuffer, { type: "array" });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const data = XLSX.utils.sheet_to_json(worksheet);
-      
-      // Validate the data before proceeding
-      const validation = validateExcelData(data);
-      if (!validation.valid) {
-        throw new Error(validation.error);
-      }
-
       // Replace spaces with underscores in the file name
       const sanitizedFileName = file.name.replace(/\s+/g, "_");
       

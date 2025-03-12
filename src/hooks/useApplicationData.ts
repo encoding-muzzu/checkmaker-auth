@@ -55,9 +55,6 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
     queryKey: ['applications', page, pageSize, filters, activeTab, userRole, statusIds],
     queryFn: async () => {
       console.log("Fetching applications with filters:", filters);
-      console.log("Active tab:", activeTab);
-      console.log("Current page:", page);
-      
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate('/');
@@ -80,8 +77,6 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
         return { data: [], count: 0 };
       }
 
-      console.log("Building query for applications table");
-      
       // Build the query with filters
       let query = supabase
         .from('applications')
@@ -95,31 +90,27 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
 
       // Apply status filters for non-search and non-bulk tabs
       if (shouldApplyStatusFilter && statusIds.length > 0) {
-        console.log("Applying status filter:", statusIds);
         query = query.in('status_id', statusIds);
       }
 
-      // Apply date range filters if they exist - specifically for the created_at column
+      // Apply date range filters specifically to the created_at column
       if (filters.from_dt) {
-        console.log("Applying from_dt filter:", filters.from_dt);
         query = query.gte('created_at', filters.from_dt);
       }
       
       if (filters.to_dt) {
-        console.log("Applying to_dt filter:", filters.to_dt);
         query = query.lte('created_at', filters.to_dt);
       }
       
       // Apply application type filter if it exists and not 'all'
       if (filters.application_type && filters.application_type !== 'all') {
-        console.log("Applying application_type filter:", filters.application_type);
         query = query.eq('application_type', filters.application_type);
       }
 
       // Apply any other search filters
       Object.entries(filters).forEach(([key, value]) => {
         if (value && key !== 'from_dt' && key !== 'to_dt' && key !== 'application_type') {
-          console.log(`Applying search filter ${key}:`, value);
+          console.log(`Applying filter: ${key} = ${value}`);
           query = query.ilike(key, `%${value}%`);
         }
       });
@@ -130,8 +121,6 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
       // Apply pagination
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
-      
-      console.log(`Applying pagination: range(${from}, ${to})`);
       
       const { data, error, count } = await query.range(from, to);
 
@@ -146,8 +135,6 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
         return { data: [], count: 0 };
       }
 
-      console.log(`Received ${data?.length} applications, total count:`, count);
-      
       // Update total count - ensure it's a number
       if (count !== null) {
         setTotalCount(count !== null ? Number(count) : 0);

@@ -93,12 +93,12 @@ const Dashboard = () => {
   // Trigger search automatically when switching to search tab
   useEffect(() => {
     if (activeTab === "search") {
-      console.log("Search tab activated - triggering initial search");
       // This will automatically search with today's date since
       // the dateRange state is initialized with today's date
+      console.log("Auto triggering search on tab change");
       handleSearch();
     }
-  }, [activeTab]);
+  }, [activeTab, handleSearch]);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {

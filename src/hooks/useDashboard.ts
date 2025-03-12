@@ -70,8 +70,6 @@ export const useDashboard = () => {
     applicationStatus,
     setApplicationStatus
   } = useApplicationSearch((searchCol, searchVal, dateRange, appStatus) => {
-    console.log("Search triggered with:", { searchCol, searchVal, dateRange, appStatus });
-    
     // Create new filters object
     const newFilters: Record<string, any> = {};
     
@@ -81,7 +79,6 @@ export const useDashboard = () => {
       const fromDate = new Date(dateRange.from);
       fromDate.setHours(0, 0, 0, 0);
       newFilters.from_dt = fromDate.toISOString();
-      console.log("From date:", fromDate.toISOString());
     }
     
     if (dateRange.to) {
@@ -89,23 +86,20 @@ export const useDashboard = () => {
       const toDate = new Date(dateRange.to);
       toDate.setHours(23, 59, 59, 999);
       newFilters.to_dt = toDate.toISOString();
-      console.log("To date:", toDate.toISOString());
     }
     
     // Handle application status filter if not "all"
     if (appStatus !== "all") {
       newFilters.application_type = appStatus;
-      console.log("Application status filter:", appStatus);
     }
     
     // Add the search column/value filter
     if (searchVal && searchCol) {
       newFilters[searchCol] = searchVal;
-      console.log("Search column/value:", { [searchCol]: searchVal });
     }
     
+    console.log("Setting search filters:", newFilters);
     setFilters(newFilters);
-    console.log("Final filters applied:", newFilters);
     
     // Reset to page 1 when searching
     updateCurrentPage("search", 1);

@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import * as XLSX from "https://esm.sh/xlsx@0.18.5";
@@ -7,53 +6,6 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-// Validate Excel data function
-function validateExcelData(data: any[]) {
-  if (!data || data.length === 0) {
-    return { valid: false, error: "File is empty or could not be parsed" };
-  }
-
-  // Check for required columns
-  const firstRow = data[0];
-  const requiredColumns = ["itr_flag", "lrs_amount_consumed"];
-  
-  for (const column of requiredColumns) {
-    if (!(column in firstRow)) {
-      return { valid: false, error: `Required column '${column}' is missing` };
-    }
-  }
-
-  // Validate itr_flag values (should be Y or N)
-  for (let i = 0; i < data.length; i++) {
-    const row = data[i];
-    const itrFlag = String(row.itr_flag).trim().toUpperCase();
-    
-    if (itrFlag !== 'Y' && itrFlag !== 'N') {
-      return { 
-        valid: false, 
-        error: "itr_flag is not correct" 
-      };
-    }
-  }
-
-  // Validate lrs_amount_consumed values (should be numeric)
-  for (let i = 0; i < data.length; i++) {
-    const row = data[i];
-    const lrsAmount = row.lrs_amount_consumed;
-    
-    // Check if the value is a number or can be converted to one
-    if (lrsAmount === undefined || lrsAmount === null || 
-        (typeof lrsAmount !== 'number' && isNaN(Number(lrsAmount)))) {
-      return { 
-        valid: false, 
-        error: "lrs_amount should be numeric or decimal values" 
-      };
-    }
-  }
-
-  return { valid: true, error: null };
-}
 
 serve(async (req) => {
   console.log("Processing process-bulk-data function");
@@ -189,19 +141,6 @@ serve(async (req) => {
     const data = XLSX.utils.sheet_to_json(worksheet);
     
     console.log(`Parsed ${data.length} rows from Excel file`);
-
-    // Validate the data before proceeding
-    const validation = validateExcelData(data);
-    if (!validation.valid) {
-      console.error("Data validation error:", validation.error);
-      return new Response(
-        JSON.stringify({ error: validation.error }),
-        { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" }, 
-          status: 400 
-        }
-      );
-    }
 
     // Generate a new filename
     const originalPath = fileDetails.file_path;
