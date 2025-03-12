@@ -87,6 +87,11 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     // Reset the search query when switching columns
     if (searchColumn !== newColumn) {
       setSearchQuery("");
+      
+      // Immediately trigger search when column changes
+      setTimeout(() => {
+        onSearch(newColumn, "", dateRange, applicationStatus);
+      }, 0);
     }
   };
 
@@ -95,57 +100,69 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     handleSearch();
   }, []);
 
-  // Add a custom handler for date range changes to automatically trigger search
-  const handleDateRangeChange = (newDateRange: {from: Date | undefined, to: Date | undefined}) => {
-    setDateRange(newDateRange);
+  // Separate handler for search query changes with debouncing
+  const handleSearchQueryChange = (newQuery: string) => {
+    setSearchQuery(newQuery);
     
-    // Check if the date range has actually changed before triggering a search
-    if (
-      newDateRange.from?.toISOString() !== lastSearchParams.dateFrom ||
-      newDateRange.to?.toISOString() !== lastSearchParams.dateTo
-    ) {
+    // Trigger search immediately on query change
+    if (newQuery !== lastSearchParams.query) {
       // Use setTimeout to give the state time to update
       setTimeout(() => {
-        onSearch(searchColumn, searchQuery, newDateRange, applicationStatus);
+        onSearch(searchColumn, newQuery, dateRange, applicationStatus);
         
         // Update the last search params
         setLastSearchParams(prev => ({
           ...prev,
-          dateFrom: newDateRange.from?.toISOString(),
-          dateTo: newDateRange.to?.toISOString()
+          query: newQuery
         }));
         
         setIsSearchPerformed(true);
-      }, 0);
+      }, 300); // 300ms debounce
     }
+  };
+
+  // Add a custom handler for date range changes to automatically trigger search
+  const handleDateRangeChange = (newDateRange: {from: Date | undefined, to: Date | undefined}) => {
+    setDateRange(newDateRange);
+    
+    // Always trigger a search on date range change
+    setTimeout(() => {
+      onSearch(searchColumn, searchQuery, newDateRange, applicationStatus);
+      
+      // Update the last search params
+      setLastSearchParams(prev => ({
+        ...prev,
+        dateFrom: newDateRange.from?.toISOString(),
+        dateTo: newDateRange.to?.toISOString()
+      }));
+      
+      setIsSearchPerformed(true);
+    }, 0);
   };
   
   // Add a custom handler for application status changes
   const handleStatusChange = (newStatus: string) => {
     setApplicationStatus(newStatus);
     
-    // Check if the status has actually changed before triggering a search
-    if (newStatus !== lastSearchParams.status) {
-      // Use setTimeout to give the state time to update
-      setTimeout(() => {
-        onSearch(searchColumn, searchQuery, dateRange, newStatus);
-        
-        // Update the last search params
-        setLastSearchParams(prev => ({
-          ...prev,
-          status: newStatus
-        }));
-        
-        setIsSearchPerformed(true);
-      }, 0);
-    }
+    // Always trigger a search on status change
+    setTimeout(() => {
+      onSearch(searchColumn, searchQuery, dateRange, newStatus);
+      
+      // Update the last search params
+      setLastSearchParams(prev => ({
+        ...prev,
+        status: newStatus
+      }));
+      
+      setIsSearchPerformed(true);
+    }, 0);
   };
 
   return {
     searchColumn,
     setSearchColumn,
     searchQuery,
-    setSearchQuery,
+    setSearchQuery: handleSearchQueryChange, // Use the debounced handler
     searchResults,
     setSearchResults,
     handleSearch,

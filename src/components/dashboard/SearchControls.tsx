@@ -44,7 +44,7 @@ export const SearchControls = ({
     setLocalSearchQuery(searchQuery);
   }, [searchQuery]);
 
-  // Update query and debounce the search by 500ms
+  // Update query and trigger search immediately
   const handleQueryChange = (value: string) => {
     setLocalSearchQuery(value);
     onSearchQueryChange(value);
@@ -103,11 +103,6 @@ export const SearchControls = ({
             value={localSearchQuery}
             onChange={(e) => handleQueryChange(e.target.value)}
             onKeyPress={handleKeyPress}
-            onBlur={() => {
-              if (localSearchQuery !== searchQuery) {
-                onSearch();
-              }
-            }}
           />
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         </div>

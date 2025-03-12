@@ -1,3 +1,4 @@
+
 import { useAuth } from "./useAuth";
 import { useApplicationData } from "./useApplicationData";
 import { useApplicationSearch } from "./useApplicationSearch";
@@ -97,6 +98,7 @@ export const useDashboard = () => {
       newFilters[searchCol] = searchVal;
     }
     
+    // Update filters to trigger a re-fetch
     setFilters(newFilters);
     
     // Reset to page 1 when searching

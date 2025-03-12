@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ApplicationData } from "@/types/dashboard";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Define an interface for the filters object
 interface FiltersType {
@@ -19,6 +19,20 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [totalCount, setTotalCount] = useState(0);
+  
+  // Track the current filters for invalidating queries
+  const [currentFilters, setCurrentFilters] = useState<FiltersType>(filters);
+
+  // Update currentFilters when filters change to properly invalidate queries
+  useEffect(() => {
+    if (JSON.stringify(filters) !== JSON.stringify(currentFilters)) {
+      setCurrentFilters(filters);
+      // Invalidate the query when filters change
+      queryClient.invalidateQueries({ 
+        queryKey: ['applications', page, pageSize, activeTab, userRole] 
+      });
+    }
+  }, [filters, currentFilters, queryClient, page, pageSize, activeTab, userRole]);
 
   // Get status IDs based on active tab and user role
   const getStatusIds = (tab: string, role: string | null): number[] => {
@@ -52,8 +66,10 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
   const statusIds = shouldApplyStatusFilter ? getStatusIds(activeTab, userRole) : [];
 
   const { data: applications, isLoading, isFetching } = useQuery({
-    queryKey: ['applications', page, pageSize, filters, activeTab, userRole, statusIds],
+    queryKey: ['applications', page, pageSize, currentFilters, activeTab, userRole, statusIds],
     queryFn: async () => {
+      console.log("Fetching applications with filters:", currentFilters);
+      
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate('/');
@@ -93,23 +109,27 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
       }
 
       // Apply date range filters if they exist - specifically for the created_at column
-      if (filters.from_dt) {
-        query = query.gte('created_at', filters.from_dt);
+      if (currentFilters.from_dt) {
+        query = query.gte('created_at', currentFilters.from_dt);
+        console.log("Applying from_dt filter:", currentFilters.from_dt);
       }
       
-      if (filters.to_dt) {
-        query = query.lte('created_at', filters.to_dt);
+      if (currentFilters.to_dt) {
+        query = query.lte('created_at', currentFilters.to_dt);
+        console.log("Applying to_dt filter:", currentFilters.to_dt);
       }
       
       // Apply application type filter if it exists and not 'all'
-      if (filters.application_type && filters.application_type !== 'all') {
-        query = query.eq('application_type', filters.application_type);
+      if (currentFilters.application_type && currentFilters.application_type !== 'all') {
+        query = query.eq('application_type', currentFilters.application_type);
+        console.log("Applying application_type filter:", currentFilters.application_type);
       }
 
       // Apply any other search filters
-      Object.entries(filters).forEach(([key, value]) => {
+      Object.entries(currentFilters).forEach(([key, value]) => {
         if (value && key !== 'from_dt' && key !== 'to_dt' && key !== 'application_type') {
           query = query.ilike(key, `%${value}%`);
+          console.log(`Applying ${key} filter:`, value);
         }
       });
 
@@ -147,7 +167,8 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
         count: count !== null ? Number(count) : 0 
       };
     },
-    refetchOnWindowFocus: false // Disable auto-refresh
+    refetchOnWindowFocus: false, // Disable auto-refresh
+    staleTime: 0, // Consider data immediately stale to force refetch on filter changes
   });
 
   const handleRefresh = () => {
