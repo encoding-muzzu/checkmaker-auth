@@ -90,11 +90,10 @@ const Dashboard = () => {
     setSearchColumn("application_number");
   }, [setSearchColumn]);
 
-  // Trigger search automatically when switching to search tab
+  // Trigger search automatically when switching to search tab to load today's data
   useEffect(() => {
     if (activeTab === "search") {
-      // This will automatically search with today's date since
-      // the dateRange state is initialized with today's date
+      // This will load today's data when switching to search tab
       handleSearch();
     }
   }, [activeTab]);
@@ -194,7 +193,7 @@ const Dashboard = () => {
             userRole={userRole}
             activeTab={activeTab}
             isSearchPerformed={isSearchPerformed && activeTab === "search"}
-            showPagination={activeTab !== "search"}
+            showPagination={true}
           />
         </>
       )}

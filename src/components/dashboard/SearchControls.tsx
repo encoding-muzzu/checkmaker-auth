@@ -44,7 +44,7 @@ export const SearchControls = ({
     setLocalSearchQuery(searchQuery);
   }, [searchQuery]);
 
-  // Update query and trigger search immediately
+  // Update query without triggering search (search will be triggered by button click)
   const handleQueryChange = (value: string) => {
     setLocalSearchQuery(value);
     onSearchQueryChange(value);
@@ -104,7 +104,6 @@ export const SearchControls = ({
             value={localSearchQuery}
             onChange={(e) => handleQueryChange(e.target.value)}
             onKeyPress={handleKeyPress}
-            onBlur={() => onSearch()} // Also trigger search on blur
           />
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         </div>
