@@ -48,11 +48,10 @@ export const SearchControls = ({
   // Format the date range for display - focus on date only (not time)
   const formatDateRange = () => {
     if (dateRange.from && dateRange.to) {
-      if (
-        dateRange.from.getDate() === dateRange.to.getDate() &&
-        dateRange.from.getMonth() === dateRange.to.getMonth() &&
-        dateRange.from.getFullYear() === dateRange.to.getFullYear()
-      ) {
+      const fromStr = format(dateRange.from, 'yyyy-MM-dd');
+      const toStr = format(dateRange.to, 'yyyy-MM-dd');
+      
+      if (fromStr === toStr) {
         // Same day selected - show only one date
         return `${format(dateRange.from, 'PP')}`;
       } else {

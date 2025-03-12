@@ -65,6 +65,11 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     }
   };
 
+  // Automatically trigger a search when the component mounts
+  useEffect(() => {
+    handleSearch();
+  }, []);
+
   return {
     searchColumn,
     setSearchColumn,
