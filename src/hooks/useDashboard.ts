@@ -70,7 +70,7 @@ export const useDashboard = () => {
     applicationStatus,
     setApplicationStatus
   } = useApplicationSearch((searchCol, searchVal, dateRange, appStatus) => {
-    // Create new filters object for server-side search
+    // Create new filters object
     const newFilters: Record<string, any> = {};
     
     // Handle date range search - ensure proper start/end of day
@@ -98,9 +98,6 @@ export const useDashboard = () => {
       newFilters[searchCol] = searchVal;
     }
     
-    console.log("Setting search filters:", newFilters);
-    
-    // Update filters to trigger a re-fetch
     setFilters(newFilters);
     
     // Reset to page 1 when searching
@@ -120,17 +117,6 @@ export const useDashboard = () => {
     if (activeTab !== "search") {
       clearSearch();
       setFilters({});
-    } else {
-      // If switching to search tab, make sure we load today's data if no filters are set
-      const defaultFilters = {
-        from_dt: today.toISOString(),
-        to_dt: todayEnd.toISOString()
-      };
-      
-      if (Object.keys(filters).length === 0) {
-        console.log("Setting default date filters for search tab");
-        setFilters(defaultFilters);
-      }
     }
   }, [activeTab]);
 

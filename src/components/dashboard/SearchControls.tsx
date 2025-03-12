@@ -38,19 +38,7 @@ export const SearchControls = ({
 }: SearchControlsProps) => {
   
   const [calendarOpen, setCalendarOpen] = useState(false);
-  const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
 
-  useEffect(() => {
-    setLocalSearchQuery(searchQuery);
-  }, [searchQuery]);
-
-  // Update query without triggering search (search will be triggered by button click)
-  const handleQueryChange = (value: string) => {
-    setLocalSearchQuery(value);
-    onSearchQueryChange(value);
-  };
-
-  // Handle key press for Enter key
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       onSearch();
@@ -60,10 +48,11 @@ export const SearchControls = ({
   // Format the date range for display - focus on date only (not time)
   const formatDateRange = () => {
     if (dateRange.from && dateRange.to) {
-      const fromStr = format(dateRange.from, 'yyyy-MM-dd');
-      const toStr = format(dateRange.to, 'yyyy-MM-dd');
-      
-      if (fromStr === toStr) {
+      if (
+        dateRange.from.getDate() === dateRange.to.getDate() &&
+        dateRange.from.getMonth() === dateRange.to.getMonth() &&
+        dateRange.from.getFullYear() === dateRange.to.getFullYear()
+      ) {
         // Same day selected - show only one date
         return `${format(dateRange.from, 'PP')}`;
       } else {
@@ -101,8 +90,8 @@ export const SearchControls = ({
             type="search"
             placeholder="Search..."
             className="pl-9 pr-4 py-2 bg-white border-gray-200 w-full sm:w-[240px]"
-            value={localSearchQuery}
-            onChange={(e) => handleQueryChange(e.target.value)}
+            value={searchQuery}
+            onChange={(e) => onSearchQueryChange(e.target.value)}
             onKeyPress={handleKeyPress}
           />
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -161,7 +150,6 @@ export const SearchControls = ({
                     });
                   }
                   
-                  // Close the calendar on selection
                   if (range.to || (range.from && !range.to)) {
                     setCalendarOpen(false);
                   }

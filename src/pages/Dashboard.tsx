@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDashboard } from "@/hooks/useDashboard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
@@ -89,13 +89,14 @@ const Dashboard = () => {
     setSearchColumn("application_number");
   }, [setSearchColumn]);
 
-  // Trigger search automatically when switching to search tab to load today's data
+  // Trigger search automatically when switching to search tab
   useEffect(() => {
     if (activeTab === "search") {
-      // This will load today's data when switching to search tab
+      // This will automatically search with today's date since
+      // the dateRange state is initialized with today's date
       handleSearch();
     }
-  }, [activeTab, handleSearch]);
+  }, [activeTab]);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -192,7 +193,7 @@ const Dashboard = () => {
             userRole={userRole}
             activeTab={activeTab}
             isSearchPerformed={isSearchPerformed && activeTab === "search"}
-            showPagination={true}
+            showPagination={activeTab !== "search"}
           />
         </>
       )}
