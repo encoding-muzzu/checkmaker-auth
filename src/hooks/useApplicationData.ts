@@ -92,7 +92,7 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
         query = query.in('status_id', statusIds);
       }
 
-      // Apply date range filters if they exist - specifically for the created_at column
+      // Apply date range filters specifically to the created_at column
       if (filters.from_dt) {
         query = query.gte('created_at', filters.from_dt);
       }
