@@ -121,7 +121,7 @@ export const useDashboard = () => {
       clearSearch();
       setFilters({});
     } else {
-      // If switching to search tab, make sure we load today's data
+      // If switching to search tab, make sure we load today's data if no filters are set
       const defaultFilters = {
         from_dt: today.toISOString(),
         to_dt: todayEnd.toISOString()

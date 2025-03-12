@@ -25,6 +25,7 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
 
   // Update currentFilters when filters change to properly invalidate queries
   useEffect(() => {
+    // Deep compare filters
     const filtersString = JSON.stringify(filters);
     const currentFiltersString = JSON.stringify(currentFilters);
     

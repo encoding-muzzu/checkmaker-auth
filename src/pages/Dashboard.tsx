@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDashboard } from "@/hooks/useDashboard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
@@ -96,7 +95,7 @@ const Dashboard = () => {
       // This will load today's data when switching to search tab
       handleSearch();
     }
-  }, [activeTab]);
+  }, [activeTab, handleSearch]);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
