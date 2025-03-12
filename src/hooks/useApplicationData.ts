@@ -54,6 +54,7 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
   const { data: applications, isLoading, isFetching } = useQuery({
     queryKey: ['applications', page, pageSize, filters, activeTab, userRole, statusIds],
     queryFn: async () => {
+      console.log("Fetching applications with filters:", filters);
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate('/');
@@ -109,6 +110,7 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
       // Apply any other search filters
       Object.entries(filters).forEach(([key, value]) => {
         if (value && key !== 'from_dt' && key !== 'to_dt' && key !== 'application_type') {
+          console.log(`Applying filter: ${key} = ${value}`);
           query = query.ilike(key, `%${value}%`);
         }
       });

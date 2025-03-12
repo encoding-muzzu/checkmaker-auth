@@ -24,6 +24,7 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
   const [applicationStatus, setApplicationStatus] = useState<string>("all");
 
   const handleSearch = () => {
+    console.log("Search initiated with column:", searchColumn, "query:", searchQuery);
     // Always trigger a search, even if the query hasn't changed
     setIsSearchPerformed(true);
     
