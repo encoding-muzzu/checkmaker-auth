@@ -25,9 +25,14 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
 
   // Update currentFilters when filters change to properly invalidate queries
   useEffect(() => {
-    if (JSON.stringify(filters) !== JSON.stringify(currentFilters)) {
+    const filtersString = JSON.stringify(filters);
+    const currentFiltersString = JSON.stringify(currentFilters);
+    
+    if (filtersString !== currentFiltersString) {
+      console.log("Filters changed:", filters);
       setCurrentFilters(filters);
-      // Invalidate the query when filters change
+      
+      // Immediately invalidate the query when filters change
       queryClient.invalidateQueries({ 
         queryKey: ['applications', page, pageSize, activeTab, userRole] 
       });
@@ -66,7 +71,7 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
   const statusIds = shouldApplyStatusFilter ? getStatusIds(activeTab, userRole) : [];
 
   const { data: applications, isLoading, isFetching } = useQuery({
-    queryKey: ['applications', page, pageSize, currentFilters, activeTab, userRole, statusIds],
+    queryKey: ['applications', page, pageSize, JSON.stringify(currentFilters), activeTab, userRole, statusIds],
     queryFn: async () => {
       console.log("Fetching applications with filters:", currentFilters);
       

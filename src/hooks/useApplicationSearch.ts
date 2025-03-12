@@ -76,7 +76,7 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     onSearch("", "", { from: resetToday, to: resetTodayEnd }, "all");
   };
 
-  // Add a new method to handle column changes properly
+  // Handle column changes properly
   const handleColumnChange = (newColumn: string) => {
     // Store the previous column before changing
     setPreviousColumn(searchColumn);
@@ -91,6 +91,15 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
       // Immediately trigger search when column changes
       setTimeout(() => {
         onSearch(newColumn, "", dateRange, applicationStatus);
+        
+        // Update the last search params
+        setLastSearchParams(prev => ({
+          ...prev,
+          column: newColumn,
+          query: ""
+        }));
+        
+        setIsSearchPerformed(true);
       }, 0);
     }
   };
@@ -100,7 +109,7 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     handleSearch();
   }, []);
 
-  // Separate handler for search query changes with debouncing
+  // Handle search query changes with debouncing
   const handleSearchQueryChange = (newQuery: string) => {
     setSearchQuery(newQuery);
     
@@ -121,7 +130,7 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     }
   };
 
-  // Add a custom handler for date range changes to automatically trigger search
+  // Custom handler for date range changes to automatically trigger search
   const handleDateRangeChange = (newDateRange: {from: Date | undefined, to: Date | undefined}) => {
     setDateRange(newDateRange);
     
@@ -140,7 +149,7 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     }, 0);
   };
   
-  // Add a custom handler for application status changes
+  // Custom handler for application status changes
   const handleStatusChange = (newStatus: string) => {
     setApplicationStatus(newStatus);
     

@@ -98,6 +98,9 @@ export const useDashboard = () => {
       newFilters[searchCol] = searchVal;
     }
     
+    // Log the filter changes for debugging
+    console.log("Setting new filters:", newFilters);
+    
     // Update filters to trigger a re-fetch
     setFilters(newFilters);
     

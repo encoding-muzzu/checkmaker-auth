@@ -50,6 +50,7 @@ export const SearchControls = ({
     onSearchQueryChange(value);
   };
 
+  // Handle key press for Enter key
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       onSearch();
@@ -103,6 +104,7 @@ export const SearchControls = ({
             value={localSearchQuery}
             onChange={(e) => handleQueryChange(e.target.value)}
             onKeyPress={handleKeyPress}
+            onBlur={() => onSearch()} // Also trigger search on blur
           />
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         </div>
