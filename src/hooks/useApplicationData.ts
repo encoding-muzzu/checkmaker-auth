@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ApplicationData } from "@/types/dashboard";
@@ -91,7 +92,7 @@ export const useApplicationData = (page = 1, pageSize = 10, filters: FiltersType
         query = query.in('status_id', statusIds);
       }
 
-      // Apply date range filters if they exist
+      // Apply date range filters if they exist - specifically for the created_at column
       if (filters.from_dt) {
         query = query.gte('created_at', filters.from_dt);
       }

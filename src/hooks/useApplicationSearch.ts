@@ -10,6 +10,7 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
   // Set both from and to date to today by default
   const today = new Date();
   const todayEnd = new Date(today);
+  // Set the time to the end of the day for today (23:59:59.999)
   todayEnd.setHours(23, 59, 59, 999);
   
   const [dateRange, setDateRange] = useState<{from: Date | undefined, to: Date | undefined}>({
