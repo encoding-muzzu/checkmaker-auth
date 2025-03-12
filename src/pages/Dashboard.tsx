@@ -89,6 +89,12 @@ const Dashboard = () => {
     setSearchColumn("application_number");
   }, [setSearchColumn]);
 
+  useEffect(() => {
+    if (activeTab === "search") {
+      handleSearch();
+    }
+  }, [activeTab]);
+
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       updateCurrentPage(activeTab, currentPage + 1);

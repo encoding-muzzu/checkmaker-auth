@@ -6,19 +6,24 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearchPerformed, setIsSearchPerformed] = useState(false);
+  
+  // Initialize with today's date for both from and to
+  const today = new Date();
+  const todayEnd = new Date(today);
+  todayEnd.setHours(23, 59, 59, 999);
+  
   const [dateRange, setDateRange] = useState<{from: Date | undefined, to: Date | undefined}>({
-    from: new Date(), // Default to today's date
-    to: undefined
+    from: today,
+    to: todayEnd
   });
+  
   // Track if application type was previously selected
   const [previousColumn, setPreviousColumn] = useState<string | null>(null);
   const [applicationStatus, setApplicationStatus] = useState<string>("all");
 
-  // Initialize with today's date
   useEffect(() => {
-    if (!dateRange.from) {
-      setDateRange({ from: new Date(), to: undefined });
-    }
+    // Trigger a search with default parameters when the component mounts
+    handleSearch();
   }, []);
 
   const handleSearch = () => {
@@ -33,10 +38,16 @@ export const useApplicationSearch = (onSearch: (searchColumn: string, searchQuer
     setSearchQuery("");
     setSearchResults([]);
     setIsSearchPerformed(false);
-    setDateRange({ from: new Date(), to: undefined }); // Reset to today's date
+    
+    // Reset to today's date for both from and to
+    const today = new Date();
+    const todayEnd = new Date(today);
+    todayEnd.setHours(23, 59, 59, 999);
+    
+    setDateRange({ from: today, to: todayEnd });
     setPreviousColumn(null);
     setApplicationStatus("all");
-    onSearch("", "", { from: new Date(), to: undefined }, "all");
+    onSearch("", "", { from: today, to: todayEnd }, "all");
   };
 
   // Add a new method to handle column changes properly
