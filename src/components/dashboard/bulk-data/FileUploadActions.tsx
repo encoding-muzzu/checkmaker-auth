@@ -130,7 +130,7 @@ export const FileUploadActions = ({
       </div>
       
       <div className="text-xs text-gray-500 mt-1 italic">
-        Note: Files must have valid itr_flag (Y/N) and numeric lrs_amount values
+        Note: Files must have valid itr_flag ('Y'/'N') and numeric lrs_amount values
       </div>
     </div>
   );

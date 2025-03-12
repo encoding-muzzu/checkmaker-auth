@@ -42,7 +42,7 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
       if (itrFlag !== 'Y' && itrFlag !== 'N') {
         return { 
           valid: false, 
-          error: "itr_flag is not correct" 
+          error: "Invalid value in itr_flag column. Values must be 'Y' or 'N'." 
         };
       }
     }
@@ -57,7 +57,7 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
           (typeof lrsAmount !== 'number' && isNaN(Number(lrsAmount)))) {
         return { 
           valid: false, 
-          error: "lrs_amount should be numeric or decimal values" 
+          error: "Invalid value in lrs_amount column. Values must be numeric or decimal." 
         };
       }
     }
