@@ -114,23 +114,19 @@ export const FileUploadActions = ({
       </div>
       
       <div className="mt-2 flex justify-end">
-        {isCurrentUserMaker && file.maker_processed && (
+        {isCurrentUserMaker && (
           <div className="text-green-600 text-xs flex items-center gap-1 font-medium">
             <CheckCircle2 size={14} />
             You've already processed this as Maker
           </div>
         )}
         
-        {isCurrentUserChecker && file.checker_processed && (
+        {isCurrentUserChecker && (
           <div className="text-green-600 text-xs flex items-center gap-1 font-medium">
             <CheckCircle2 size={14} />
             You've already processed this as Checker
           </div>
         )}
-      </div>
-      
-      <div className="text-xs text-gray-500 mt-1 italic">
-        Note: Files must have valid itr_flag (Y/N) and numeric lrs_amount values
       </div>
     </div>
   );
