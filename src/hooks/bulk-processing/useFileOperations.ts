@@ -3,7 +3,7 @@ import { useRef } from "react";
 import { ProcessingRole } from "@/types/bulk-processing";
 import { useFileUpload } from "./useFileUpload";
 import { useFileDownload } from "./useFileDownload";
-import { useValidationDialog } from "./useValidationDialog";
+import { useValidationDialog, ValidationResults } from "./useValidationDialog";
 
 // Use `export type` for re-exporting the type when isolatedModules is enabled
 export type { ValidationResults } from "./useValidationDialog";
@@ -15,7 +15,6 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
     validationResults,
     setValidationResults,
     validationDialogOpen,
-    setValidationDialogOpen,
     openValidationDialog,
     closeValidationDialog
   } = useValidationDialog();
@@ -41,7 +40,6 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
     validationResults,
     setValidationResults,
     validationDialogOpen,
-    setValidationDialogOpen,
     openValidationDialog,
     closeValidationDialog,
     handleUploadClick,

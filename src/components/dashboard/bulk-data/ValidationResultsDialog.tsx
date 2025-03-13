@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -24,7 +23,7 @@ export const ValidationResultsDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[600px] font-['Roboto'] p-0 overflow-hidden bg-white rounded-md">
+      <DialogContent className="max-w-[500px] font-['Roboto'] p-0 overflow-hidden bg-white rounded-md">
         <DialogHeader className="border-b-[1px] border-[rgb(224, 224, 224)] p-4">
           <DialogTitle className="text-left flex items-center gap-2 text-[rgba(0, 0, 0, 0.87)] text-base font-normal">
             <FileText className="h-5 w-5" />
@@ -51,38 +50,20 @@ export const ValidationResultsDialog = ({
             </div>
           </div>
 
-          {/* File info section with filename and error indicator */}
-          <div className="mb-4">
-            <div className="flex items-center">
-              <div className="h-10 w-10 flex items-center justify-center rounded-full bg-green-100 mr-3">
-                <CheckCircle className="h-6 w-6 text-green-500" />
-              </div>
-              <div>
-                <p className="text-[0.8125rem] font-medium text-[rgba(0, 0, 0, 0.87)]">
-                  {results.fileName}
-                </p>
-                <div className="flex items-center text-red-500 text-[0.75rem]">
-                  <AlertTriangle className="h-3 w-3 mr-1" />
-                  <span>Errors Found in Uploaded File</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Records statistics */}
           <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="border border-[rgb(224, 224, 224)] rounded p-3 text-center">
-              <p className="text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)]">
+            <div className="border border-[rgb(224, 224, 224)] rounded p-2">
+              <p className="text-[0.8125rem] text-center text-[rgba(0, 0, 0, 0.87)]">
                 Records Found: {results.totalRecords}
               </p>
             </div>
-            <div className="border border-[rgb(224, 224, 224)] rounded p-3 text-center">
-              <p className="text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)]">
+            <div className="border border-[rgb(224, 224, 224)] rounded p-2">
+              <p className="text-[0.8125rem] text-center text-[rgba(0, 0, 0, 0.87)]">
                 Valid Records: {results.validRecords}
               </p>
             </div>
-            <div className="border border-[rgb(224, 224, 224)] rounded p-3 text-center">
-              <p className="text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)]">
+            <div className="border border-[rgb(224, 224, 224)] rounded p-2">
+              <p className="text-[0.8125rem] text-center text-[rgba(0, 0, 0, 0.87)]">
                 Errors Found: {results.invalidRecords}
               </p>
             </div>
@@ -103,33 +84,31 @@ export const ValidationResultsDialog = ({
           </div>
 
           {/* Re-upload area */}
-          <div className="bg-gray-100 rounded border border-gray-300 border-dashed p-6 mb-2">
+          <div className="bg-gray-100 rounded border border-gray-300 border-dashed p-4 mb-2">
             <div className="flex flex-col items-center justify-center gap-2">
               <div className="flex justify-center w-full mb-2">
                 <img 
                   src="/lovable-uploads/59d9048b-de1b-430c-a899-9918cd16f296.png" 
                   alt="Upload icon" 
-                  className="h-14 w-14 opacity-60 mb-2" 
+                  className="h-8 w-8 opacity-60" 
                 />
               </div>
               <p className="text-[0.75rem] text-gray-500 mb-4">Drag & Drop or Browse File</p>
               
-              <div className="flex flex-col items-center w-full">
-                <Button
-                  className="bg-black text-white hover:bg-gray-800 rounded-[4px] text-[0.8125rem] h-10 px-6 mb-3 w-[140px]"
-                  onClick={onReupload}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Re-Upload
-                </Button>
-                
-                <Button
-                  className="bg-gray-300 text-gray-500 hover:bg-gray-300 hover:text-gray-500 rounded-[4px] text-[0.8125rem] h-10 w-[140px]"
-                  disabled
-                >
-                  Validate
-                </Button>
-              </div>
+              <Button
+                className="bg-black text-white hover:bg-gray-800 rounded-[4px] text-[0.8125rem] h-8 px-4 mb-2 w-[120px]"
+                onClick={onReupload}
+              >
+                <Upload className="h-4 w-4 mr-1" />
+                Re-Upload
+              </Button>
+              
+              <Button
+                className="bg-gray-300 text-gray-500 hover:bg-gray-300 hover:text-gray-500 rounded-[4px] text-[0.8125rem] h-8 w-[120px]"
+                disabled
+              >
+                Validate
+              </Button>
             </div>
           </div>
         </div>

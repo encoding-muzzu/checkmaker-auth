@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useBulkProcessing } from "@/hooks/useBulkProcessing";
 import { WorkflowInstructions } from "./bulk-data/WorkflowInstructions";
@@ -35,8 +34,6 @@ export const BulkDataTab = () => {
     refetch,
     validationResults: hookValidationResults,
     setValidationResults: setHookValidationResults,
-    validationDialogOpen: hookValidationDialogOpen,
-    setValidationDialogOpen: setHookValidationDialogOpen,
   } = useBulkProcessing();
 
   const handleRefresh = () => {
@@ -50,7 +47,6 @@ export const BulkDataTab = () => {
 
   const closeValidationDialog = () => {
     setValidationDialogOpen(false);
-    setHookValidationDialogOpen(false);
   };
 
   const handleReupload = () => {
@@ -69,11 +65,9 @@ export const BulkDataTab = () => {
   };
 
   const effectiveValidationResults = hookValidationResults || validationResults;
-  const effectiveValidationDialogOpen = hookValidationDialogOpen || validationDialogOpen;
   
-  if (hookValidationResults && !validationDialogOpen && !effectiveValidationDialogOpen) {
+  if (hookValidationResults && !validationDialogOpen) {
     setValidationResults(hookValidationResults);
-    setActiveFileId(uploadingFileId);
     setValidationDialogOpen(true);
   }
 
@@ -119,7 +113,7 @@ export const BulkDataTab = () => {
 
       {effectiveValidationResults && (
         <ValidationResultsDialog
-          isOpen={effectiveValidationDialogOpen}
+          isOpen={validationDialogOpen}
           onClose={closeValidationDialog}
           results={effectiveValidationResults}
           onDownloadValidation={handleDownload}
