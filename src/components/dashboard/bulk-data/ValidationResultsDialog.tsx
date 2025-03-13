@@ -67,6 +67,25 @@ export const ValidationResultsDialog = ({
             </div>
           </div>
 
+          {results.rowErrors && results.rowErrors.length > 0 && (
+            <div className="max-h-40 overflow-y-auto mb-4 border border-[rgb(224, 224, 224)] rounded p-2">
+              <h3 className="text-sm font-medium mb-2">Error Details:</h3>
+              <ul className="text-xs space-y-1">
+                {results.rowErrors.slice(0, 5).map((error, idx) => (
+                  <li key={idx} className="flex gap-1">
+                    <span className="font-medium">Row {error.row}:</span>
+                    <span className="text-red-500">{error.error}</span>
+                  </li>
+                ))}
+                {results.rowErrors.length > 5 && (
+                  <li className="text-gray-500 italic">
+                    ... and {results.rowErrors.length - 5} more errors
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
+
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm text-[rgba(0, 0, 0, 0.87)]">Download Validated File to make Corrections</span>
             <Button 
@@ -79,8 +98,7 @@ export const ValidationResultsDialog = ({
           </div>
 
           <Button 
-            className="w-full flex items-center justify-center gap-2 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded-[4px]"
-            variant="secondary"
+            className="w-full flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-800 rounded-[4px]"
             onClick={onReupload}
           >
             <Upload size={16} />
@@ -89,7 +107,7 @@ export const ValidationResultsDialog = ({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} className="rounded-[4px]">
+          <Button variant="outline" onClick={onClose} className="rounded-[4px] border-gray-300">
             Dismiss
           </Button>
         </DialogFooter>

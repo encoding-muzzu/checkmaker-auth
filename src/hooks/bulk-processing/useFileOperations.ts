@@ -135,8 +135,12 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
         throw new Error("Authentication required");
       }
 
+      // Make sure we're using the correct URL format
+      const functionUrl = new URL(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-bulk-data`);
+      console.log("Calling edge function at:", functionUrl.toString());
+
       // Call the edge function to process the bulk data
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-bulk-data`, {
+      const response = await fetch(functionUrl.toString(), {
         method: "POST",
         headers: {
           Authorization: `Bearer ${session.access_token}`,
@@ -144,18 +148,34 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
         body: formData
       });
 
+      console.log("Response status:", response.status);
+
       // Check if the response is valid before parsing
       if (!response.ok) {
-        const errorText = await response.text();
+        let errorMessage = `Server error: ${response.status} ${response.statusText}`;
         try {
-          // Try to parse the error as JSON
-          const errorJson = JSON.parse(errorText);
-          throw new Error(errorJson.error || "Failed to process bulk data");
-        } catch (parseError) {
-          // If parsing fails, use the raw error text
-          console.error("Raw error response:", errorText);
-          throw new Error(`Server error: ${response.status} ${response.statusText}`);
+          // Try to get more detailed error info if available
+          const errorText = await response.text();
+          console.log("Error response body:", errorText);
+          
+          if (errorText) {
+            try {
+              const errorJson = JSON.parse(errorText);
+              if (errorJson.error) {
+                errorMessage = errorJson.error;
+              }
+            } catch (parseError) {
+              // If JSON parsing fails, use the text as is
+              if (errorText.length > 0) {
+                errorMessage = errorText;
+              }
+            }
+          }
+        } catch (readError) {
+          console.error("Error reading response:", readError);
         }
+        
+        throw new Error(errorMessage);
       }
 
       // Safely parse the JSON response
@@ -163,7 +183,13 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
       try {
         const responseText = await response.text();
         console.log("Raw response:", responseText);
+        
+        if (responseText.trim().length === 0) {
+          throw new Error("Empty response from server");
+        }
+        
         result = JSON.parse(responseText);
+        console.log("Parsed response:", result);
       } catch (parseError) {
         console.error("JSON parse error:", parseError);
         throw new Error("Failed to parse server response. Please try again.");
@@ -198,12 +224,15 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
 
   const handleDownload = async (filePath: string) => {
     try {
+      console.log("Downloading file:", filePath);
+      
       // Download the file directly using the provided path without modifying it
       const { data, error } = await supabase.storage
         .from('bulk-files')
         .download(filePath);
 
       if (error) {
+        console.error("Storage download error:", error);
         throw error;
       }
 

@@ -41,7 +41,9 @@ export const BulkDataTab = () => {
     handleDownload,
     handleUploadClick,
     handleFileChange,
-    refetch
+    refetch,
+    validationResults: hookValidationResults,
+    setValidationResults: setHookValidationResults,
   } = useBulkProcessing();
 
   // Create a handler function that calls refetch
@@ -61,24 +63,33 @@ export const BulkDataTab = () => {
   // Handler for re-uploading files after validation
   const handleReupload = () => {
     if (activeFileId) {
-      if (canCurrentUserUploadAsMaker) {
+      closeValidationDialog();
+      if (canCurrentUserUploadAsMaker(bulkFiles?.find(f => f.id === activeFileId) || { id: '' })) {
         handleUploadClick(activeFileId, { current: fileInputRefs.current[`maker_${activeFileId}`] });
-      } else if (canCurrentUserUploadAsChecker) {
+      } else if (canCurrentUserUploadAsChecker(bulkFiles?.find(f => f.id === activeFileId) || { id: '' })) {
         handleUploadClick(activeFileId, { current: fileInputRefs.current[`checker_${activeFileId}`] });
       }
     }
-    closeValidationDialog();
   };
 
+  // Use the validation results from the hook if available
+  const effectiveValidationResults = hookValidationResults || validationResults;
+  
+  // Update local state when hook validation results change
+  if (hookValidationResults && !validationDialogOpen) {
+    setValidationResults(hookValidationResults);
+    setValidationDialogOpen(true);
+  }
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm">
+    <div className="bg-[rgb(247, 249, 252)] p-6 rounded-lg shadow-sm">
       <div className="flex justify-between items-center mb-6">
         <WorkflowInstructions />
         <Button
           onClick={handleRefresh}
           variant="outline"
           size="icon"
-          className="flex-shrink-0"
+          className="flex-shrink-0 rounded-[4px]"
         >
           <RefreshCw className="h-4 w-4" />
         </Button>
@@ -104,17 +115,17 @@ export const BulkDataTab = () => {
           handleDownload={handleDownload}
           handleUploadClick={handleUploadClick}
           handleFileChange={handleFileChange}
-          validationResults={validationResults}
+          validationResults={effectiveValidationResults}
           setValidationResults={setValidationResults}
           openValidationDialog={openValidationDialog}
         />
       </div>
 
-      {validationResults && (
+      {effectiveValidationResults && (
         <ValidationResultsDialog
           isOpen={validationDialogOpen}
           onClose={closeValidationDialog}
-          results={validationResults}
+          results={effectiveValidationResults}
           onDownloadValidation={handleDownload}
           onReupload={handleReupload}
         />
