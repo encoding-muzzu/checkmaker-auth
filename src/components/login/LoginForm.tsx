@@ -7,7 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTokenValidation } from "@/hooks/useTokenValidation";
 
-export const LoginForm = () => {
+interface LoginFormProps {
+  isProcessingUrlToken?: boolean;
+}
+
+export const LoginForm = ({ isProcessingUrlToken = false }: LoginFormProps) => {
   const [prepaidToken, setPrepaidToken] = useState("");
   const { isValidating, validateToken } = useTokenValidation();
 
@@ -16,6 +20,9 @@ export const LoginForm = () => {
     await validateToken(prepaidToken);
   };
 
+  // Combined validation state - either from URL token or from form submission
+  const isProcessing = isValidating || isProcessingUrlToken;
+
   return (
     <Card className="w-full max-w-md shadow-lg border-0 bg-white/80 backdrop-blur-sm">
       <CardHeader className="space-y-1">
@@ -23,7 +30,9 @@ export const LoginForm = () => {
           M2P Forex DB Ops Admin Portal
         </CardTitle>
         <CardDescription className="text-center text-gray-600">
-          Sign in with your prepaid token
+          {isProcessingUrlToken
+            ? "Processing token from URL..."
+            : "Sign in with your prepaid token"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -36,16 +45,16 @@ export const LoginForm = () => {
               className="h-24 border-gray-200 focus:border-gray-400 focus:ring-gray-400"
               value={prepaidToken}
               onChange={(e) => setPrepaidToken(e.target.value)}
-              disabled={isValidating}
+              disabled={isProcessing}
             />
           </div>
 
           <Button 
             type="submit" 
             className="w-full h-11 bg-black hover:bg-gray-800 text-white transition-all duration-300"
-            disabled={isValidating}
+            disabled={isProcessing}
           >
-            {isValidating ? (
+            {isProcessing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Signing in...

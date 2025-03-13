@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +12,7 @@ export const useTokenValidation = () => {
     // Get the Supabase URL from the client
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://dhgseybgaswdryynnomz.supabase.co";
 
-    const checkTokenValidity = async () => {
+    const checkTokenValidity = useCallback(async () => {
         try {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
@@ -30,9 +30,12 @@ export const useTokenValidation = () => {
             navigate('/');
             return false;
         }
-    };
+    }, [navigate, toast]);
 
-    const validateToken = async (prepaidToken: string) => {
+    const validateToken = useCallback(async (prepaidToken: string) => {
+        // Don't proceed if already validating or token is empty
+        if (isValidating || !prepaidToken.trim()) return false;
+        
         setIsValidating(true);
         try {
             const response = await fetch(
@@ -74,7 +77,7 @@ export const useTokenValidation = () => {
         } finally {
             setIsValidating(false);
         }
-    };
+    }, [isValidating, navigate, supabaseUrl, toast]);
 
     return { validateToken, isValidating, checkTokenValidity };
 };
