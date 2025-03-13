@@ -15,19 +15,49 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
     const token = url.searchParams.get('token');
-
-    if (!token) {
+    
+    // Check if the URL has a 'token' parameter
+    const hasTokenParam = url.searchParams.has('token');
+    if (!hasTokenParam) {
       return new Response(
-        JSON.stringify({ code: 400, message: "Token is required" }),
+        JSON.stringify({ code: 400, message: "No token parameter found in the URL." }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+      );
+    }
+
+    // Check if token is empty or null
+    if (!token || token.trim() === '') {
+      return new Response(
+        JSON.stringify({ code: 400, message: "Token is required and cannot be empty" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
       );
     }
 
     console.log("Validating token:", token);
     
-    // Here you would implement real token validation logic
-    // This is just basic validation - in production, you'd verify against a database
+    // Simulate different error conditions based on token for testing purposes
+    // In production, these would be real validations
+    if (token === 'expired') {
+      return new Response(
+        JSON.stringify({ code: 401, message: "Token has expired. Please request a new token." }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 }
+      );
+    }
     
+    if (token === 'invalid') {
+      return new Response(
+        JSON.stringify({ code: 401, message: "Invalid token format or length" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 }
+      );
+    }
+    
+    if (token === 'service-down') {
+      return new Response(
+        JSON.stringify({ code: 503, message: "Service is currently unavailable. Please try again later." }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 503 }
+      );
+    }
+
     // Simple validation - check format and length
     if (token.length < 8) {
       return new Response(
@@ -36,9 +66,6 @@ serve(async (req) => {
       );
     }
 
-    // For demo purposes, you can add more validation rules as needed
-    // In a real implementation, you would check the token against your database
-    
     // Return a successful response with real token data
     // In production, this would come from your actual authentication system
     const currentTime = Math.floor(Date.now() / 1000);
@@ -83,7 +110,10 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error processing request:", error);
     return new Response(
-      JSON.stringify({ code: 500, message: "Internal Server Error", error: error.message }),
+      JSON.stringify({ 
+        code: 500, 
+        message: "Internal Server Error. The service is experiencing technical difficulties." 
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
     );
   }

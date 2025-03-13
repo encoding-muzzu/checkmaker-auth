@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -43,12 +42,22 @@ export const useTokenValidation = () => {
 
     const validateToken = useCallback(async (prepaidToken: string) => {
         // Don't proceed if already validating, validation was already attempted, or token is empty
-        if (isValidating || validationAttempted || !prepaidToken.trim()) return false;
+        if (isValidating || validationAttempted) return false;
         
         setIsValidating(true);
         setValidationAttempted(true);
         // Clear any previous errors
         setTokenError({ isError: false, message: "" });
+        
+        // Check if token is provided
+        if (!prepaidToken || !prepaidToken.trim()) {
+            setTokenError({
+                isError: true,
+                message: "No token provided. Please check your URL and try again."
+            });
+            setIsValidating(false);
+            return false;
+        }
         
         try {
             console.log("Validating token:", prepaidToken);
@@ -63,7 +72,32 @@ export const useTokenValidation = () => {
                 }
             );
             
-            if (!response.ok) {
+            // Handle different HTTP status codes with appropriate messages
+            if (response.status === 400) {
+                setTokenError({
+                    isError: true,
+                    message: "Invalid token format. Please contact support for assistance."
+                });
+                return false;
+            } else if (response.status === 401) {
+                setTokenError({
+                    isError: true,
+                    message: "Token has expired or is invalid. Please request a new token."
+                });
+                return false;
+            } else if (response.status === 403) {
+                setTokenError({
+                    isError: true,
+                    message: "Access denied. You don't have permission to use this token."
+                });
+                return false;
+            } else if (response.status >= 500) {
+                setTokenError({
+                    isError: true,
+                    message: "Service is currently unavailable. Please try again later."
+                });
+                return false;
+            } else if (!response.ok) {
                 throw new Error(`Token validation failed: ${response.status} ${response.statusText}`);
             }
             
@@ -99,11 +133,20 @@ export const useTokenValidation = () => {
             }
         } catch (error: any) {
             console.error('Token validation error:', error);
-            // Set the error state with the error message
-            setTokenError({ 
-                isError: true, 
-                message: error.message || "An error occurred during token validation"
-            });
+            
+            // Handle network-related errors
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                setTokenError({
+                    isError: true,
+                    message: "Unable to connect to the server. Please check your internet connection."
+                });
+            } else {
+                // Set the error state with the error message
+                setTokenError({ 
+                    isError: true, 
+                    message: error.message || "An error occurred during token validation"
+                });
+            }
             return false;
         } finally {
             setIsValidating(false);

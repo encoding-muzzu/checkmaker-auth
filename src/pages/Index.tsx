@@ -13,14 +13,26 @@ function Index() {
   const [attemptedValidation, setAttemptedValidation] = useState(false);
 
   useEffect(() => {
-    const token = searchParams.get("token");
+    // Get the token parameter, checking both 'token' and any misspelled variants
+    const allParams = Array.from(searchParams.entries());
+    const tokenParam = allParams.find(([key]) => 
+      key.toLowerCase() === 'token' || key.toLowerCase().includes('tok')
+    );
     
-    // Only validate if we have a token, haven't attempted validation yet,
-    // and the validation hasn't been attempted in the hook
-    if (token && !attemptedValidation && !validationAttempted) {
-      setTokenFromUrl(token);
-      setAttemptedValidation(true);
-      validateToken(token);
+    const token = tokenParam ? tokenParam[1] : null;
+    
+    // Only validate if we haven't attempted validation yet
+    if (!attemptedValidation && !validationAttempted) {
+      if (token) {
+        setTokenFromUrl(token);
+        setAttemptedValidation(true);
+        validateToken(token);
+      } else if (searchParams.toString() && !token) {
+        // If URL has parameters but no valid token
+        setAttemptedValidation(true);
+        // Trigger error for missing token
+        validateToken("");
+      }
     }
   }, [searchParams, validateToken, validationAttempted, attemptedValidation]);
 
