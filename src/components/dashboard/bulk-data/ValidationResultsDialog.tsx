@@ -65,18 +65,18 @@ export const ValidationResultsDialog = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mb-6 text-center">
-            <div className="border rounded p-3">
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="border rounded p-3 text-center">
               <p className="text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)] font-medium">
                 Records Found: {results.totalRecords}
               </p>
             </div>
-            <div className="border rounded p-3">
+            <div className="border rounded p-3 text-center">
               <p className="text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)] font-medium">
                 Valid Records: {results.validRecords}
               </p>
             </div>
-            <div className="border rounded p-3">
+            <div className="border rounded p-3 text-center">
               <p className="text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)] font-medium">
                 Errors Found: {results.invalidRecords}
               </p>
@@ -92,11 +92,18 @@ export const ValidationResultsDialog = ({
               className="text-red-500 p-0 text-[0.8125rem]" 
               onClick={() => onDownloadValidation(results.validationFilePath)}
             >
-              final excel file with errors
+              Download .xlsx
             </Button>
           </div>
 
           <div className="bg-gray-100 rounded-md p-4 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center space-y-4">
+            <div className="flex items-center justify-center">
+              <img 
+                src="/lovable-uploads/59d9048b-de1b-430c-a899-9918cd16f296.png" 
+                alt="Upload icon" 
+                className="h-8 w-8 mb-2" 
+              />
+            </div>
             <p className="text-[0.8125rem] text-gray-500">Drag & Drop or Browse File</p>
             <div className="flex space-x-4">
               <button
