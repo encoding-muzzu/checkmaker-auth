@@ -47,35 +47,55 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
       }
     }
 
-    // Validate itr_flag values (should be Y or N)
+    // Track validation results
+    let validRecords = 0;
+    let invalidRecords = 0;
+    const rowErrors = [];
+
+    // Validate each row
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
+      const rowIndex = i + 2; // Excel row number (1-based + header row)
+      
+      // Validate itr_flag values (should be Y or N)
       const itrFlag = String(row.itr_flag).trim().toUpperCase();
+      const isItrFlagValid = itrFlag === 'Y' || itrFlag === 'N';
       
-      if (itrFlag !== 'Y' && itrFlag !== 'N') {
-        return { 
-          valid: false, 
-          error: "itr_flag is not correct" 
-        };
-      }
-    }
-
-    // Validate lrs_amount_consumed values (should be numeric)
-    for (let i = 0; i < data.length; i++) {
-      const row = data[i];
+      // Validate lrs_amount_consumed values (should be numeric)
       const lrsAmount = row.lrs_amount_consumed;
+      const isLrsAmountValid = !(lrsAmount === undefined || lrsAmount === null || 
+        (typeof lrsAmount !== 'number' && isNaN(Number(lrsAmount))));
       
-      // Check if the value is a number or can be converted to one
-      if (lrsAmount === undefined || lrsAmount === null || 
-          (typeof lrsAmount !== 'number' && isNaN(Number(lrsAmount)))) {
-        return { 
-          valid: false, 
-          error: "lrs_amount should be numeric or decimal values" 
-        };
+      // Create error message based on validation results
+      let rowError = "";
+      if (!isItrFlagValid && !isLrsAmountValid) {
+        rowError = "itr_flag is not correct and lrs_amount should be numeric or decimal values";
+      } else if (!isItrFlagValid) {
+        rowError = "itr_flag is not correct";
+      } else if (!isLrsAmountValid) {
+        rowError = "lrs_amount should be numeric or decimal values";
+      }
+      
+      // Add errors
+      if (rowError) {
+        row.Errors = rowError;
+        invalidRecords++;
+        rowErrors.push({
+          row: rowIndex,
+          error: rowError
+        });
+      } else {
+        validRecords++;
       }
     }
 
-    return { valid: true, error: null };
+    return { 
+      valid: invalidRecords === 0, 
+      error: invalidRecords > 0 ? `Found ${invalidRecords} records with validation errors` : null,
+      validRecords,
+      invalidRecords,
+      rowErrors
+    };
   };
 
   const openValidationDialog = () => {
@@ -168,37 +188,11 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
         throw error;
       }
 
-      // Read the Excel file
-      const arrayBuffer = await data.arrayBuffer();
-      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      
-      // Convert worksheet to JSON
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
-      
-      // Filter to only include the required columns
-      const filteredData = jsonData.map((row: any) => ({
-        arn: row.arn,
-        pan_number: row.pan_number,
-        itr_flag: row.itr_flag,
-        lrs_amount_consumed: row.lrs_amount_consumed,
-        Errors: row.Errors // Include the Errors column if it exists
-      }));
-      
-      // Create a new workbook with filtered data
-      const newWorkbook = XLSX.utils.book_new();
-      const newWorksheet = XLSX.utils.json_to_sheet(filteredData);
-      XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, "FilteredData");
-      
-      // Generate Excel file and download
-      const excelOutput = XLSX.write(newWorkbook, { bookType: 'xlsx', type: 'array' });
-      const blob = new Blob([excelOutput], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      
-      const url = window.URL.createObjectURL(blob);
+      // Create a download link for the file
+      const url = window.URL.createObjectURL(data);
       const a = document.createElement('a');
       a.href = url;
-      a.download = filePath.split('/').pop() || 'filtered_data.xlsx'; // Extract filename
+      a.download = filePath.split('/').pop() || 'downloaded_file.xlsx';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

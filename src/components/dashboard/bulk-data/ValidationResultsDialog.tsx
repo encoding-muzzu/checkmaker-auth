@@ -40,7 +40,7 @@ export const ValidationResultsDialog = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-left">
             <FileText size={18} />
             Data Validation From "{results.fileName}"
           </DialogTitle>

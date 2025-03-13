@@ -50,17 +50,6 @@ export const FileUploadActions = ({
 }: FileUploadActionsProps) => {
   const [validationDialogOpen, setValidationDialogOpen] = useState(false);
   
-  // Add debugging console logs
-  console.log("File Upload Actions Props:", {
-    fileId: file.id,
-    canUploadAsMaker: canCurrentUserUploadAsMaker,
-    canUploadAsChecker: canCurrentUserUploadAsChecker,
-    isCurrentUserMaker,
-    isCurrentUserChecker,
-    maker_processed: file.maker_processed,
-    checker_processed: file.checker_processed
-  });
-
   const handleCloseValidationDialog = () => {
     setValidationDialogOpen(false);
   };
