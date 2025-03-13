@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -5,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 export const useTokenValidation = () => {
     const [isValidating, setIsValidating] = useState(false);
+    const [validationAttempted, setValidationAttempted] = useState(false);
     const [tokenError, setTokenError] = useState<{ isError: boolean; message: string }>({
         isError: false,
         message: ""
@@ -44,6 +46,7 @@ export const useTokenValidation = () => {
         if (isValidating || !prepaidToken.trim()) return false;
         
         setIsValidating(true);
+        setValidationAttempted(true);
         // Clear any previous errors
         setTokenError({ isError: false, message: "" });
         
@@ -92,6 +95,7 @@ export const useTokenValidation = () => {
     return { 
         validateToken, 
         isValidating, 
+        validationAttempted,
         checkTokenValidity,
         tokenError,
         clearTokenError
