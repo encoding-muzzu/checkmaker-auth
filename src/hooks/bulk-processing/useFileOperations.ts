@@ -129,14 +129,12 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
       }
       
       if (!result.valid) {
-        // Handle validation errors
+        // Handle validation errors - show validation results dialog
         console.log("Validation failed:", result.validationResults);
         
         // Show validation results dialog
         setValidationResults(result.validationResults);
         setValidationDialogOpen(true);
-        
-        sonnerToast.error("Validation failed. Please check the validation results.");
       } else {
         // If validation passed, show success message
         sonnerToast.success(`File uploaded successfully as ${makerType === 'maker' ? 'Maker' : 'Checker'}!`);
@@ -144,10 +142,15 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
       }
     } catch (error: any) {
       console.error("File upload error:", error);
-      toast({
-        title: "Error",
-        description: `Failed to upload file: ${error.message}`,
-        variant: "destructive",
+      // Show general errors as a toast notification
+      sonnerToast.error(`Failed to upload file: ${error.message}`, {
+        position: "top-center",
+        duration: 5000,
+        style: {
+          background: "#f44336",
+          color: "white",
+          border: "none"
+        }
       });
     } finally {
       setIsUploading(false);
