@@ -52,8 +52,13 @@ export const useTokenValidation = () => {
         
         try {
             console.log("Validating token:", prepaidToken);
+            
+            // Determine the correct base URL for API calls
+            let apiBaseUrl = supabaseUrl;
+            console.log("Using API base URL:", apiBaseUrl);
+            
             const response = await fetch(
-                `${supabaseUrl}/functions/v1/validate-token?token=${encodeURIComponent(prepaidToken)}`,
+                `${apiBaseUrl}/functions/v1/validate-token?token=${encodeURIComponent(prepaidToken)}`,
                 {
                     method: 'GET',
                     headers: {
@@ -69,26 +74,53 @@ export const useTokenValidation = () => {
                 // Extract token data
                 const tokenData = result.data.access_token;
                 
-                // Set the session using the proper structure that Supabase expects
-                const { error } = await supabase.auth.setSession({
+                console.log("Setting session with tokens:", {
                     access_token: tokenData.access_token,
                     refresh_token: tokenData.refresh_token,
                 });
                 
-                if (error) {
-                    console.error("Error setting session:", error);
+                try {
+                    // Set the session using the proper structure that Supabase expects
+                    const { error } = await supabase.auth.setSession({
+                        access_token: tokenData.access_token,
+                        refresh_token: tokenData.refresh_token,
+                    });
+                    
+                    if (error) {
+                        console.error("Error setting session:", error);
+                        setTokenError({ 
+                            isError: true, 
+                            message: "Error setting user session. Please try again." 
+                        });
+                        return false;
+                    }
+                    
+                    console.log("Session set successfully");
+                    
+                    // Verify the session was set correctly
+                    const { data: sessionData } = await supabase.auth.getSession();
+                    console.log("Current session after setting:", sessionData);
+                    
+                    if (!sessionData.session) {
+                        console.error("Session could not be verified after setting");
+                        setTokenError({ 
+                            isError: true, 
+                            message: "Unable to verify session. Please try again." 
+                        });
+                        return false;
+                    }
+                    
+                    // Redirect to dashboard
+                    navigate('/dashboard');
+                    return true;
+                } catch (sessionError) {
+                    console.error("Exception during session setup:", sessionError);
                     setTokenError({ 
                         isError: true, 
-                        message: "Error setting user session. Please try again." 
+                        message: "An error occurred during session setup. Please try again." 
                     });
                     return false;
                 }
-                
-                console.log("Session set successfully");
-                
-                // Redirect to dashboard
-                navigate('/dashboard');
-                return true;
             } else {
                 // Set the error state with the message from the API
                 setTokenError({ 
