@@ -66,9 +66,17 @@ export const useTokenValidation = () => {
             console.log("Validation result:", result);
 
             if (result.code === 200 && result.data?.access_token) {
-                // Set the session
+                // Set the session with a static key
                 const { access_token } = result.data;
-                await supabase.auth.setSession(access_token);
+                
+                // Use the setSession method with the static key approach
+                await supabase.auth.setSession({
+                    access_token: access_token.access_token,
+                    refresh_token: access_token.refresh_token,
+                });
+                
+                // Store the token with a static key in localStorage
+                localStorage.setItem('sb-auth-token', JSON.stringify(access_token));
                 
                 // Redirect to dashboard
                 navigate('/dashboard');
