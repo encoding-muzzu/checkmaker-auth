@@ -6,6 +6,7 @@ import { BulkDataTable } from "./bulk-data/BulkDataTable";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { ValidationResultsDialog } from "./bulk-data/ValidationResultsDialog";
+import { BulkFile } from "@/types/bulk-processing";
 
 interface ValidationResults {
   fileName: string;
@@ -64,10 +65,15 @@ export const BulkDataTab = () => {
   const handleReupload = () => {
     if (activeFileId) {
       closeValidationDialog();
-      if (canCurrentUserUploadAsMaker(bulkFiles?.find(f => f.id === activeFileId) || { id: '' })) {
-        handleUploadClick(activeFileId, { current: fileInputRefs.current[`maker_${activeFileId}`] });
-      } else if (canCurrentUserUploadAsChecker(bulkFiles?.find(f => f.id === activeFileId) || { id: '' })) {
-        handleUploadClick(activeFileId, { current: fileInputRefs.current[`checker_${activeFileId}`] });
+      // Find the file to re-upload
+      const fileToUpload = bulkFiles?.find(f => f.id === activeFileId);
+      
+      if (fileToUpload) {
+        if (canCurrentUserUploadAsMaker(fileToUpload)) {
+          handleUploadClick(activeFileId, { current: fileInputRefs.current[`maker_${activeFileId}`] });
+        } else if (canCurrentUserUploadAsChecker(fileToUpload)) {
+          handleUploadClick(activeFileId, { current: fileInputRefs.current[`checker_${activeFileId}`] });
+        }
       }
     }
   };

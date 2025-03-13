@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { toast as sonnerToast } from "sonner";
 import { ProcessingRole } from "@/types/bulk-processing";
-import * as XLSX from "xlsx";
 
 interface ValidationResults {
   fileName: string;
@@ -29,73 +28,6 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
     if (inputRef.current) {
       inputRef.current.click();
     }
-  };
-
-  // Validate Excel data
-  const validateExcelData = (data: any[]) => {
-    if (!data || data.length === 0) {
-      return { valid: false, error: "File is empty or could not be parsed" };
-    }
-
-    // Check for required columns
-    const firstRow = data[0];
-    const requiredColumns = ["itr_flag", "lrs_amount_consumed"];
-    
-    for (const column of requiredColumns) {
-      if (!(column in firstRow)) {
-        return { valid: false, error: `Required column '${column}' is missing` };
-      }
-    }
-
-    // Track validation results
-    let validRecords = 0;
-    let invalidRecords = 0;
-    const rowErrors = [];
-
-    // Validate each row
-    for (let i = 0; i < data.length; i++) {
-      const row = data[i];
-      const rowIndex = i + 2; // Excel row number (1-based + header row)
-      
-      // Validate itr_flag values (should be Y or N)
-      const itrFlag = String(row.itr_flag).trim().toUpperCase();
-      const isItrFlagValid = itrFlag === 'Y' || itrFlag === 'N';
-      
-      // Validate lrs_amount_consumed values (should be numeric)
-      const lrsAmount = row.lrs_amount_consumed;
-      const isLrsAmountValid = !(lrsAmount === undefined || lrsAmount === null || 
-        (typeof lrsAmount !== 'number' && isNaN(Number(lrsAmount))));
-      
-      // Create error message based on validation results
-      let rowError = "";
-      if (!isItrFlagValid && !isLrsAmountValid) {
-        rowError = "The values in both 'itr_flag' and 'lrs_amount' columns are incorrect.";
-      } else if (!isItrFlagValid) {
-        rowError = "The value in the 'itr_flag' column is incorrect.";
-      } else if (!isLrsAmountValid) {
-        rowError = "The value in the 'lrs_amount' column should be numeric or decimal.";
-      }
-      
-      // Add errors
-      if (rowError) {
-        row.Errors = rowError;
-        invalidRecords++;
-        rowErrors.push({
-          row: rowIndex,
-          error: rowError
-        });
-      } else {
-        validRecords++;
-      }
-    }
-
-    return { 
-      valid: invalidRecords === 0, 
-      error: invalidRecords > 0 ? `Found ${invalidRecords} records with validation errors` : null,
-      validRecords,
-      invalidRecords,
-      rowErrors
-    };
   };
 
   const openValidationDialog = () => {
@@ -135,12 +67,13 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
         throw new Error("Authentication required");
       }
 
-      // Make sure we're using the correct URL format
-      const functionUrl = new URL(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-bulk-data`);
-      console.log("Calling edge function at:", functionUrl.toString());
+      // Construct the correct URL for the edge function
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const functionUrl = `${supabaseUrl}/functions/v1/process-bulk-data`;
+      console.log("Calling edge function at:", functionUrl);
 
       // Call the edge function to process the bulk data
-      const response = await fetch(functionUrl.toString(), {
+      const response = await fetch(functionUrl, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${session.access_token}`,
