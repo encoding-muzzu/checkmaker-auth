@@ -65,64 +65,21 @@ export const useFileUpload = (
         throw new Error("Authentication required");
       }
 
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const functionUrl = `${supabaseUrl}/functions/v1/process-bulk-data`;
-      console.log("Calling edge function at:", functionUrl);
-
-      const response = await fetch(functionUrl, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: formData
+      // Use the Supabase function invocation method instead of direct fetch
+      const { data, error } = await supabase.functions.invoke("process-bulk-data", {
+        body: formData,
       });
 
-      console.log("Response status:", response.status);
-
-      if (!response.ok) {
-        let errorMessage = `Server error: ${response.status} ${response.statusText}`;
-        try {
-          const errorText = await response.text();
-          console.log("Error response body:", errorText);
-          
-          if (errorText) {
-            try {
-              const errorJson = JSON.parse(errorText);
-              if (errorJson.error) {
-                errorMessage = errorJson.error;
-              }
-            } catch (parseError) {
-              if (errorText.length > 0) {
-                errorMessage = errorText;
-              }
-            }
-          }
-        } catch (readError) {
-          console.error("Error reading response:", readError);
-        }
-        
-        throw new Error(errorMessage);
+      if (error) {
+        console.error("Function invocation error:", error);
+        throw new Error(`Server error: ${error.message || error.name}`);
       }
 
-      let result;
-      try {
-        const responseText = await response.text();
-        console.log("Raw response:", responseText);
-        
-        if (responseText.trim().length === 0) {
-          throw new Error("Empty response from server");
-        }
-        
-        result = JSON.parse(responseText);
-        console.log("Parsed response:", result);
-      } catch (parseError) {
-        console.error("JSON parse error:", parseError);
-        throw new Error("Failed to parse server response. Please try again.");
-      }
+      console.log("Function response:", data);
       
-      if (!result.valid) {
-        console.log("Validation failed:", result.validationResults);
-        setValidationResults(result.validationResults);
+      if (!data.valid) {
+        console.log("Validation failed:", data.validationResults);
+        setValidationResults(data.validationResults);
         openValidationDialog();
       } else {
         sonnerToast(`File uploaded successfully as ${makerType === 'maker' ? 'Maker' : 'Checker'}!`);

@@ -6,3 +6,6 @@ verify_jwt = false
 
 [functions.process-dbops]
 verify_jwt = false
+
+[functions.process-bulk-data]
+verify_jwt = false
