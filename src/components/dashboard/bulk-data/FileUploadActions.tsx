@@ -105,7 +105,7 @@ export const FileUploadActions = ({
               size="sm"
               onClick={() => handleUploadClick(file.id, { current: fileInputRefs.current[`maker_${file.id}`] })}
               disabled={isUploading && uploadingFileId === file.id}
-              className="flex items-center gap-1 bg-black text-white hover:bg-gray-800"
+              className="flex items-center gap-1 bg-black text-white hover:bg-gray-800 rounded-[4px]"
             >
               <UploadIcon size={16} />
               {isUploading && uploadingFileId === file.id ? "Uploading..." : "Upload as a Maker"}
@@ -127,7 +127,7 @@ export const FileUploadActions = ({
               size="sm"
               onClick={() => handleUploadClick(file.id, { current: fileInputRefs.current[`checker_${file.id}`] })}
               disabled={isUploading && uploadingFileId === file.id}
-              className="flex items-center gap-1 bg-black text-white hover:bg-gray-800"
+              className="flex items-center gap-1 bg-black text-white hover:bg-gray-800 rounded-[4px]"
             >
               <UploadIcon size={16} />
               {isUploading && uploadingFileId === file.id ? "Uploading..." : "Upload as a Checker"}

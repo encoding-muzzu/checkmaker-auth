@@ -38,7 +38,7 @@ export const ValidationResultsDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-white font-['Roboto']">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-left">
             <FileText size={18} />
@@ -52,14 +52,14 @@ export const ValidationResultsDialog = ({
             <span className="font-medium">Errors Found in Uploaded File</span>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-3 gap-4 mb-4 border-b-[1px] border-solid border-[rgb(224, 224, 224)] pb-4">
             <div className="text-center">
               <p className="text-sm text-gray-500">Records Found</p>
-              <p className="font-medium">{results.totalRecords}</p>
+              <p className="font-medium text-[rgba(0, 0, 0, 0.87)]">{results.totalRecords}</p>
             </div>
             <div className="text-center">
               <p className="text-sm text-gray-500">Valid Records</p>
-              <p className="font-medium">{results.validRecords}</p>
+              <p className="font-medium text-[rgba(0, 0, 0, 0.87)]">{results.validRecords}</p>
             </div>
             <div className="text-center">
               <p className="text-sm text-gray-500">Errors Found</p>
@@ -68,7 +68,7 @@ export const ValidationResultsDialog = ({
           </div>
 
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm">Download Validated File to make Corrections</span>
+            <span className="text-sm text-[rgba(0, 0, 0, 0.87)]">Download Validated File to make Corrections</span>
             <Button 
               variant="link" 
               className="text-red-500 p-0" 
@@ -79,7 +79,7 @@ export const ValidationResultsDialog = ({
           </div>
 
           <Button 
-            className="w-full flex items-center justify-center gap-2 bg-gray-200 text-gray-800 hover:bg-gray-300"
+            className="w-full flex items-center justify-center gap-2 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded-[4px]"
             variant="secondary"
             onClick={onReupload}
           >
@@ -89,7 +89,7 @@ export const ValidationResultsDialog = ({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} className="rounded-[4px]">
             Dismiss
           </Button>
         </DialogFooter>
