@@ -59,20 +59,36 @@ export const useTokenValidation = () => {
                     headers: {
                         'Content-Type': 'application/json',
                     },
+                    credentials: 'omit' // Don't send cookies with cross-origin requests
                 }
             );
+            
+            if (!response.ok) {
+                throw new Error(`Token validation failed: ${response.status} ${response.statusText}`);
+            }
             
             const result = await response.json();
             console.log("Validation result:", result);
 
             if (result.code === 200 && result.data?.access_token) {
-                // Set the session
-                const { access_token } = result.data;
-                await supabase.auth.setSession(access_token);
-                
-                // Redirect to dashboard
-                navigate('/dashboard');
-                return true;
+                try {
+                    // Set the session with the complete session object
+                    await supabase.auth.setSession({
+                        access_token: result.data.access_token.access_token,
+                        refresh_token: result.data.access_token.refresh_token
+                    });
+                    
+                    // Redirect to dashboard
+                    navigate('/dashboard');
+                    return true;
+                } catch (sessionError: any) {
+                    console.error('Error setting session:', sessionError);
+                    setTokenError({
+                        isError: true,
+                        message: "Error setting user session. Please try again."
+                    });
+                    return false;
+                }
             } else {
                 // Set the error state with the message from the API
                 setTokenError({ 

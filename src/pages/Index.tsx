@@ -4,10 +4,11 @@ import { useSearchParams } from "react-router-dom";
 import { FeatureSection } from "@/components/login/FeatureSection";
 import { LoginForm } from "@/components/login/LoginForm";
 import { useTokenValidation } from "@/hooks/useTokenValidation";
+import { LoadingOverlay } from "@/components/login/LoadingOverlay";
 
 function Index() {
   const [searchParams] = useSearchParams();
-  const { validateToken, isValidating, validationAttempted, tokenError } = useTokenValidation();
+  const { validateToken, isValidating, validationAttempted, tokenError, clearTokenError } = useTokenValidation();
   const [tokenFromUrl, setTokenFromUrl] = useState<string | null>(null);
   const [attemptedValidation, setAttemptedValidation] = useState(false);
 
@@ -23,19 +24,34 @@ function Index() {
     }
   }, [searchParams, validateToken, validationAttempted, attemptedValidation]);
 
+  const handleCloseError = () => {
+    clearTokenError();
+    setTokenFromUrl(null);
+    setAttemptedValidation(false);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F7F9FC] p-4">
-      <div className="w-full max-w-[1200px] grid md:grid-cols-2 gap-8 items-center">
-        <FeatureSection />
-        <div className="flex items-center justify-center w-full">
-          <LoginForm 
-            isProcessingUrlToken={isValidating} 
-            urlToken={tokenFromUrl} 
-            urlTokenError={tokenError.isError ? tokenError.message : null}
-          />
+    <>
+      {/* Full-screen loading overlay for token processing */}
+      <LoadingOverlay 
+        isLoading={isValidating} 
+        errorMessage={tokenError.isError ? tokenError.message : null}
+        onClose={handleCloseError}
+      />
+
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F9FC] p-4">
+        <div className="w-full max-w-[1200px] grid md:grid-cols-2 gap-8 items-center">
+          <FeatureSection />
+          <div className="flex items-center justify-center w-full">
+            <LoginForm 
+              isProcessingUrlToken={isValidating} 
+              urlToken={tokenFromUrl} 
+              urlTokenError={tokenError.isError ? tokenError.message : null}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
