@@ -1,28 +1,25 @@
 
-import { useState } from "react";
-import { Loader2 } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { useState, useEffect } from "react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTokenValidation } from "@/hooks/useTokenValidation";
 import { TokenErrorDialog } from "./TokenErrorDialog";
 
 interface LoginFormProps {
-  isProcessingUrlToken?: boolean;
+  urlToken?: string | null;
 }
 
-export const LoginForm = ({ isProcessingUrlToken = false }: LoginFormProps) => {
-  const [prepaidToken, setPrepaidToken] = useState("");
+export const LoginForm = ({ urlToken }: LoginFormProps) => {
   const { isValidating, validateToken, tokenError, clearTokenError } = useTokenValidation();
+  const [validationAttempted, setValidationAttempted] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await validateToken(prepaidToken);
-  };
-
-  // Combined validation state - either from URL token or from form submission
-  const isProcessing = isValidating || isProcessingUrlToken;
+  // Automatically validate token if provided in URL
+  useEffect(() => {
+    if (urlToken && !validationAttempted) {
+      validateToken(urlToken);
+      setValidationAttempted(true);
+    }
+  }, [urlToken, validateToken, validationAttempted]);
 
   return (
     <>
@@ -32,40 +29,36 @@ export const LoginForm = ({ isProcessingUrlToken = false }: LoginFormProps) => {
             M2P Forex DB Ops Admin Portal
           </CardTitle>
           <CardDescription className="text-center text-gray-600">
-            {isProcessingUrlToken
-              ? "Processing token from URL..."
-              : "Sign in with your prepaid token"}
+            {isValidating ? "Token validation in progress..." : "Automatic token validation"}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="prepaidToken" className="text-sm font-medium text-gray-700">Prepaid Token</Label>
-              <Textarea
-                id="prepaidToken"
-                placeholder="Enter your prepaid token"
-                className="h-24 border-gray-200 focus:border-gray-400 focus:ring-gray-400"
-                value={prepaidToken}
-                onChange={(e) => setPrepaidToken(e.target.value)}
-                disabled={isProcessing}
-              />
+        <CardContent className="space-y-4">
+          {isValidating ? (
+            <div className="flex justify-center items-center py-8">
+              <Loader2 className="h-10 w-10 animate-spin text-gray-500" />
             </div>
-
-            <Button 
-              type="submit" 
-              className="w-full h-11 bg-black hover:bg-gray-800 text-white transition-all duration-300"
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                'Sign in'
+          ) : (
+            <>
+              {tokenError.isError && !isValidating && validationAttempted ? (
+                <div className="p-4 border border-red-200 rounded-md bg-red-50">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h3 className="font-medium text-red-800">Validation Failed</h3>
+                      <p className="text-sm text-red-700 mt-1">{tokenError.message}</p>
+                    </div>
+                  </div>
+                </div>
+              ) : validationAttempted && !isValidating && (
+                <div className="text-center text-gray-500">
+                  No valid token was found in the URL.
+                  <p className="mt-2 text-sm">
+                    Please ensure you're using a complete and valid URL with a token parameter.
+                  </p>
+                </div>
               )}
-            </Button>
-          </form>
+            </>
+          )}
         </CardContent>
       </Card>
 
