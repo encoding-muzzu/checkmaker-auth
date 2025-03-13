@@ -15,6 +15,7 @@ export interface UseValidationDialogResult {
   validationResults: ValidationResults | null;
   setValidationResults: (results: ValidationResults | null) => void;
   validationDialogOpen: boolean;
+  setValidationDialogOpen: (open: boolean) => void;
   openValidationDialog: () => void;
   closeValidationDialog: () => void;
 }
@@ -35,6 +36,7 @@ export const useValidationDialog = (): UseValidationDialogResult => {
     validationResults,
     setValidationResults,
     validationDialogOpen,
+    setValidationDialogOpen,
     openValidationDialog,
     closeValidationDialog
   };
