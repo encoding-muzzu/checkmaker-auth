@@ -38,9 +38,9 @@ export const ValidationResultsDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg bg-white font-['Roboto']">
-        <DialogHeader className="border-b-[1px] border-[rgb(224, 224, 224)] pb-2">
-          <DialogTitle className="text-left flex items-center gap-2 text-[rgba(0, 0, 0, 0.87)]">
+      <DialogContent className="max-w-md bg-white font-['Roboto'] p-0 overflow-hidden">
+        <DialogHeader className="border-b-[1px] border-[rgb(224, 224, 224)] p-4">
+          <DialogTitle className="text-left flex items-center gap-2 text-[rgba(0, 0, 0, 0.87)] text-base">
             <FileText className="h-5 w-5" />
             Data Validation From "{results.fileName}"
           </DialogTitle>
@@ -53,7 +53,7 @@ export const ValidationResultsDialog = ({
           </button>
         </DialogHeader>
 
-        <div className="py-4">
+        <div className="p-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center text-[0.8125rem]">
               <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
@@ -65,28 +65,28 @@ export const ValidationResultsDialog = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="border rounded p-3 text-center">
-              <p className="text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)] font-medium">
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="border border-[rgb(224, 224, 224)] rounded p-2">
+              <p className="text-[0.8125rem] text-center text-[rgba(0, 0, 0, 0.87)]">
                 Records Found: {results.totalRecords}
               </p>
             </div>
-            <div className="border rounded p-3 text-center">
-              <p className="text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)] font-medium">
+            <div className="border border-[rgb(224, 224, 224)] rounded p-2">
+              <p className="text-[0.8125rem] text-center text-[rgba(0, 0, 0, 0.87)]">
                 Valid Records: {results.validRecords}
               </p>
             </div>
-            <div className="border rounded p-3 text-center">
-              <p className="text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)] font-medium">
+            <div className="border border-[rgb(224, 224, 224)] rounded p-2">
+              <p className="text-[0.8125rem] text-center text-[rgba(0, 0, 0, 0.87)]">
                 Errors Found: {results.invalidRecords}
               </p>
             </div>
           </div>
 
           <div className="flex justify-between items-center mb-4">
-            <span className="text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)]">
+            <p className="text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)]">
               Download Validated File to make Corrections
-            </span>
+            </p>
             <Button 
               variant="link" 
               className="text-red-500 p-0 text-[0.8125rem]" 
@@ -96,41 +96,33 @@ export const ValidationResultsDialog = ({
             </Button>
           </div>
 
-          <div className="bg-gray-100 rounded-md p-4 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center space-y-4">
+          <div className="bg-gray-200 rounded border border-gray-300 border-dashed flex flex-col items-center justify-center py-6 px-4 space-y-4">
             <div className="flex items-center justify-center">
               <img 
                 src="/lovable-uploads/59d9048b-de1b-430c-a899-9918cd16f296.png" 
                 alt="Upload icon" 
-                className="h-8 w-8 mb-2" 
+                className="h-8 w-8" 
               />
             </div>
-            <p className="text-[0.8125rem] text-gray-500">Drag & Drop or Browse File</p>
-            <div className="flex space-x-4">
-              <button
-                className="bg-black text-white px-6 py-2 rounded-[4px] flex items-center justify-center gap-2 hover:bg-gray-800 w-auto"
+            <p className="text-[0.75rem] text-gray-500">Drag & Drop or Browse File</p>
+            
+            <div className="w-full flex justify-center">
+              <Button
+                className="bg-black text-white hover:bg-gray-800 rounded-[4px] text-[0.8125rem] h-8"
                 onClick={onReupload}
               >
-                <Upload size={16} />
+                <Upload className="h-4 w-4 mr-1" />
                 Re-Upload File
-              </button>
-              <button
-                className="bg-gray-300 text-gray-500 px-6 py-2 rounded-[4px] flex items-center justify-center gap-2 cursor-not-allowed"
-                disabled
-              >
-                Validate
-              </button>
+              </Button>
             </div>
+            
+            <Button
+              className="bg-gray-300 text-gray-500 hover:bg-gray-300 hover:text-gray-500 rounded-[4px] text-[0.8125rem] h-8"
+              disabled
+            >
+              Validate
+            </Button>
           </div>
-        </div>
-
-        <div className="pt-4 border-t-[1px] border-[rgb(224, 224, 224)] flex justify-end">
-          <Button 
-            variant="outline" 
-            onClick={onClose} 
-            className="rounded-[4px] border-gray-300 text-[0.8125rem]"
-          >
-            Dismiss
-          </Button>
         </div>
       </DialogContent>
     </Dialog>
