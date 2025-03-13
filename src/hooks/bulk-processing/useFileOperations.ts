@@ -5,7 +5,8 @@ import { useFileUpload } from "./useFileUpload";
 import { useFileDownload } from "./useFileDownload";
 import { useValidationDialog, ValidationResults } from "./useValidationDialog";
 
-export { ValidationResults } from "./useValidationDialog";
+// Use `export type` for re-exporting the type when isolatedModules is enabled
+export type { ValidationResults } from "./useValidationDialog";
 
 export const useFileOperations = (currentUserId: string | null, refreshFiles: () => void) => {
   const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
