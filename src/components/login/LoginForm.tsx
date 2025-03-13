@@ -16,9 +16,11 @@ interface LoginFormProps {
 export const LoginForm = ({ isProcessingUrlToken = false, urlToken = null }: LoginFormProps) => {
   const [prepaidToken, setPrepaidToken] = useState("");
   const { isValidating, validateToken, tokenError, clearTokenError, validationAttempted } = useTokenValidation();
+  const [manualSubmission, setManualSubmission] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setManualSubmission(true);
     await validateToken(prepaidToken);
   };
 
@@ -33,7 +35,7 @@ export const LoginForm = ({ isProcessingUrlToken = false, urlToken = null }: Log
   const isProcessing = isValidating || isProcessingUrlToken;
 
   // Determine whether to show manual input or validation message
-  const showManualInput = !isProcessingUrlToken && (!urlToken || tokenError.isError);
+  const showManualInput = !isProcessingUrlToken || tokenError.isError;
 
   return (
     <>
@@ -43,9 +45,9 @@ export const LoginForm = ({ isProcessingUrlToken = false, urlToken = null }: Log
             M2P Forex DB Ops Admin Portal
           </CardTitle>
           <CardDescription className="text-center text-gray-600">
-            {isProcessingUrlToken
+            {isProcessingUrlToken && !tokenError.isError
               ? "Processing token from URL..."
-              : urlToken && !tokenError.isError && validationAttempted
+              : urlToken && validationAttempted && !tokenError.isError
               ? "Token validation completed. Processing login..."
               : "Sign in with your prepaid token"}
           </CardDescription>
@@ -71,7 +73,7 @@ export const LoginForm = ({ isProcessingUrlToken = false, urlToken = null }: Log
               <Button 
                 type="submit" 
                 className="w-full h-11 bg-black hover:bg-gray-800 text-white transition-all duration-300"
-                disabled={isProcessing}
+                disabled={isProcessing || (!manualSubmission && validationAttempted && tokenError.isError)}
               >
                 {isProcessing ? (
                   <>
@@ -102,4 +104,4 @@ export const LoginForm = ({ isProcessingUrlToken = false, urlToken = null }: Log
       />
     </>
   );
-};
+}

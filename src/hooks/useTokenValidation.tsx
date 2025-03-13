@@ -42,8 +42,8 @@ export const useTokenValidation = () => {
     }, []);
 
     const validateToken = useCallback(async (prepaidToken: string) => {
-        // Don't proceed if already validating or token is empty
-        if (isValidating || !prepaidToken.trim()) return false;
+        // Don't proceed if already validating, validation was already attempted, or token is empty
+        if (isValidating || validationAttempted || !prepaidToken.trim()) return false;
         
         setIsValidating(true);
         setValidationAttempted(true);
@@ -90,7 +90,7 @@ export const useTokenValidation = () => {
         } finally {
             setIsValidating(false);
         }
-    }, [isValidating, navigate, supabaseUrl]);
+    }, [isValidating, validationAttempted, navigate, supabaseUrl]);
 
     return { 
         validateToken, 
