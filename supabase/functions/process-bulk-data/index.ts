@@ -56,11 +56,11 @@ function validateExcelData(data: any[]) {
     // Create error message based on validation results
     let rowError = "";
     if (!isItrFlagValid && !isLrsAmountValid) {
-      rowError = "The values in both 'itr_flag' and 'lrs_amount' columns are incorrect.";
+      rowError = "itr_flag must be \"Y\" or \"N\". lrs_amount must be a decimal or number.";
     } else if (!isItrFlagValid) {
-      rowError = "The value in the 'itr_flag' column is incorrect.";
+      rowError = "itr_flag must be \"Y\" or \"N\".";
     } else if (!isLrsAmountValid) {
-      rowError = "The value in the 'lrs_amount' column should be numeric or decimal.";
+      rowError = "lrs_amount must be a decimal or number.";
     }
     
     // Add the error to the row in the data

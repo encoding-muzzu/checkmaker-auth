@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, FileText, Upload, X } from "lucide-react";
 
@@ -61,16 +61,13 @@ export const ValidationResultsDialog = ({
 
           <div className="grid grid-cols-3 gap-4 mb-4 border-b-[1px] border-[rgb(224, 224, 224)] pb-4">
             <div className="text-center">
-              <p className="text-sm text-gray-500">Records Found</p>
-              <p className="font-medium text-[rgba(0, 0, 0, 0.87)]">{results.totalRecords}</p>
+              <p className="text-sm text-gray-500">Records Found: {results.totalRecords}</p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-gray-500">Valid Records</p>
-              <p className="font-medium text-[rgba(0, 0, 0, 0.87)]">{results.validRecords}</p>
+              <p className="text-sm text-gray-500">Valid Records: {results.validRecords}</p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-gray-500">Errors Found</p>
-              <p className="font-medium text-red-500">{results.invalidRecords}</p>
+              <p className="text-sm text-gray-500">Errors Found: {results.invalidRecords}</p>
             </div>
           </div>
 
@@ -94,11 +91,11 @@ export const ValidationResultsDialog = ({
           </Button>
         </div>
 
-        <DialogFooter>
+        <div className="pt-4 border-t-[1px] border-[rgb(224, 224, 224)] flex justify-end">
           <Button variant="outline" onClick={onClose} className="rounded-[4px] border-gray-300">
             Dismiss
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
