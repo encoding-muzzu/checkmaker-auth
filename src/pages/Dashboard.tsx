@@ -51,26 +51,36 @@ export function Dashboard() {
       if (!isValid) return;
 
       try {
-        // Fetch user data
-        const { data: profile, error: profileError } = await supabase
+        // Fetch user data - IMPORTANT CHANGE: Don't use single() here
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          throw new Error("No active session");
+        }
+        
+        const userId = session.user.id;
+        
+        // Fetch user profile matching the current user's ID
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('username, role')
-          .single();
+          .eq('id', userId)
+          .maybeSingle(); // Use maybeSingle instead of single
 
         if (profileError) {
           console.error("Error fetching profile:", profileError);
           throw profileError;
         }
 
-        setUserName(profile?.username || 'User');
-        setUserRole(profile?.role || 'user');
+        setUserName(profileData?.username || 'User');
+        setUserRole(profileData?.role || 'user');
 
         // Fetch applications based on role
         let query = supabase
           .from('applications')
           .select('*, application_statuses!fk_status (id, name)');
 
-        if (profile?.role === 'checker') {
+        if (profileData?.role === 'checker') {
           // Checker sees applications with status 1 or 4
           query = query.in('status_id', [1, 4]);
         } else {
@@ -149,12 +159,33 @@ export function Dashboard() {
     if (!isValid) return;
 
     try {
+      // Get current user session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error("No active session");
+      }
+      
+      const userId = session.user.id;
+      
+      // Fetch user profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('username, role')
+        .eq('id', userId)
+        .maybeSingle(); // Use maybeSingle instead of single
+
+      if (profileError) {
+        console.error("Error fetching profile:", profileError);
+        throw profileError;
+      }
+
       // Fetch applications based on role
       let query = supabase
         .from('applications')
         .select('*, application_statuses!fk_status (id, name)');
 
-      if (userRole === 'checker') {
+      if (profileData?.role === 'checker') {
         // Checker sees applications with status 1 or 4
         query = query.in('status_id', [1, 4]);
       } else {
@@ -226,7 +257,7 @@ export function Dashboard() {
         variant: "destructive",
       });
     }
-  }, [checkTokenValidity, toast, userRole]);
+  }, [checkTokenValidity, toast]);
 
   const handleLogout = async () => {
     try {
@@ -239,7 +270,10 @@ export function Dashboard() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <DashboardHeader onLogout={handleLogout} userRole={userRole} />
+      <DashboardHeader 
+        onLogout={handleLogout} 
+        userRole={userRole} 
+      />
       
       <DashboardTabs
         activeTab={activeTab}
