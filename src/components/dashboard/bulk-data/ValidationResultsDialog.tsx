@@ -38,7 +38,7 @@ export const ValidationResultsDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-white font-['Roboto']">
+      <DialogContent className="sm:max-w-lg bg-white font-['Roboto']">
         <DialogHeader className="border-b-[1px] border-[rgb(224, 224, 224)] pb-2">
           <DialogTitle className="text-left flex items-center gap-2 text-[rgba(0, 0, 0, 0.87)]">
             <FileText className="h-5 w-5" />
@@ -54,45 +54,69 @@ export const ValidationResultsDialog = ({
         </DialogHeader>
 
         <div className="py-4">
-          <div className="flex items-center justify-center gap-2 text-amber-500 mb-4">
-            <AlertTriangle className="h-5 w-5" />
-            <span className="font-medium">Errors Found in Uploaded File</span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4 mb-4 border-b-[1px] border-[rgb(224, 224, 224)] pb-4">
-            <div className="text-center">
-              <p className="text-sm text-gray-500">Records Found: {results.totalRecords}</p>
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <div className="flex items-center text-[0.8125rem]">
+              <img 
+                src="/lovable-uploads/267c76f0-cb3f-41b3-8ae7-8f494b65446c.png" 
+                alt="File icon" 
+                className="h-5 w-5 mr-2" 
+              />
+              <span className="text-[rgba(0, 0, 0, 0.87)]">{results.fileName}</span>
             </div>
-            <div className="text-center">
-              <p className="text-sm text-gray-500">Valid Records: {results.validRecords}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-sm text-gray-500">Errors Found: {results.invalidRecords}</p>
+            <div className="flex items-center text-red-500 text-[0.8125rem]">
+              <AlertTriangle className="h-4 w-4 mr-1" />
+              <span>Errors Found in Uploaded File</span>
             </div>
           </div>
 
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm text-[rgba(0, 0, 0, 0.87)]">Download Validated File to make Corrections</span>
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="border-r border-[rgb(224, 224, 224)]">
+              <p className="text-center text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)]">
+                Records Found: {results.totalRecords}
+              </p>
+            </div>
+            <div className="border-r border-[rgb(224, 224, 224)]">
+              <p className="text-center text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)]">
+                Valid Records: {results.validRecords}
+              </p>
+            </div>
+            <div>
+              <p className="text-center text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)]">
+                Errors Found: {results.invalidRecords}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)]">
+              Download Validated File to make Corrections
+            </span>
             <Button 
               variant="link" 
-              className="text-red-500 p-0" 
+              className="text-red-500 p-0 text-[0.8125rem]" 
               onClick={() => onDownloadValidation(results.validationFilePath)}
             >
               Download .xlsx
             </Button>
           </div>
 
-          <Button 
-            className="w-full flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-800 rounded-[4px]"
-            onClick={onReupload}
-          >
-            <Upload size={16} />
-            Re-Upload File
-          </Button>
+          <div className="bg-gray-200 rounded p-4 flex flex-col items-center justify-center">
+            <button
+              className="bg-black text-white px-4 py-2 rounded-[4px] flex items-center justify-center gap-2 hover:bg-gray-800 w-auto"
+              onClick={onReupload}
+            >
+              <Upload size={16} />
+              Re-Upload File
+            </button>
+          </div>
         </div>
 
         <div className="pt-4 border-t-[1px] border-[rgb(224, 224, 224)] flex justify-end">
-          <Button variant="outline" onClick={onClose} className="rounded-[4px] border-gray-300">
+          <Button 
+            variant="outline" 
+            onClick={onClose} 
+            className="rounded-[4px] border-gray-300 text-[0.8125rem]"
+          >
             Dismiss
           </Button>
         </div>
