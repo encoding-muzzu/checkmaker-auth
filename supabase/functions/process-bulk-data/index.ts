@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import * as XLSX from "https://esm.sh/xlsx@0.18.5";
@@ -74,6 +73,8 @@ function validateExcelData(data: any[]) {
       });
     } else {
       validRecords++;
+      // Set empty error message for valid rows to maintain consistent columns
+      row.Errors = "";
     }
   }
 
@@ -230,7 +231,18 @@ serve(async (req) => {
       
       // Create a new workbook with the updated data (including errors column)
       const wb = XLSX.utils.book_new();
+      
+      // Add a worksheet with the data including the Errors column
       const ws = XLSX.utils.json_to_sheet(data);
+      
+      // Customize the column widths for better readability
+      const columnWidths = [];
+      for (const key in data[0]) {
+        // Set error column to be wider
+        columnWidths.push({ wch: key === 'Errors' ? 50 : 15 });
+      }
+      ws['!cols'] = columnWidths;
+      
       XLSX.utils.book_append_sheet(wb, ws, "Applications");
       
       // Generate Excel file with errors
