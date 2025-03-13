@@ -4,6 +4,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
 serve(async (req) => {
@@ -15,6 +16,8 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
     const token = url.searchParams.get('token');
+    const origin = req.headers.get('origin') || '*';
+    console.log(`Request from origin: ${origin}`);
 
     if (!token) {
       return new Response(
@@ -76,6 +79,7 @@ serve(async (req) => {
       }
     };
 
+    console.log("Sending successful token validation response");
     return new Response(
       JSON.stringify(responseData),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }

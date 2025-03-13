@@ -14,11 +14,22 @@ export const useTokenValidation = () => {
 
     const checkTokenValidity = useCallback(async () => {
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
+            console.log("Checking token validity...");
+            const { data: { session }, error } = await supabase.auth.getSession();
+            
+            if (error) {
+                console.error("Session error:", error);
                 navigate('/');
                 return false;
             }
+            
+            if (!session) {
+                console.log("No active session found");
+                navigate('/');
+                return false;
+            }
+            
+            console.log("Active session found");
             return true;
         } catch (error) {
             console.error('Token validation error:', error);
@@ -37,7 +48,10 @@ export const useTokenValidation = () => {
         if (isValidating || !prepaidToken.trim()) return false;
         
         setIsValidating(true);
+        console.log("Starting token validation for:", prepaidToken.substring(0, 5) + "...");
+        
         try {
+            // Make request to validate token edge function
             const response = await fetch(
                 `${supabaseUrl}/functions/v1/validate-token?token=${encodeURIComponent(prepaidToken)}`,
                 {
@@ -48,17 +62,50 @@ export const useTokenValidation = () => {
                 }
             );
             
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`Token validation failed with status ${response.status}:`, errorText);
+                throw new Error(`Token validation failed: ${response.status} ${errorText}`);
+            }
+            
             const result = await response.json();
+            console.log("Token validation response:", result);
 
             if (result.code === 200 && result.data?.access_token) {
-                // Set the session
-                const { access_token } = result.data;
-                await supabase.auth.setSession(access_token);
-                
-                // Redirect to dashboard
-                navigate('/dashboard');
-                return true;
+                try {
+                    console.log("Setting session with validated token...");
+                    
+                    // Properly set the session with the access token
+                    const { error: sessionError } = await supabase.auth.setSession({
+                        access_token: result.data.access_token.access_token,
+                        refresh_token: result.data.access_token.refresh_token
+                    });
+                    
+                    if (sessionError) {
+                        console.error("Error setting session:", sessionError);
+                        toast({
+                            title: "Error",
+                            description: "Error setting user session. Please try again.",
+                            variant: "destructive",
+                        });
+                        return false;
+                    }
+                    
+                    console.log("Session successfully set, redirecting to dashboard");
+                    // Redirect to dashboard
+                    navigate('/dashboard');
+                    return true;
+                } catch (sessionError) {
+                    console.error("Exception setting session:", sessionError);
+                    toast({
+                        title: "Error",
+                        description: "Error setting user session. Please try again.",
+                        variant: "destructive",
+                    });
+                    return false;
+                }
             } else {
+                console.error("Invalid token response structure:", result);
                 toast({
                     title: "Error",
                     description: result.message || "Invalid token",
