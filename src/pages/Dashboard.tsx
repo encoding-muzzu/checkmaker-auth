@@ -1,332 +1,206 @@
 
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+import { useDashboard } from "@/hooks/useDashboard";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
-import { ApplicationData } from "@/types/dashboard";
-import { ApplicationTable } from "@/components/dashboard/ApplicationTable";
-import { SearchBar } from "@/components/dashboard/SearchBar";
+import { SearchControls } from "@/components/dashboard/SearchControls";
+import { DashboardTable } from "@/components/dashboard/DashboardTable";
 import { BulkDataTab } from "@/components/dashboard/BulkDataTab";
-import { useToast } from "@/components/ui/use-toast";
-import { Json } from "@/integrations/supabase/types";
+import { supabase } from "@/integrations/supabase/client";
+import { useBulkProcessing } from "@/hooks/useBulkProcessing";
+import { useTokenValidation } from "@/hooks/useTokenValidation";
 
-export function Dashboard() {
-  const [userName, setUserName] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [applications, setApplications] = useState<ApplicationData[] | undefined>([]);
-  const [activeTab, setActiveTab] = useState("pending");
-  const [searchResults, setSearchResults] = useState<ApplicationData[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [bulkFileCount, setBulkFileCount] = useState(0);
-  const navigate = useNavigate();
-  const { toast } = useToast();
+// Read the environment variable to disable bulk data tab
+// Default to enabled (false) if not specified
+const isBulkDataDisabled = import.meta.env.VITE_DISABLE_BULK_DATA === "true";
 
-  // Get the DISABLE_BULK_DATA environment variable
-  const isBulkDataDisabled = import.meta.env.VITE_DISABLE_BULK_DATA === 'true';
+// Create a searchable columns array for the search tab
+const searchableColumns = [
+  { value: "application_number", label: "Application Number" },
+  { value: "arn", label: "ARN" },
+  { value: "kit_no", label: "Kit No" },
+  { value: "customer_name", label: "Customer Name" },
+  { value: "pan_number", label: "PAN" },
+  { value: "customer_type", label: "Customer Type" },
+  { value: "product_variant", label: "Product Variant" },
+  { value: "card_type", label: "Card Type" },
+  { value: "processing_type", label: "Processing Type" },
+  { value: "status", label: "Status" }
+];
 
-  const checkTokenValidity = useCallback(async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate('/');
-        return false;
-      }
-      return true;
-    } catch (error) {
-      console.error('Token validation error:', error);
-      toast({
-        title: "Session Expired",
-        description: "Your session has expired. Please log in again.",
-        variant: "destructive",
-      });
-      navigate('/');
-      return false;
-    }
-  }, [navigate, toast]);
+const Dashboard = () => {
+  const {
+    activeTab,
+    setActiveTab,
+    searchColumn,
+    setSearchColumn,
+    searchQuery,
+    setSearchQuery,
+    currentPage,
+    updateCurrentPage,
+    userRole,
+    setUserRole,
+    applications,
+    isLoading,
+    handleLogout,
+    handleRefresh,
+    handleSearch,
+    clearSearch,
+    searchResults,
+    setSearchResults,
+    totalCount,
+    totalPages,
+    filteredApplications,
+    isSearchPerformed,
+    dateRange,
+    setDateRange,
+    handleColumnChange,
+    previousColumn,
+    applicationStatus,
+    setApplicationStatus
+  } = useDashboard();
+
+  // Get bulk data count for the tab display
+  const { totalCount: bulkDataCount } = useBulkProcessing();
+  const { checkTokenValidity } = useTokenValidation();
 
   useEffect(() => {
-    const fetchData = async () => {
-      const isValid = await checkTokenValidity();
-      if (!isValid) return;
+    // Check token validity on mount
+    checkTokenValidity();
+    
+    const fetchUserRole = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
 
-      try {
-        // Fetch user data - IMPORTANT CHANGE: Don't use single() here
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          throw new Error("No active session");
-        }
-        
-        const userId = session.user.id;
-        
-        // Fetch user profile matching the current user's ID
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('username, role')
-          .eq('id', userId)
-          .maybeSingle(); // Use maybeSingle instead of single
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single();
 
-        if (profileError) {
-          console.error("Error fetching profile:", profileError);
-          throw profileError;
-        }
-
-        setUserName(profileData?.username || 'User');
-        setUserRole(profileData?.role || 'user');
-
-        // Fetch applications based on role
-        let query = supabase
-          .from('applications')
-          .select('*, application_statuses!fk_status (id, name)');
-
-        if (profileData?.role === 'checker') {
-          // Checker sees applications with status 1 or 4
-          query = query.in('status_id', [1, 4]);
-        } else {
-          // Maker sees applications with status 0
-          query = query.eq('status_id', 0);
-        }
-
-        const { data: applicationsData, error: applicationsError, count } = await query;
-
-        if (applicationsError) {
-          console.error("Error fetching applications:", applicationsError);
-          throw applicationsError;
-        }
-
-        // Map the data to include status_name from the joined table
-        // and properly format documents to match ApplicationData interface
-        const mappedData: ApplicationData[] = applicationsData.map(app => {
-          let formattedDocuments: { name: string; path: string; type: string; }[] | null = null;
-          
-          // Process documents to ensure they match the expected structure
-          if (app.documents) {
-            // Check if documents is an array
-            if (Array.isArray(app.documents)) {
-              formattedDocuments = app.documents.map((doc: Json) => {
-                if (typeof doc === 'object' && doc !== null) {
-                  const docObj = doc as Record<string, unknown>;
-                  return {
-                    name: docObj.name as string || '',
-                    path: docObj.path as string || '',
-                    type: docObj.type as string || ''
-                  };
-                }
-                return { name: '', path: '', type: '' };
-              });
-            } else {
-              formattedDocuments = [];
-            }
-          }
-          
-          return {
-            ...app,
-            status_name: app.application_statuses.name,
-            documents: formattedDocuments
-          } as ApplicationData;
-        });
-
-        setApplications(mappedData);
-        setTotalCount(count || 0);
-
-         // Fetch bulk file count
-         const { count: bulkCount, error: bulkError } = await supabase
-         .from('bulk_file_processing')
-         .select('*', { count: 'exact', head: true });
-
-         if (bulkError) {
-           console.error("Error fetching bulk file count:", bulkError);
-         }
-
-         setBulkFileCount(bulkCount || 0);
-
-      } catch (error: any) {
-        console.error("Error in fetchData:", error);
-        toast({
-          title: "Error",
-          description: error.message || "Failed to fetch data.",
-          variant: "destructive",
-        });
+      if (profile) {
+        setUserRole(profile.role);
       }
     };
 
-    fetchData();
-  }, [checkTokenValidity, toast]);
+    fetchUserRole();
+  }, [setUserRole, checkTokenValidity]);
 
-  const handleRefresh = useCallback(async () => {
-    const isValid = await checkTokenValidity();
-    if (!isValid) return;
+  useEffect(() => {
+    setSearchColumn("application_number");
+  }, [setSearchColumn]);
 
-    try {
-      // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        throw new Error("No active session");
-      }
-      
-      const userId = session.user.id;
-      
-      // Fetch user profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('username, role')
-        .eq('id', userId)
-        .maybeSingle(); // Use maybeSingle instead of single
-
-      if (profileError) {
-        console.error("Error fetching profile:", profileError);
-        throw profileError;
-      }
-
-      // Fetch applications based on role
-      let query = supabase
-        .from('applications')
-        .select('*, application_statuses!fk_status (id, name)');
-
-      if (profileData?.role === 'checker') {
-        // Checker sees applications with status 1 or 4
-        query = query.in('status_id', [1, 4]);
-      } else {
-        // Maker sees applications with status 0
-        query = query.eq('status_id', 0);
-      }
-
-      const { data: applicationsData, error: applicationsError, count } = await query;
-
-      if (applicationsError) {
-        console.error("Error fetching applications:", applicationsError);
-        throw applicationsError;
-      }
-
-      // Map the data to include status_name from the joined table and properly format documents
-      const mappedData: ApplicationData[] = applicationsData.map(app => {
-        let formattedDocuments: { name: string; path: string; type: string; }[] | null = null;
-          
-        // Process documents to ensure they match the expected structure
-        if (app.documents) {
-          // Check if documents is an array
-          if (Array.isArray(app.documents)) {
-            formattedDocuments = app.documents.map((doc: Json) => {
-              if (typeof doc === 'object' && doc !== null) {
-                const docObj = doc as Record<string, unknown>;
-                return {
-                  name: docObj.name as string || '',
-                  path: docObj.path as string || '',
-                  type: docObj.type as string || ''
-                };
-              }
-              return { name: '', path: '', type: '' };
-            });
-          } else {
-            formattedDocuments = [];
-          }
-        }
-        
-        return {
-          ...app,
-          status_name: app.application_statuses.name,
-          documents: formattedDocuments
-        } as ApplicationData;
-      });
-
-      setApplications(mappedData);
-      setTotalCount(count || 0);
-
-      // Fetch bulk file count
-      const { count: bulkCount, error: bulkError } = await supabase
-        .from('bulk_file_processing')
-        .select('*', { count: 'exact', head: true });
-
-      if (bulkError) {
-        console.error("Error fetching bulk file count:", bulkError);
-      }
-
-      setBulkFileCount(bulkCount || 0);
-
-      toast({
-        title: "Applications Refreshed",
-        description: "The application data has been updated.",
-      });
-    } catch (error: any) {
-      console.error("Error refreshing data:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to refresh data.",
-        variant: "destructive",
-      });
+  // Trigger search automatically when switching to search tab
+  useEffect(() => {
+    if (activeTab === "search") {
+      console.log("Search tab activated - triggering initial search");
+      // This will automatically search with today's date since
+      // the dateRange state is initialized with today's date
+      handleSearch();
     }
-  }, [checkTokenValidity, toast]);
+  }, [activeTab]);
 
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      navigate('/');
-    } catch (error) {
-      console.error('Logout error:', error);
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      updateCurrentPage(activeTab, currentPage + 1);
     }
   };
 
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      updateCurrentPage(activeTab, currentPage - 1);
+    }
+  };
+
+  const handleTabChange = (tab: string) => {
+    if (tab !== activeTab) {
+      // Only allow switching to bulkData tab if it's not disabled
+      if (tab === "bulkData" && !isBulkDataDisabled) {
+        setActiveTab(tab);
+      } else if (tab !== "bulkData") {
+        setActiveTab(tab);
+      }
+      
+      if (tab !== "search") {
+        clearSearch();
+      }
+    }
+  };
+
+  // If user is on the bulk data tab and it gets disabled, redirect them to pending tab
+  useEffect(() => {
+    if (isBulkDataDisabled && activeTab === "bulkData") {
+      setActiveTab("pending");
+    }
+  }, [isBulkDataDisabled, activeTab, setActiveTab]);
+
   return (
-    <div className="container mx-auto py-8 px-4">
-      <DashboardHeader 
-        onLogout={handleLogout} 
-        userRole={userRole} 
-      />
+    <div className="p-8 max-w-[1400px] mx-auto">
+      <DashboardHeader userRole={userRole} onLogout={handleLogout} />
       
       <DashboardTabs
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleTabChange}
         applications={applications}
         userRole={userRole}
         onRefresh={handleRefresh}
         setSearchResults={setSearchResults}
-        bulkDataCount={bulkFileCount}
+        bulkDataCount={bulkDataCount}
         totalCount={totalCount}
         isBulkDataDisabled={isBulkDataDisabled}
       />
 
-      {activeTab === "pending" && (
-        <ApplicationTable
-          applications={applications}
-          userRole={userRole}
-          activeTab={activeTab}
-        />
-      )}
-      {activeTab === "completed" && (
-        <ApplicationTable
-          applications={applications}
-          userRole={userRole}
-          activeTab={activeTab}
-        />
-      )}
-      {activeTab === "reopened" && (
-        <ApplicationTable
-          applications={applications}
-          userRole={userRole}
-          activeTab={activeTab}
-        />
-      )}
       {activeTab === "search" && (
-        <SearchBar setSearchResults={setSearchResults} />
-      )}
-      {activeTab === "search" && searchResults.length > 0 && (
-        <ApplicationTable
-          applications={searchResults}
-          userRole={userRole}
-          activeTab={activeTab}
-        />
-      )}
-      
-      {/* Only render the Bulk Data tab if it's not disabled */}
-      {activeTab === "bulkData" && !isBulkDataDisabled && <BulkDataTab />}
-      
-      <div className="fixed bottom-4 right-4">
-        <div className="toaster">
-          <div id="root" style={{ position: 'relative', zIndex: 9999 }}></div>
+        <div className="bg-white border-b border-[#e0e0e0] mb-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 py-6">
+            <SearchControls
+              searchColumn={searchColumn}
+              searchQuery={searchQuery}
+              onSearchColumnChange={handleColumnChange}
+              onSearchQueryChange={setSearchQuery}
+              onSearch={handleSearch}
+              searchableColumns={searchableColumns}
+              dateRange={dateRange}
+              setDateRange={setDateRange}
+              previousColumn={previousColumn}
+              applicationStatus={applicationStatus}
+              onApplicationStatusChange={setApplicationStatus}
+            />
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Only render BulkDataTab if the tab is not disabled */}
+      {activeTab === "bulkData" && !isBulkDataDisabled ? (
+        <BulkDataTab />
+      ) : (
+        <>
+          <style>
+            {`
+              #application-details-sheet {
+                max-width: 70% !important;
+                border-radius: 10px !important;
+              }
+            `}
+          </style>
+
+          <DashboardTable 
+            data={activeTab === "search" ? searchResults : filteredApplications}
+            isDense={false}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onNextPage={handleNextPage}
+            onPreviousPage={handlePreviousPage}
+            isLoading={isLoading}
+            userRole={userRole}
+            activeTab={activeTab}
+            isSearchPerformed={isSearchPerformed && activeTab === "search"}
+            showPagination={activeTab !== "search"}
+          />
+        </>
+      )}
     </div>
   );
-}
+};
+
+export default Dashboard;

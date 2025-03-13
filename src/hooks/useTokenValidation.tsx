@@ -14,7 +14,7 @@ export const useTokenValidation = () => {
     const navigate = useNavigate();
 
     // Get the Supabase URL from the client
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://dhgseybgaswdryynnomz.supabase.co";
 
     const checkTokenValidity = useCallback(async () => {
         try {
