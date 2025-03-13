@@ -6,6 +6,11 @@ import { useNavigate } from "react-router-dom";
 
 export const useTokenValidation = () => {
     const [isValidating, setIsValidating] = useState(false);
+    const [validationAttempted, setValidationAttempted] = useState(false);
+    const [tokenError, setTokenError] = useState<{ isError: boolean; message: string }>({
+        isError: false,
+        message: ""
+    });
     const { toast } = useToast();
     const navigate = useNavigate();
 
@@ -14,22 +19,11 @@ export const useTokenValidation = () => {
 
     const checkTokenValidity = useCallback(async () => {
         try {
-            console.log("Checking token validity...");
-            const { data: { session }, error } = await supabase.auth.getSession();
-            
-            if (error) {
-                console.error("Session error:", error);
-                navigate('/');
-                return false;
-            }
-            
+            const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
-                console.log("No active session found");
                 navigate('/');
                 return false;
             }
-            
-            console.log("Active session found");
             return true;
         } catch (error) {
             console.error('Token validation error:', error);
@@ -43,15 +37,21 @@ export const useTokenValidation = () => {
         }
     }, [navigate, toast]);
 
+    const clearTokenError = useCallback(() => {
+        setTokenError({ isError: false, message: "" });
+    }, []);
+
     const validateToken = useCallback(async (prepaidToken: string) => {
-        // Don't proceed if already validating or token is empty
-        if (isValidating || !prepaidToken.trim()) return false;
+        // Don't proceed if already validating, validation was already attempted, or token is empty
+        if (isValidating || validationAttempted || !prepaidToken.trim()) return false;
         
         setIsValidating(true);
-        console.log("Starting token validation for:", prepaidToken.substring(0, 5) + "...");
+        setValidationAttempted(true);
+        // Clear any previous errors
+        setTokenError({ isError: false, message: "" });
         
         try {
-            // Make request to validate token edge function
+            console.log("Validating token:", prepaidToken);
             const response = await fetch(
                 `${supabaseUrl}/functions/v1/validate-token?token=${encodeURIComponent(prepaidToken)}`,
                 {
@@ -62,69 +62,44 @@ export const useTokenValidation = () => {
                 }
             );
             
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error(`Token validation failed with status ${response.status}:`, errorText);
-                throw new Error(`Token validation failed: ${response.status} ${errorText}`);
-            }
-            
             const result = await response.json();
-            console.log("Token validation response:", result);
+            console.log("Validation result:", result);
 
             if (result.code === 200 && result.data?.access_token) {
-                try {
-                    console.log("Setting session with validated token...");
-                    
-                    // Properly set the session with the access token
-                    const { error: sessionError } = await supabase.auth.setSession({
-                        access_token: result.data.access_token.access_token,
-                        refresh_token: result.data.access_token.refresh_token
-                    });
-                    
-                    if (sessionError) {
-                        console.error("Error setting session:", sessionError);
-                        toast({
-                            title: "Error",
-                            description: "Error setting user session. Please try again.",
-                            variant: "destructive",
-                        });
-                        return false;
-                    }
-                    
-                    console.log("Session successfully set, redirecting to dashboard");
-                    // Redirect to dashboard
-                    navigate('/dashboard');
-                    return true;
-                } catch (sessionError) {
-                    console.error("Exception setting session:", sessionError);
-                    toast({
-                        title: "Error",
-                        description: "Error setting user session. Please try again.",
-                        variant: "destructive",
-                    });
-                    return false;
-                }
+                // Set the session
+                const { access_token } = result.data;
+                await supabase.auth.setSession(access_token);
+                
+                // Redirect to dashboard
+                navigate('/dashboard');
+                return true;
             } else {
-                console.error("Invalid token response structure:", result);
-                toast({
-                    title: "Error",
-                    description: result.message || "Invalid token",
-                    variant: "destructive",
+                // Set the error state with the message from the API
+                setTokenError({ 
+                    isError: true, 
+                    message: result.message || "Invalid token" 
                 });
                 return false;
             }
         } catch (error: any) {
             console.error('Token validation error:', error);
-            toast({
-                title: "Error",
-                description: error.message || "An error occurred during token validation",
-                variant: "destructive",
+            // Set the error state with the error message
+            setTokenError({ 
+                isError: true, 
+                message: error.message || "An error occurred during token validation"
             });
             return false;
         } finally {
             setIsValidating(false);
         }
-    }, [isValidating, navigate, supabaseUrl, toast]);
+    }, [isValidating, validationAttempted, navigate, supabaseUrl]);
 
-    return { validateToken, isValidating, checkTokenValidity };
+    return { 
+        validateToken, 
+        isValidating, 
+        validationAttempted,
+        checkTokenValidity,
+        tokenError,
+        clearTokenError
+    };
 };
