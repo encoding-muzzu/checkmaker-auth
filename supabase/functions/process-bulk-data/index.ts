@@ -44,7 +44,6 @@ function validateExcelData(data: any[]) {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     const rowIndex = i + 2; // Excel row number (1-based + header row)
-    let rowError = "";
     
     // Validate itr_flag values (should be Y or N)
     const itrFlag = String(row.itr_flag).trim().toUpperCase();
@@ -56,6 +55,7 @@ function validateExcelData(data: any[]) {
       (typeof lrsAmount !== 'number' && isNaN(Number(lrsAmount))));
     
     // Create error message based on validation results
+    let rowError = "";
     if (!isItrFlagValid && !isLrsAmountValid) {
       rowError = "The values in both 'itr_flag' and 'lrs_amount' columns are incorrect.";
     } else if (!isItrFlagValid) {

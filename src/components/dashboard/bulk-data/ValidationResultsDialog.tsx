@@ -40,19 +40,19 @@ export const ValidationResultsDialog = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md bg-white font-['Roboto']">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-left">
-            <FileText size={18} />
+          <DialogTitle className="text-left flex items-center gap-2">
+            <FileText className="h-5 w-5" />
             Data Validation From "{results.fileName}"
           </DialogTitle>
         </DialogHeader>
 
         <div className="py-4">
-          <div className="flex items-center justify-center gap-2 text-amber-500 mb-4">
-            <AlertTriangle size={20} />
+          <div className="flex items-center justify-center gap-1 text-amber-500 mb-4">
+            <AlertTriangle className="h-5 w-5" />
             <span className="font-medium">Errors Found in Uploaded File</span>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mb-4 border-b-[1px] border-solid border-[rgb(224, 224, 224)] pb-4">
+          <div className="grid grid-cols-3 gap-4 mb-4 border-b-[1px] border-[rgb(224, 224, 224)] pb-4">
             <div className="text-center">
               <p className="text-sm text-gray-500">Records Found</p>
               <p className="font-medium text-[rgba(0, 0, 0, 0.87)]">{results.totalRecords}</p>

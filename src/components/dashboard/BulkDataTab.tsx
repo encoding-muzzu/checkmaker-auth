@@ -5,6 +5,7 @@ import { WorkflowInstructions } from "./bulk-data/WorkflowInstructions";
 import { BulkDataTable } from "./bulk-data/BulkDataTable";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { ValidationResultsDialog } from "./bulk-data/ValidationResultsDialog";
 
 interface ValidationResults {
   fileName: string;
@@ -53,6 +54,22 @@ export const BulkDataTab = () => {
     setValidationDialogOpen(true);
   };
 
+  const closeValidationDialog = () => {
+    setValidationDialogOpen(false);
+  };
+
+  // Handler for re-uploading files after validation
+  const handleReupload = () => {
+    if (activeFileId) {
+      if (canCurrentUserUploadAsMaker) {
+        handleUploadClick(activeFileId, { current: fileInputRefs.current[`maker_${activeFileId}`] });
+      } else if (canCurrentUserUploadAsChecker) {
+        handleUploadClick(activeFileId, { current: fileInputRefs.current[`checker_${activeFileId}`] });
+      }
+    }
+    closeValidationDialog();
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
       <div className="flex justify-between items-center mb-6">
@@ -92,6 +109,16 @@ export const BulkDataTab = () => {
           openValidationDialog={openValidationDialog}
         />
       </div>
+
+      {validationResults && (
+        <ValidationResultsDialog
+          isOpen={validationDialogOpen}
+          onClose={closeValidationDialog}
+          results={validationResults}
+          onDownloadValidation={handleDownload}
+          onReupload={handleReupload}
+        />
+      )}
     </div>
   );
 };
