@@ -9,6 +9,7 @@ import { ApplicationTable } from "@/components/dashboard/ApplicationTable";
 import { SearchBar } from "@/components/dashboard/SearchBar";
 import { BulkDataTab } from "@/components/dashboard/BulkDataTab";
 import { useToast } from "@/components/ui/use-toast";
+import { Json } from "@/integrations/supabase/types";
 
 export function Dashboard() {
   const [userName, setUserName] = useState<string | null>(null);
@@ -85,11 +86,36 @@ export function Dashboard() {
         }
 
         // Map the data to include status_name from the joined table
-        const mappedData = applicationsData.map(app => ({
-          ...app,
-          status_name: app.application_statuses.name,
-          documents: app.documents || []
-        })) as ApplicationData[];
+        // and properly format documents to match ApplicationData interface
+        const mappedData = applicationsData.map(app => {
+          let formattedDocuments = null;
+          
+          // Process documents to ensure they match the expected structure
+          if (app.documents) {
+            // Check if documents is an array
+            if (Array.isArray(app.documents)) {
+              formattedDocuments = app.documents.map((doc: Json) => {
+                if (typeof doc === 'object' && doc !== null) {
+                  const docObj = doc as Record<string, unknown>;
+                  return {
+                    name: docObj.name as string || '',
+                    path: docObj.path as string || '',
+                    type: docObj.type as string || ''
+                  };
+                }
+                return { name: '', path: '', type: '' };
+              });
+            } else {
+              formattedDocuments = [];
+            }
+          }
+          
+          return {
+            ...app,
+            status_name: app.application_statuses.name,
+            documents: formattedDocuments
+          } as ApplicationData;
+        });
 
         setApplications(mappedData);
         setTotalCount(count || 0);
@@ -143,12 +169,36 @@ export function Dashboard() {
         throw applicationsError;
       }
 
-      // Map the data to include status_name from the joined table
-      const mappedData = applicationsData.map(app => ({
-        ...app,
-        status_name: app.application_statuses.name,
-        documents: app.documents || []
-      })) as ApplicationData[];
+      // Map the data to include status_name from the joined table and properly format documents
+      const mappedData = applicationsData.map(app => {
+        let formattedDocuments = null;
+          
+        // Process documents to ensure they match the expected structure
+        if (app.documents) {
+          // Check if documents is an array
+          if (Array.isArray(app.documents)) {
+            formattedDocuments = app.documents.map((doc: Json) => {
+              if (typeof doc === 'object' && doc !== null) {
+                const docObj = doc as Record<string, unknown>;
+                return {
+                  name: docObj.name as string || '',
+                  path: docObj.path as string || '',
+                  type: docObj.type as string || ''
+                };
+              }
+              return { name: '', path: '', type: '' };
+            });
+          } else {
+            formattedDocuments = [];
+          }
+        }
+        
+        return {
+          ...app,
+          status_name: app.application_statuses.name,
+          documents: formattedDocuments
+        } as ApplicationData;
+      });
 
       setApplications(mappedData);
       setTotalCount(count || 0);
@@ -189,7 +239,7 @@ export function Dashboard() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <DashboardHeader userRole={userRole} onLogout={handleLogout} />
+      <DashboardHeader onLogout={handleLogout} userRole={userRole} />
       
       <DashboardTabs
         activeTab={activeTab}
