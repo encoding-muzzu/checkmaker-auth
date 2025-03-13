@@ -2,7 +2,7 @@
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, FileText, Upload, X } from "lucide-react";
+import { AlertTriangle, FileText, Upload, X, CheckCircle } from "lucide-react";
 
 interface ValidationError {
   row: number;
@@ -56,11 +56,7 @@ export const ValidationResultsDialog = ({
         <div className="py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center text-[0.8125rem]">
-              <img 
-                src="/lovable-uploads/41430135-fb1b-4b35-84bf-75e23b515ac5.png" 
-                alt="File icon" 
-                className="h-5 w-5 mr-2" 
-              />
+              <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
               <span className="text-[rgba(0, 0, 0, 0.87)]">{results.fileName}</span>
             </div>
             <div className="flex items-center text-red-500 text-[0.8125rem]">
@@ -96,18 +92,27 @@ export const ValidationResultsDialog = ({
               className="text-red-500 p-0 text-[0.8125rem]" 
               onClick={() => onDownloadValidation(results.validationFilePath)}
             >
-              Download .xlsx
+              final excel file with errors
             </Button>
           </div>
 
-          <div className="bg-gray-100 rounded p-4 flex flex-col items-center justify-center border">
-            <button
-              className="bg-black text-white px-6 py-2 rounded-[4px] flex items-center justify-center gap-2 hover:bg-gray-800 w-auto"
-              onClick={onReupload}
-            >
-              <Upload size={16} />
-              Re-Upload File
-            </button>
+          <div className="bg-gray-100 rounded-md p-4 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center space-y-4">
+            <p className="text-[0.8125rem] text-gray-500">Drag & Drop or Browse File</p>
+            <div className="flex space-x-4">
+              <button
+                className="bg-black text-white px-6 py-2 rounded-[4px] flex items-center justify-center gap-2 hover:bg-gray-800 w-auto"
+                onClick={onReupload}
+              >
+                <Upload size={16} />
+                Re-Upload File
+              </button>
+              <button
+                className="bg-gray-300 text-gray-500 px-6 py-2 rounded-[4px] flex items-center justify-center gap-2 cursor-not-allowed"
+                disabled
+              >
+                Validate
+              </button>
+            </div>
           </div>
         </div>
 
