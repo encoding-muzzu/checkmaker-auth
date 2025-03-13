@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +10,7 @@ import { SearchBar } from "@/components/dashboard/SearchBar";
 import { BulkDataTab } from "@/components/dashboard/BulkDataTab";
 import { useToast } from "@/components/ui/use-toast";
 
-function Dashboard() {
+export function Dashboard() {
   const [userName, setUserName] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [applications, setApplications] = useState<ApplicationData[] | undefined>([]);
@@ -52,7 +53,7 @@ function Dashboard() {
         // Fetch user data
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('full_name, role')
+          .select('username, role')
           .single();
 
         if (profileError) {
@@ -60,13 +61,13 @@ function Dashboard() {
           throw profileError;
         }
 
-        setUserName(profile?.full_name || 'User');
+        setUserName(profile?.username || 'User');
         setUserRole(profile?.role || 'user');
 
         // Fetch applications based on role
         let query = supabase
           .from('applications')
-          .select('*');
+          .select('*, application_statuses!fk_status (id, name)');
 
         if (profile?.role === 'checker') {
           // Checker sees applications with status 1 or 4
@@ -83,7 +84,14 @@ function Dashboard() {
           throw applicationsError;
         }
 
-        setApplications(applicationsData);
+        // Map the data to include status_name from the joined table
+        const mappedData = applicationsData.map(app => ({
+          ...app,
+          status_name: app.application_statuses.name,
+          documents: app.documents || []
+        })) as ApplicationData[];
+
+        setApplications(mappedData);
         setTotalCount(count || 0);
 
          // Fetch bulk file count
@@ -118,7 +126,7 @@ function Dashboard() {
       // Fetch applications based on role
       let query = supabase
         .from('applications')
-        .select('*');
+        .select('*, application_statuses!fk_status (id, name)');
 
       if (userRole === 'checker') {
         // Checker sees applications with status 1 or 4
@@ -135,7 +143,14 @@ function Dashboard() {
         throw applicationsError;
       }
 
-      setApplications(applicationsData);
+      // Map the data to include status_name from the joined table
+      const mappedData = applicationsData.map(app => ({
+        ...app,
+        status_name: app.application_statuses.name,
+        documents: app.documents || []
+      })) as ApplicationData[];
+
+      setApplications(mappedData);
       setTotalCount(count || 0);
 
       // Fetch bulk file count
@@ -163,9 +178,18 @@ function Dashboard() {
     }
   }, [checkTokenValidity, toast, userRole]);
 
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
     <div className="container mx-auto py-8 px-4">
-      <DashboardHeader userName={userName} userRole={userRole} />
+      <DashboardHeader userRole={userRole} onLogout={handleLogout} />
       
       <DashboardTabs
         activeTab={activeTab}
@@ -222,5 +246,3 @@ function Dashboard() {
     </div>
   );
 }
-
-export { Dashboard };
