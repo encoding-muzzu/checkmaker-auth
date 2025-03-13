@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -6,6 +5,10 @@ import { useNavigate } from "react-router-dom";
 
 export const useTokenValidation = () => {
     const [isValidating, setIsValidating] = useState(false);
+    const [tokenError, setTokenError] = useState<{ isError: boolean; message: string }>({
+        isError: false,
+        message: ""
+    });
     const { toast } = useToast();
     const navigate = useNavigate();
 
@@ -32,11 +35,18 @@ export const useTokenValidation = () => {
         }
     }, [navigate, toast]);
 
+    const clearTokenError = useCallback(() => {
+        setTokenError({ isError: false, message: "" });
+    }, []);
+
     const validateToken = useCallback(async (prepaidToken: string) => {
         // Don't proceed if already validating or token is empty
         if (isValidating || !prepaidToken.trim()) return false;
         
         setIsValidating(true);
+        // Clear any previous errors
+        setTokenError({ isError: false, message: "" });
+        
         try {
             const response = await fetch(
                 `${supabaseUrl}/functions/v1/validate-token?token=${encodeURIComponent(prepaidToken)}`,
@@ -59,25 +69,31 @@ export const useTokenValidation = () => {
                 navigate('/dashboard');
                 return true;
             } else {
-                toast({
-                    title: "Error",
-                    description: result.message || "Invalid token",
-                    variant: "destructive",
+                // Set the error state with the message from the API
+                setTokenError({ 
+                    isError: true, 
+                    message: result.message || "Invalid token" 
                 });
                 return false;
             }
         } catch (error: any) {
             console.error('Token validation error:', error);
-            toast({
-                title: "Error",
-                description: error.message || "An error occurred during token validation",
-                variant: "destructive",
+            // Set the error state with the error message
+            setTokenError({ 
+                isError: true, 
+                message: error.message || "An error occurred during token validation"
             });
             return false;
         } finally {
             setIsValidating(false);
         }
-    }, [isValidating, navigate, supabaseUrl, toast]);
+    }, [isValidating, navigate, supabaseUrl]);
 
-    return { validateToken, isValidating, checkTokenValidity };
+    return { 
+        validateToken, 
+        isValidating, 
+        checkTokenValidity,
+        tokenError,
+        clearTokenError
+    };
 };
