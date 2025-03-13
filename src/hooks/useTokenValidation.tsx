@@ -51,6 +51,7 @@ export const useTokenValidation = () => {
         setTokenError({ isError: false, message: "" });
         
         try {
+            console.log("Validating token:", prepaidToken);
             const response = await fetch(
                 `${supabaseUrl}/functions/v1/validate-token?token=${encodeURIComponent(prepaidToken)}`,
                 {
@@ -62,6 +63,7 @@ export const useTokenValidation = () => {
             );
             
             const result = await response.json();
+            console.log("Validation result:", result);
 
             if (result.code === 200 && result.data?.access_token) {
                 // Set the session

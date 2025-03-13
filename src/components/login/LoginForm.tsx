@@ -11,12 +11,19 @@ import { TokenErrorDialog } from "./TokenErrorDialog";
 interface LoginFormProps {
   isProcessingUrlToken?: boolean;
   urlToken?: string | null;
+  urlTokenError?: string | null;
 }
 
-export const LoginForm = ({ isProcessingUrlToken = false, urlToken = null }: LoginFormProps) => {
+export const LoginForm = ({ 
+  isProcessingUrlToken = false, 
+  urlToken = null,
+  urlTokenError = null
+}: LoginFormProps) => {
   const [prepaidToken, setPrepaidToken] = useState("");
   const { isValidating, validateToken, tokenError, clearTokenError, validationAttempted } = useTokenValidation();
   const [manualSubmission, setManualSubmission] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,11 +38,27 @@ export const LoginForm = ({ isProcessingUrlToken = false, urlToken = null }: Log
     }
   }, [urlToken]);
 
+  // Handle error states from both manual submission and URL token validation
+  useEffect(() => {
+    if (tokenError.isError) {
+      setShowErrorDialog(true);
+      setErrorMessage(tokenError.message);
+    } else if (urlTokenError) {
+      setShowErrorDialog(true);
+      setErrorMessage(urlTokenError);
+    }
+  }, [tokenError.isError, tokenError.message, urlTokenError]);
+
+  const handleCloseErrorDialog = () => {
+    setShowErrorDialog(false);
+    clearTokenError();
+  };
+
   // Combined validation state - either from URL token or from form submission
   const isProcessing = isValidating || isProcessingUrlToken;
 
   // Determine whether to show manual input or validation message
-  const showManualInput = !isProcessingUrlToken || tokenError.isError;
+  const showManualInput = !isProcessingUrlToken || tokenError.isError || urlTokenError;
 
   return (
     <>
@@ -45,9 +68,9 @@ export const LoginForm = ({ isProcessingUrlToken = false, urlToken = null }: Log
             M2P Forex DB Ops Admin Portal
           </CardTitle>
           <CardDescription className="text-center text-gray-600">
-            {isProcessingUrlToken && !tokenError.isError
+            {isProcessingUrlToken && !tokenError.isError && !urlTokenError
               ? "Processing token from URL..."
-              : urlToken && validationAttempted && !tokenError.isError
+              : urlToken && validationAttempted && !tokenError.isError && !urlTokenError
               ? "Token validation completed. Processing login..."
               : "Sign in with your prepaid token"}
           </CardDescription>
@@ -73,7 +96,7 @@ export const LoginForm = ({ isProcessingUrlToken = false, urlToken = null }: Log
               <Button 
                 type="submit" 
                 className="w-full h-11 bg-black hover:bg-gray-800 text-white transition-all duration-300"
-                disabled={isProcessing || (!manualSubmission && validationAttempted && tokenError.isError)}
+                disabled={isProcessing}
               >
                 {isProcessing ? (
                   <>
@@ -98,9 +121,9 @@ export const LoginForm = ({ isProcessingUrlToken = false, urlToken = null }: Log
 
       {/* Token Error Dialog */}
       <TokenErrorDialog 
-        isOpen={tokenError.isError}
-        onClose={clearTokenError}
-        errorMessage={tokenError.message}
+        isOpen={showErrorDialog}
+        onClose={handleCloseErrorDialog}
+        errorMessage={errorMessage}
       />
     </>
   );

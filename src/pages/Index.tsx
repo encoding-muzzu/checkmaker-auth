@@ -7,7 +7,7 @@ import { useTokenValidation } from "@/hooks/useTokenValidation";
 
 function Index() {
   const [searchParams] = useSearchParams();
-  const { validateToken, isValidating, validationAttempted } = useTokenValidation();
+  const { validateToken, isValidating, validationAttempted, tokenError } = useTokenValidation();
   const [tokenFromUrl, setTokenFromUrl] = useState<string | null>(null);
   const [attemptedValidation, setAttemptedValidation] = useState(false);
 
@@ -28,7 +28,11 @@ function Index() {
       <div className="w-full max-w-[1200px] grid md:grid-cols-2 gap-8 items-center">
         <FeatureSection />
         <div className="flex items-center justify-center w-full">
-          <LoginForm isProcessingUrlToken={isValidating} urlToken={tokenFromUrl} />
+          <LoginForm 
+            isProcessingUrlToken={isValidating} 
+            urlToken={tokenFromUrl} 
+            urlTokenError={tokenError.isError ? tokenError.message : null}
+          />
         </div>
       </div>
     </div>
