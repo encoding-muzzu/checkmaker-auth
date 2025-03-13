@@ -6,7 +6,6 @@ import { BulkDataTable } from "./bulk-data/BulkDataTable";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { ValidationResultsDialog } from "./bulk-data/ValidationResultsDialog";
-import { BulkFile } from "@/types/bulk-processing";
 
 interface ValidationResults {
   fileName: string;
