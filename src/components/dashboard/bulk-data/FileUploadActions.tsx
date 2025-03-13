@@ -1,18 +1,8 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { UploadIcon, CheckCircle2 } from "lucide-react";
 import { BulkFile } from "@/hooks/useBulkProcessing";
-
-interface ValidationResults {
-  fileName: string;
-  totalRecords: number;
-  validRecords: number;
-  invalidRecords: number;
-  rowErrors: { row: number; error: string }[];
-  validationFilePath: string;
-  validationFileUrl: string;
-}
+import { ValidationResults } from "@/hooks/bulk-processing/useValidationDialog";
 
 interface FileUploadActionsProps {
   file: BulkFile;

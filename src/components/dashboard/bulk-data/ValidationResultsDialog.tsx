@@ -1,23 +1,8 @@
-
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, FileText, Upload, X, CheckCircle } from "lucide-react";
-
-interface ValidationError {
-  row: number;
-  error: string;
-}
-
-interface ValidationResults {
-  fileName: string;
-  totalRecords: number;
-  validRecords: number;
-  invalidRecords: number;
-  rowErrors: ValidationError[];
-  validationFilePath: string;
-  validationFileUrl: string;
-}
+import { ValidationResults } from "@/hooks/bulk-processing/useValidationDialog";
 
 interface ValidationResultsDialogProps {
   isOpen: boolean;

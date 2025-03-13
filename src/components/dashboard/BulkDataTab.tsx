@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useBulkProcessing } from "@/hooks/useBulkProcessing";
 import { WorkflowInstructions } from "./bulk-data/WorkflowInstructions";
@@ -6,16 +5,7 @@ import { BulkDataTable } from "./bulk-data/BulkDataTable";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { ValidationResultsDialog } from "./bulk-data/ValidationResultsDialog";
-
-interface ValidationResults {
-  fileName: string;
-  totalRecords: number;
-  validRecords: number;
-  invalidRecords: number;
-  rowErrors: { row: number; error: string }[];
-  validationFilePath: string;
-  validationFileUrl: string;
-}
+import { ValidationResults } from "@/hooks/bulk-processing/useValidationDialog";
 
 export const BulkDataTab = () => {
   const [validationResults, setValidationResults] = useState<ValidationResults | null>(null);
@@ -46,7 +36,6 @@ export const BulkDataTab = () => {
     setValidationResults: setHookValidationResults,
   } = useBulkProcessing();
 
-  // Create a handler function that calls refetch
   const handleRefresh = () => {
     refetch();
   };
@@ -60,11 +49,9 @@ export const BulkDataTab = () => {
     setValidationDialogOpen(false);
   };
 
-  // Handler for re-uploading files after validation
   const handleReupload = () => {
     if (activeFileId) {
       closeValidationDialog();
-      // Find the file to re-upload
       const fileToUpload = bulkFiles?.find(f => f.id === activeFileId);
       
       if (fileToUpload) {
@@ -77,10 +64,8 @@ export const BulkDataTab = () => {
     }
   };
 
-  // Use the validation results from the hook if available
   const effectiveValidationResults = hookValidationResults || validationResults;
   
-  // Update local state when hook validation results change
   if (hookValidationResults && !validationDialogOpen) {
     setValidationResults(hookValidationResults);
     setValidationDialogOpen(true);

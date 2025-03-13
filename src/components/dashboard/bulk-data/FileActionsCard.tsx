@@ -1,19 +1,9 @@
-
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { BulkFile } from "@/types/bulk-processing";
 import { FileDownloadActions } from "./FileDownloadActions";
 import { FileUploadActions } from "./FileUploadActions";
-
-interface ValidationResults {
-  fileName: string;
-  totalRecords: number;
-  validRecords: number;
-  invalidRecords: number;
-  rowErrors: { row: number; error: string }[];
-  validationFilePath: string;
-  validationFileUrl: string;
-}
+import { ValidationResults } from "@/hooks/bulk-processing/useValidationDialog";
 
 interface FileActionsCardProps {
   file: BulkFile;
