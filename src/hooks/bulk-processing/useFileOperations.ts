@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -54,25 +53,21 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
     setUploadingFileId(fileId);
 
     try {
-      // Create form data to upload to the edge function
       const formData = new FormData();
       formData.append("file", file);
       formData.append("fileId", fileId);
       formData.append("makerType", makerType);
 
-      // Get the JWT token for authentication
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
         throw new Error("Authentication required");
       }
 
-      // Construct the correct URL for the edge function
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const functionUrl = `${supabaseUrl}/functions/v1/process-bulk-data`;
       console.log("Calling edge function at:", functionUrl);
 
-      // Call the edge function to process the bulk data
       const response = await fetch(functionUrl, {
         method: "POST",
         headers: {
@@ -83,11 +78,9 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
 
       console.log("Response status:", response.status);
 
-      // Check if the response is valid before parsing
       if (!response.ok) {
         let errorMessage = `Server error: ${response.status} ${response.statusText}`;
         try {
-          // Try to get more detailed error info if available
           const errorText = await response.text();
           console.log("Error response body:", errorText);
           
@@ -98,7 +91,6 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
                 errorMessage = errorJson.error;
               }
             } catch (parseError) {
-              // If JSON parsing fails, use the text as is
               if (errorText.length > 0) {
                 errorMessage = errorText;
               }
@@ -111,7 +103,6 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
         throw new Error(errorMessage);
       }
 
-      // Safely parse the JSON response
       let result;
       try {
         const responseText = await response.text();
@@ -129,20 +120,15 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
       }
       
       if (!result.valid) {
-        // Handle validation errors - show validation results dialog
         console.log("Validation failed:", result.validationResults);
-        
-        // Show validation results dialog
         setValidationResults(result.validationResults);
         setValidationDialogOpen(true);
       } else {
-        // If validation passed, show success message
         sonnerToast.success(`File uploaded successfully as ${makerType === 'maker' ? 'Maker' : 'Checker'}!`);
         refreshFiles();
       }
     } catch (error: any) {
       console.error("File upload error:", error);
-      // Show general errors as a toast notification
       sonnerToast.error(`Failed to upload file: ${error.message}`, {
         position: "top-center",
         duration: 5000,
@@ -162,7 +148,6 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
     try {
       console.log("Downloading file:", filePath);
       
-      // Download the file directly using the provided path without modifying it
       const { data, error } = await supabase.storage
         .from('bulk-files')
         .download(filePath);
@@ -172,7 +157,6 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
         throw error;
       }
 
-      // Create a download link for the file
       const url = window.URL.createObjectURL(data);
       const a = document.createElement('a');
       a.href = url;
