@@ -270,22 +270,30 @@ serve(async (req) => {
         .from("bulk-files")
         .getPublicUrl(validationPath);
       
+      // Ensure we're returning a proper response with the correct Content-Type
+      const responseData = { 
+        valid: false,
+        message: validation.error,
+        validationResults: {
+          fileName: originalFileName,
+          totalRecords: data.length,
+          validRecords: validation.validRecords,
+          invalidRecords: validation.invalidRecords,
+          rowErrors: validation.rowErrors,
+          validationFilePath: validationPath,
+          validationFileUrl: publicUrl.publicUrl
+        }
+      };
+      
+      console.log("Sending validation response:", JSON.stringify(responseData));
+      
       return new Response(
-        JSON.stringify({ 
-          valid: false,
-          message: validation.error,
-          validationResults: {
-            fileName: originalFileName,
-            totalRecords: data.length,
-            validRecords: validation.validRecords,
-            invalidRecords: validation.invalidRecords,
-            rowErrors: validation.rowErrors,
-            validationFilePath: validationPath,
-            validationFileUrl: publicUrl.publicUrl
-          }
-        }),
+        JSON.stringify(responseData),
         { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" }, 
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json" 
+          }, 
           status: 200 
         }
       );
@@ -390,15 +398,23 @@ serve(async (req) => {
 
     console.log("bulk_file_processing record updated successfully");
     
+    // Ensure we're returning a proper response with the correct Content-Type
+    const responseData = { 
+      valid: true,
+      message: `File processed successfully by ${makerType === "maker" ? "Maker" : "Checker"}`, 
+      file_path: newFilePath,
+      file_url: publicUrl.publicUrl
+    };
+    
+    console.log("Sending success response:", JSON.stringify(responseData));
+    
     return new Response(
-      JSON.stringify({ 
-        valid: true,
-        message: `File processed successfully by ${makerType === "maker" ? "Maker" : "Checker"}`, 
-        file_path: newFilePath,
-        file_url: publicUrl.publicUrl
-      }),
+      JSON.stringify(responseData),
       { 
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, 
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json" 
+        }, 
         status: 200 
       }
     );

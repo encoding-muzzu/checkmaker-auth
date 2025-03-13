@@ -144,12 +144,31 @@ export const useFileOperations = (currentUserId: string | null, refreshFiles: ()
         body: formData
       });
 
-      const result = await response.json();
-      
+      // Check if the response is valid before parsing
       if (!response.ok) {
-        throw new Error(result.error || "Failed to process bulk data");
+        const errorText = await response.text();
+        try {
+          // Try to parse the error as JSON
+          const errorJson = JSON.parse(errorText);
+          throw new Error(errorJson.error || "Failed to process bulk data");
+        } catch (parseError) {
+          // If parsing fails, use the raw error text
+          console.error("Raw error response:", errorText);
+          throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        }
       }
 
+      // Safely parse the JSON response
+      let result;
+      try {
+        const responseText = await response.text();
+        console.log("Raw response:", responseText);
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        throw new Error("Failed to parse server response. Please try again.");
+      }
+      
       if (!result.valid) {
         // Handle validation errors
         console.log("Validation failed:", result.validationResults);
