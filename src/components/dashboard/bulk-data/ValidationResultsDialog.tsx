@@ -54,10 +54,10 @@ export const ValidationResultsDialog = ({
         </DialogHeader>
 
         <div className="py-4">
-          <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center text-[0.8125rem]">
               <img 
-                src="/lovable-uploads/267c76f0-cb3f-41b3-8ae7-8f494b65446c.png" 
+                src="/lovable-uploads/41430135-fb1b-4b35-84bf-75e23b515ac5.png" 
                 alt="File icon" 
                 className="h-5 w-5 mr-2" 
               />
@@ -69,19 +69,19 @@ export const ValidationResultsDialog = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div className="border-r border-[rgb(224, 224, 224)]">
-              <p className="text-center text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)]">
+          <div className="grid grid-cols-3 gap-4 mb-6 text-center">
+            <div className="border rounded p-3">
+              <p className="text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)] font-medium">
                 Records Found: {results.totalRecords}
               </p>
             </div>
-            <div className="border-r border-[rgb(224, 224, 224)]">
-              <p className="text-center text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)]">
+            <div className="border rounded p-3">
+              <p className="text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)] font-medium">
                 Valid Records: {results.validRecords}
               </p>
             </div>
-            <div>
-              <p className="text-center text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)]">
+            <div className="border rounded p-3">
+              <p className="text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)] font-medium">
                 Errors Found: {results.invalidRecords}
               </p>
             </div>
@@ -100,9 +100,9 @@ export const ValidationResultsDialog = ({
             </Button>
           </div>
 
-          <div className="bg-gray-200 rounded p-4 flex flex-col items-center justify-center">
+          <div className="bg-gray-100 rounded p-4 flex flex-col items-center justify-center border">
             <button
-              className="bg-black text-white px-4 py-2 rounded-[4px] flex items-center justify-center gap-2 hover:bg-gray-800 w-auto"
+              className="bg-black text-white px-6 py-2 rounded-[4px] flex items-center justify-center gap-2 hover:bg-gray-800 w-auto"
               onClick={onReupload}
             >
               <Upload size={16} />
