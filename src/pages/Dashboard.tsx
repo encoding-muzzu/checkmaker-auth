@@ -87,8 +87,8 @@ export function Dashboard() {
 
         // Map the data to include status_name from the joined table
         // and properly format documents to match ApplicationData interface
-        const mappedData = applicationsData.map(app => {
-          let formattedDocuments = null;
+        const mappedData: ApplicationData[] = applicationsData.map(app => {
+          let formattedDocuments: { name: string; path: string; type: string; }[] | null = null;
           
           // Process documents to ensure they match the expected structure
           if (app.documents) {
@@ -170,8 +170,8 @@ export function Dashboard() {
       }
 
       // Map the data to include status_name from the joined table and properly format documents
-      const mappedData = applicationsData.map(app => {
-        let formattedDocuments = null;
+      const mappedData: ApplicationData[] = applicationsData.map(app => {
+        let formattedDocuments: { name: string; path: string; type: string; }[] | null = null;
           
         // Process documents to ensure they match the expected structure
         if (app.documents) {
