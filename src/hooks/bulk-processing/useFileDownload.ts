@@ -35,17 +35,38 @@ export const useFileDownload = (): UseFileDownloadResult => {
       // Convert sheet to JSON
       const jsonData = XLSX.utils.sheet_to_json(sheet);
       
-      // Filter JSON data to only include the required fields
-      const filteredData = jsonData.map((row: any) => ({
-        arn: row.arn,
-        pan_number: row.pan_number,
-        itr_flag: row.itr_flag,
-        lrs_amount_consumed: row.lrs_amount_consumed
-      }));
+      // Filter JSON data to only include the required fields and errors if they exist
+      const filteredData = jsonData.map((row: any) => {
+        // Initialize with the four required fields
+        const filteredRow: any = {
+          arn: row.arn,
+          pan_number: row.pan_number,
+          itr_flag: row.itr_flag,
+          lrs_amount_consumed: row.lrs_amount_consumed
+        };
+        
+        // Only include the Errors column if this row has an error
+        if (row.Errors) {
+          filteredRow.Errors = row.Errors;
+        }
+        
+        return filteredRow;
+      });
       
       // Create a new workbook with the filtered data
       const newWorkbook = XLSX.utils.book_new();
       const newSheet = XLSX.utils.json_to_sheet(filteredData);
+      
+      // Set column widths for better readability
+      const columnWidths = [
+        { wch: 15 }, // arn
+        { wch: 15 }, // pan_number
+        { wch: 10 }, // itr_flag
+        { wch: 15 }, // lrs_amount_consumed
+        { wch: 50 }  // Errors (if present)
+      ];
+      newSheet['!cols'] = columnWidths;
+      
       XLSX.utils.book_append_sheet(newWorkbook, newSheet, "Applications");
       
       // Generate and download the new Excel file
