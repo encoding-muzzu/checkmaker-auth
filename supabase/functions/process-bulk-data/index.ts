@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import * as XLSX from "https://esm.sh/xlsx@0.18.5";
@@ -54,37 +53,84 @@ function validateExcelData(data: any[], originalRecordCount: number | null) {
   let invalidRecords = 0;
   const rowErrors = [];
 
-  // Validate each row and track errors
+  // Check for duplicate ARN and PAN values
+  const arnValues = new Map<string, number>();
+  const panValues = new Map<string, number>();
+
+  // First pass: collect all ARN and PAN values
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     const rowIndex = i + 2; // Excel row number (1-based + header row)
     
+    // Check for ARN value
+    if (row.arn) {
+      const arnValue = String(row.arn).trim();
+      if (arnValue) {
+        if (arnValues.has(arnValue)) {
+          arnValues.set(arnValue, arnValues.get(arnValue)! + 1);
+        } else {
+          arnValues.set(arnValue, 1);
+        }
+      }
+    }
+    
+    // Check for PAN value
+    if (row.pan_number) {
+      const panValue = String(row.pan_number).trim();
+      if (panValue) {
+        if (panValues.has(panValue)) {
+          panValues.set(panValue, panValues.get(panValue)! + 1);
+        } else {
+          panValues.set(panValue, 1);
+        }
+      }
+    }
+  }
+
+  // Second pass: validate each row and track errors
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    const rowIndex = i + 2; // Excel row number (1-based + header row)
+    let rowErrors = [];
+    
     // Validate itr_flag values (should be Y or N)
     const itrFlag = String(row.itr_flag).trim().toUpperCase();
     const isItrFlagValid = itrFlag === 'Y' || itrFlag === 'N';
+    if (!isItrFlagValid) {
+      rowErrors.push("itr_flag must be \"Y\" or \"N\"");
+    }
     
     // Validate lrs_amount_consumed values (should be numeric)
     const lrsAmount = row.lrs_amount_consumed;
     const isLrsAmountValid = !(lrsAmount === undefined || lrsAmount === null || 
       (typeof lrsAmount !== 'number' && isNaN(Number(lrsAmount))));
-    
-    // Create error message based on validation results
-    let rowError = "";
-    if (!isItrFlagValid && !isLrsAmountValid) {
-      rowError = "itr_flag must be \"Y\" or \"N\". lrs_amount must be a decimal or number.";
-    } else if (!isItrFlagValid) {
-      rowError = "itr_flag must be \"Y\" or \"N\".";
-    } else if (!isLrsAmountValid) {
-      rowError = "lrs_amount must be a decimal or number.";
+    if (!isLrsAmountValid) {
+      rowErrors.push("lrs_amount must be a decimal or number");
     }
     
-    // Add the error to the row in the data
-    if (rowError) {
-      row.Errors = rowError;
+    // Check for duplicate ARN
+    if (row.arn) {
+      const arnValue = String(row.arn).trim();
+      if (arnValue && arnValues.get(arnValue)! > 1) {
+        rowErrors.push(`Duplicate ARN value "${arnValue}" found`);
+      }
+    }
+    
+    // Check for duplicate PAN
+    if (row.pan_number) {
+      const panValue = String(row.pan_number).trim();
+      if (panValue && panValues.get(panValue)! > 1) {
+        rowErrors.push(`Duplicate PAN value "${panValue}" found`);
+      }
+    }
+    
+    // Add the error to the row in the data if any errors were found
+    if (rowErrors.length > 0) {
+      row.Errors = rowErrors.join(". ");
       invalidRecords++;
       rowErrors.push({
         row: rowIndex,
-        error: rowError
+        error: row.Errors
       });
     } else {
       validRecords++;
