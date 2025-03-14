@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { sonnerToast } from "@/utils/toast-utils";
@@ -24,7 +23,7 @@ export const useFileDownload = (): UseFileDownloadResult => {
         throw error;
       }
 
-      // Filter the Excel data to only include the required fields
+      // Read the Excel data
       const arrayBuffer = await data.arrayBuffer();
       const workbook = XLSX.read(arrayBuffer);
       
@@ -34,6 +33,7 @@ export const useFileDownload = (): UseFileDownloadResult => {
       
       // Convert sheet to JSON
       const jsonData = XLSX.utils.sheet_to_json(sheet);
+      console.log("Excel data loaded:", jsonData);
       
       // Filter JSON data to only include the required fields and errors if they exist
       const filteredData = jsonData.map((row: any) => {
@@ -45,40 +45,45 @@ export const useFileDownload = (): UseFileDownloadResult => {
           lrs_amount_consumed: row.lrs_amount_consumed
         };
         
-        // Handle various error cases
+        // Handle various error cases - Prioritize based on specific checks first
+        let errorMessage = null;
+        
+        // Check if there's any error information in the row
         if (row.Errors) {
-          // Keep original errors
-          filteredRow.Errors = row.Errors;
+          errorMessage = row.Errors;
         } else if (row.error) {
-          // Some files might use lowercase 'error'
-          filteredRow.Errors = row.error;
+          errorMessage = row.error;
         } else if (row.Error) {
-          // Some files might use 'Error' (capitalized)
-          filteredRow.Errors = row.Error;
+          errorMessage = row.Error;
         }
         
-        // Check for specific error patterns and standardize them
-        if (filteredRow.Errors) {
-          // Check for "not found in original file" pattern
-          if (filteredRow.Errors.toLowerCase().includes("not found in original file")) {
-            filteredRow.Errors = "Record not found in the original file.";
-          }
+        // Apply error standardization if we found an error
+        if (errorMessage) {
+          // Apply specific error standardization based on content
+          const errorLower = errorMessage.toLowerCase();
           
-          // Check for ARN-specific errors
-          if (filteredRow.Errors.toLowerCase().includes("arn") && 
-              filteredRow.Errors.toLowerCase().includes("not found")) {
+          // Check for ARN-specific errors first - most specific checks first
+          if (errorLower.includes("arn") && errorLower.includes("not found")) {
             filteredRow.Errors = "arn does not exists in the original file";
           }
-          
-          // Check for PAN-specific errors
-          if (filteredRow.Errors.toLowerCase().includes("pan") && 
-              filteredRow.Errors.toLowerCase().includes("not found")) {
+          // Then check for PAN-specific errors
+          else if (errorLower.includes("pan") && errorLower.includes("not found")) {
             filteredRow.Errors = "pan_number does not exists in the original file";
+          }
+          // Then check for general "not found in original file" pattern
+          else if (errorLower.includes("not found in original file")) {
+            filteredRow.Errors = "Record not found in the original file.";
+          }
+          // If none of the specific patterns match, keep the original error
+          else {
+            filteredRow.Errors = errorMessage;
           }
         }
         
         return filteredRow;
       });
+      
+      console.log("Filtered data with errors:", filteredData);
       
       // Create a new workbook with the filtered data
       const newWorkbook = XLSX.utils.book_new();
