@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import * as XLSX from "https://esm.sh/xlsx@0.18.5";
@@ -8,7 +9,7 @@ const corsHeaders = {
 };
 
 // Enhanced validation function that returns detailed validation results
-function validateExcelData(data: any[]) {
+function validateExcelData(data: any[], originalRecordCount: number | null) {
   if (!data || data.length === 0) {
     return { 
       valid: false, 
@@ -16,6 +17,20 @@ function validateExcelData(data: any[]) {
       validRecords: 0,
       invalidRecords: 0,
       rowErrors: [] 
+    };
+  }
+
+  // Check for record count mismatch
+  if (originalRecordCount !== null && data.length !== originalRecordCount) {
+    return { 
+      valid: false, 
+      error: `Record count mismatch. Expected ${originalRecordCount} records, but found ${data.length} records.`,
+      validRecords: 0,
+      invalidRecords: data.length,
+      rowErrors: [{
+        row: 0,
+        error: `Record count mismatch. Expected ${originalRecordCount} records, but found ${data.length} records.`
+      }]
     };
   }
 
@@ -222,8 +237,9 @@ serve(async (req) => {
     
     console.log(`Parsed ${data.length} rows from Excel file`);
 
-    // Validate the data with enhanced validation
-    const validation = validateExcelData(data);
+    // Validate the data with enhanced validation, including record count check
+    const originalRecordCount = fileDetails.record_count;
+    const validation = validateExcelData(data, originalRecordCount);
     
     // If there are validation errors, return the updated file with errors column
     if (!validation.valid) {

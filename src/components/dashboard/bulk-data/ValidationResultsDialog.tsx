@@ -22,6 +22,11 @@ export const ValidationResultsDialog = ({
 }: ValidationResultsDialogProps) => {
   if (!results) return null;
 
+  // Determine if this is a record count mismatch error
+  const isRecordCountMismatch = results.rowErrors.length > 0 && 
+    results.rowErrors[0].row === 0 && 
+    results.rowErrors[0].error.includes("Record count mismatch");
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
       if (!open) onClose();
@@ -51,9 +56,20 @@ export const ValidationResultsDialog = ({
             </div>
             <div className="flex items-center text-red-500 text-[0.8125rem]">
               <AlertTriangle className="h-4 w-4 mr-1" />
-              <span>Errors Found in Uploaded File</span>
+              <span>
+                {isRecordCountMismatch 
+                  ? "Record Count Mismatch" 
+                  : "Errors Found in Uploaded File"}
+              </span>
             </div>
           </div>
+
+          {/* Error message for record count mismatch */}
+          {isRecordCountMismatch && (
+            <div className="bg-red-50 border border-red-200 rounded p-4 mb-6 text-[0.8125rem] text-red-700">
+              {results.rowErrors[0].error}
+            </div>
+          )}
 
           {/* Records statistics */}
           <div className="grid grid-cols-3 gap-4 mb-6">
@@ -88,7 +104,7 @@ export const ValidationResultsDialog = ({
             </Button>
           </div>
 
-          {/* Re-upload button - removing the drag & drop area */}
+          {/* Re-upload button */}
           <div className="flex justify-center mt-8">
             <Button
               className="bg-black text-white hover:bg-gray-800 rounded-[4px] text-[0.8125rem] h-10 px-6 w-[140px]"
