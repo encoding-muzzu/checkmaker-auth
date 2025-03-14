@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { sonnerToast } from "@/utils/toast-utils";
@@ -45,9 +44,21 @@ export const useFileDownload = (): UseFileDownloadResult => {
           lrs_amount_consumed: row.lrs_amount_consumed
         };
         
-        // Only include the Errors column if this row has an error
+        // Handle various error cases
         if (row.Errors) {
+          // Keep original errors
           filteredRow.Errors = row.Errors;
+        } else if (row.error) {
+          // Some files might use lowercase 'error'
+          filteredRow.Errors = row.error;
+        } else if (row.Error) {
+          // Some files might use 'Error' (capitalized)
+          filteredRow.Errors = row.Error;
+        }
+        
+        // Check for "Records Not Found in Original File" error message pattern
+        if (row.Errors && row.Errors.toLowerCase().includes("not found in original file")) {
+          filteredRow.Errors = "Record not found in the original file.";
         }
         
         return filteredRow;
