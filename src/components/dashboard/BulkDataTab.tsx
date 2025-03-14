@@ -59,11 +59,13 @@ export const BulkDataTab = () => {
       const fileToUpload = bulkFiles?.find(f => f.id === activeFileId);
       
       if (fileToUpload) {
-        if (canCurrentUserUploadAsMaker(fileToUpload)) {
-          handleUploadClick(activeFileId, { current: fileInputRefs.current[`maker_${activeFileId}`] });
-        } else if (canCurrentUserUploadAsChecker(fileToUpload)) {
-          handleUploadClick(activeFileId, { current: fileInputRefs.current[`checker_${activeFileId}`] });
-        }
+        setTimeout(() => {
+          if (canCurrentUserUploadAsMaker(fileToUpload)) {
+            handleUploadClick(activeFileId, { current: fileInputRefs.current[`maker_${activeFileId}`] });
+          } else if (canCurrentUserUploadAsChecker(fileToUpload)) {
+            handleUploadClick(activeFileId, { current: fileInputRefs.current[`checker_${activeFileId}`] });
+          }
+        }, 100); // Small delay to ensure dialog is fully closed
       }
     }
   };
