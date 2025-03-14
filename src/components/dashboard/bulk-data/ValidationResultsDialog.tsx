@@ -10,22 +10,41 @@ interface ValidationResultsDialogProps {
   onClose: () => void;
   results: ValidationResults | null;
   onDownloadValidation: (filePath: string) => void;
-  onReupload: () => void;
 }
 
 export const ValidationResultsDialog = ({
   isOpen,
   onClose,
   results,
-  onDownloadValidation,
-  onReupload
+  onDownloadValidation
 }: ValidationResultsDialogProps) => {
   if (!results) return null;
 
-  // Determine if this is a record count mismatch error
+  // Determine error type based on the error message
+  const isDuplicateError = results.rowErrors.length > 0 && 
+    results.rowErrors[0].error.includes("Duplicate");
+  
+  const isRecordNotFoundError = results.rowErrors.length > 0 && 
+    results.rowErrors[0].error.includes("not found in original file");
+  
   const isRecordCountMismatch = results.rowErrors.length > 0 && 
     results.rowErrors[0].row === 0 && 
     results.rowErrors[0].error.includes("Record count mismatch");
+
+  // Determine the appropriate error title and message
+  let errorTitle = "Validation Failed";
+  let errorMessage = `Found errors in ${results.invalidRecords} of ${results.totalRecords} records.`;
+  
+  if (isRecordCountMismatch) {
+    errorTitle = "Record Count Mismatch";
+    errorMessage = results.rowErrors[0].error;
+  } else if (isDuplicateError) {
+    errorTitle = "Duplicate Records Found";
+    errorMessage = "The uploaded file contains duplicate ARN or PAN number values.";
+  } else if (isRecordNotFoundError) {
+    errorTitle = "Records Not Found in Original File";
+    errorMessage = "The uploaded file contains records that don't exist in the original file.";
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
@@ -56,17 +75,14 @@ export const ValidationResultsDialog = ({
 
         <div className="p-6">
           {/* Status Banner */}
-          <div className={`mb-6 p-3 rounded-md flex items-center gap-3 
-            ${isRecordCountMismatch ? "bg-red-50 border border-red-200" : "bg-red-50 border border-red-200"}`}>
+          <div className="mb-6 p-3 rounded-md flex items-center gap-3 bg-red-50 border border-red-200">
             <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0" />
             <div className="flex-1">
               <h3 className="font-medium text-red-700 text-sm mb-1">
-                {isRecordCountMismatch ? "Record Count Mismatch" : "Validation Failed"}
+                {errorTitle}
               </h3>
               <p className="text-red-600 text-xs">
-                {isRecordCountMismatch 
-                  ? results.rowErrors[0].error 
-                  : `Found errors in ${results.invalidRecords} of ${results.totalRecords} records.`}
+                {errorMessage}
               </p>
             </div>
           </div>
@@ -106,14 +122,9 @@ export const ValidationResultsDialog = ({
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-center mt-8">
-            <Button
-              className="bg-black text-white hover:bg-gray-800 rounded-[4px] text-[0.875rem] h-10 px-8 font-medium"
-              onClick={onReupload}
-            >
-              Re-Upload File
-            </Button>
+          {/* Note about validation */}
+          <div className="text-center text-gray-500 text-sm mt-6">
+            Please download the file, correct the errors, and upload again.
           </div>
         </div>
       </DialogContent>

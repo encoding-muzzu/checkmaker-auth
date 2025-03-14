@@ -53,23 +53,6 @@ export const BulkDataTab = () => {
     setHookValidationDialogOpen(false);
   };
 
-  const handleReupload = () => {
-    if (activeFileId) {
-      closeValidationDialog();
-      const fileToUpload = bulkFiles?.find(f => f.id === activeFileId);
-      
-      if (fileToUpload) {
-        setTimeout(() => {
-          if (canCurrentUserUploadAsMaker(fileToUpload)) {
-            handleUploadClick(activeFileId, { current: fileInputRefs.current[`maker_${activeFileId}`] });
-          } else if (canCurrentUserUploadAsChecker(fileToUpload)) {
-            handleUploadClick(activeFileId, { current: fileInputRefs.current[`checker_${activeFileId}`] });
-          }
-        }, 100); // Small delay to ensure dialog is fully closed
-      }
-    }
-  };
-
   const effectiveValidationResults = hookValidationResults || validationResults;
   const effectiveValidationDialogOpen = hookValidationDialogOpen || validationDialogOpen;
   
@@ -125,7 +108,6 @@ export const BulkDataTab = () => {
           onClose={closeValidationDialog}
           results={effectiveValidationResults}
           onDownloadValidation={handleDownload}
-          onReupload={handleReupload}
         />
       )}
     </div>

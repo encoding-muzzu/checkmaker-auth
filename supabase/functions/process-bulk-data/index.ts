@@ -9,7 +9,7 @@ const corsHeaders = {
 };
 
 // Enhanced validation function that returns detailed validation results
-function validateExcelData(data: any[], originalRecordCount: number | null) {
+function validateExcelData(data: any[], originalData: any[] | null) {
   if (!data || data.length === 0) {
     return { 
       valid: false, 
@@ -20,16 +20,16 @@ function validateExcelData(data: any[], originalRecordCount: number | null) {
     };
   }
 
-  // Check for record count mismatch
-  if (originalRecordCount !== null && data.length !== originalRecordCount) {
+  // Check for record count mismatch if originalData is provided
+  if (originalData !== null && data.length !== originalData.length) {
     return { 
       valid: false, 
-      error: `Record count mismatch. Expected ${originalRecordCount} records, but found ${data.length} records.`,
+      error: `Record count mismatch. Expected ${originalData.length} records, but found ${data.length} records.`,
       validRecords: 0,
       invalidRecords: data.length,
       rowErrors: [{
         row: 0,
-        error: `Record count mismatch. Expected ${originalRecordCount} records, but found ${data.length} records.`
+        error: `Record count mismatch. Expected ${originalData.length} records, but found ${data.length} records.`
       }]
     };
   }
@@ -46,6 +46,88 @@ function validateExcelData(data: any[], originalRecordCount: number | null) {
         validRecords: 0,
         invalidRecords: data.length,
         rowErrors: []
+      };
+    }
+  }
+
+  // Check for required unique identifiers
+  if (!("arn" in firstRow) || !("pan_number" in firstRow)) {
+    return {
+      valid: false,
+      error: "Required columns 'arn' and/or 'pan_number' are missing",
+      validRecords: 0,
+      invalidRecords: data.length,
+      rowErrors: []
+    };
+  }
+
+  // Check for duplicate ARN and PAN numbers
+  const arnSet = new Set();
+  const panSet = new Set();
+  const duplicateRecords = [];
+
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    const rowIndex = i + 2; // Excel row number (1-based + header row)
+    const arn = String(row.arn).trim();
+    const pan = String(row.pan_number).trim();
+    
+    if (arnSet.has(arn)) {
+      duplicateRecords.push({
+        row: rowIndex,
+        error: `Duplicate ARN '${arn}' found`
+      });
+    } else {
+      arnSet.add(arn);
+    }
+    
+    if (panSet.has(pan)) {
+      duplicateRecords.push({
+        row: rowIndex,
+        error: `Duplicate PAN Number '${pan}' found`
+      });
+    } else {
+      panSet.add(pan);
+    }
+  }
+
+  if (duplicateRecords.length > 0) {
+    return {
+      valid: false,
+      error: "Duplicate records found in the uploaded Excel file",
+      validRecords: data.length - duplicateRecords.length,
+      invalidRecords: duplicateRecords.length,
+      rowErrors: duplicateRecords
+    };
+  }
+
+  // Check if records exist in original data if provided
+  if (originalData !== null) {
+    const originalArnSet = new Set(originalData.map(row => String(row.arn).trim()));
+    const originalPanSet = new Set(originalData.map(row => String(row.pan_number).trim()));
+    const missingRecords = [];
+
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      const rowIndex = i + 2; // Excel row number (1-based + header row)
+      const arn = String(row.arn).trim();
+      const pan = String(row.pan_number).trim();
+      
+      if (!originalArnSet.has(arn) || !originalPanSet.has(pan)) {
+        missingRecords.push({
+          row: rowIndex,
+          error: `Record with ARN '${arn}' and PAN '${pan}' not found in original file`
+        });
+      }
+    }
+
+    if (missingRecords.length > 0) {
+      return {
+        valid: false,
+        error: "No matching records found in the original Excel file",
+        validRecords: data.length - missingRecords.length,
+        invalidRecords: missingRecords.length,
+        rowErrors: missingRecords
       };
     }
   }
@@ -237,9 +319,41 @@ serve(async (req) => {
     
     console.log(`Parsed ${data.length} rows from Excel file`);
 
-    // Validate the data with enhanced validation, including record count check
-    const originalRecordCount = fileDetails.record_count;
-    const validation = validateExcelData(data, originalRecordCount);
+    // Get the original file to compare records
+    const adminSupabase = createClient(
+      supabaseUrl,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+    );
+    
+    // Download the original file
+    const originalFilePath = fileDetails.file_path;
+    const { data: originalFileData, error: downloadError } = await adminSupabase.storage
+      .from("bulk-files")
+      .download(originalFilePath);
+      
+    if (downloadError) {
+      console.error("Error downloading original file:", downloadError);
+      return new Response(
+        JSON.stringify({ error: "Failed to download original file for validation", details: downloadError }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, 
+          status: 500 
+        }
+      );
+    }
+    
+    // Parse the original file for comparison
+    const originalArrayBuffer = await originalFileData.arrayBuffer();
+    const originalBuffer = new Uint8Array(originalArrayBuffer);
+    const originalWorkbook = XLSX.read(originalBuffer, { type: "array" });
+    const originalSheetName = originalWorkbook.SheetNames[0];
+    const originalWorksheet = originalWorkbook.Sheets[originalSheetName];
+    const originalData = XLSX.utils.sheet_to_json(originalWorksheet);
+    
+    console.log(`Parsed ${originalData.length} rows from original Excel file`);
+
+    // Validate the data with enhanced validation, comparing with original data
+    const validation = validateExcelData(data, originalData);
     
     // If there are validation errors, return the updated file with errors column
     if (!validation.valid) {
@@ -270,11 +384,6 @@ serve(async (req) => {
       const validationPath = `validations/${fileId}/${validationFileName}`;
       
       // Upload the validation file
-      const adminSupabase = createClient(
-        supabaseUrl,
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
-      );
-      
       const { data: uploadData, error: uploadError } = await adminSupabase.storage
         .from("bulk-files")
         .upload(validationPath, excelOutput, {
@@ -355,11 +464,6 @@ serve(async (req) => {
     // Upload the new Excel file to Supabase Storage
     // For storage operations, we need to use the service role key
     // because the current user might not have permissions to upload to storage
-    const adminSupabase = createClient(
-      supabaseUrl,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
-    );
-    
     const { data: uploadData, error: uploadError } = await adminSupabase.storage
       .from("bulk-files")
       .upload(newFilePath, excelOutput, {
