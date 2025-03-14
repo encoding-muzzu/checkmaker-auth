@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import * as XLSX from "https://esm.sh/xlsx@0.18.5";
@@ -23,10 +24,10 @@ serve(async (req) => {
 
     console.log("Fetching applications with status_id = 5");
     
-    // Fetch applications with status_id = 5
+    // Fetch applications with status_id = 5, selecting only the required fields
     const { data: applications, error: fetchError } = await supabase
       .from("applications")
-      .select("*")
+      .select("arn, pan_number, itr_flag, lrs_amount_consumed")
       .eq("status_id", 5);
 
     if (fetchError) {
@@ -75,7 +76,7 @@ serve(async (req) => {
     
     // Upload Excel file to Supabase Storage
     const { data: fileData, error: uploadError } = await supabase.storage
-      .from("bulk-files") // Changed from "bulk-files" to "bulk-files" for consistency
+      .from("bulk-files")
       .upload(filePath, excelOutput, {
         contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         upsert: false
@@ -96,7 +97,7 @@ serve(async (req) => {
     
     // Get public URL for the file
     const { data: publicUrl } = supabase.storage
-      .from("bulk-files") // Changed from "bulk-files" to "bulk-files" for consistency
+      .from("bulk-files")
       .getPublicUrl(filePath);
 
     console.log(`Creating record in bulk_file_processing table for ${fileName}`);
