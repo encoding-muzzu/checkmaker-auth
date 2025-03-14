@@ -113,10 +113,27 @@ function validateExcelData(data: any[], originalData: any[] | null) {
       const arn = String(row.arn).trim();
       const pan = String(row.pan_number).trim();
       
-      if (!originalArnSet.has(arn) || !originalPanSet.has(pan)) {
+      // Check ARN and PAN numbers separately for more specific error messages
+      if (!originalArnSet.has(arn) && !originalPanSet.has(pan)) {
+        // Both ARN and PAN are missing
+        row.Errors = "ARN and PAN number not found in original file";
         missingRecords.push({
           row: rowIndex,
-          error: `Record with ARN '${arn}' and PAN '${pan}' not found in original file`
+          error: `ARN '${arn}' and PAN '${pan}' not found in original file`
+        });
+      } else if (!originalArnSet.has(arn)) {
+        // Only ARN is missing
+        row.Errors = "ARN not found in original file";
+        missingRecords.push({
+          row: rowIndex,
+          error: `ARN '${arn}' not found in original file`
+        });
+      } else if (!originalPanSet.has(pan)) {
+        // Only PAN is missing
+        row.Errors = "PAN number not found in original file";
+        missingRecords.push({
+          row: rowIndex,
+          error: `PAN '${pan}' not found in original file`
         });
       }
     }
@@ -124,7 +141,7 @@ function validateExcelData(data: any[], originalData: any[] | null) {
     if (missingRecords.length > 0) {
       return {
         valid: false,
-        error: "No matching records found in the original Excel file",
+        error: "Records not found in the original Excel file",
         validRecords: data.length - missingRecords.length,
         invalidRecords: missingRecords.length,
         rowErrors: missingRecords

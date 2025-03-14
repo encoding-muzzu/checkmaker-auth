@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { sonnerToast } from "@/utils/toast-utils";
@@ -45,38 +46,28 @@ export const useFileDownload = (): UseFileDownloadResult => {
           lrs_amount_consumed: row.lrs_amount_consumed
         };
         
-        // Handle various error cases - Prioritize based on specific checks first
-        let errorMessage = null;
-        
-        // Check if there's any error information in the row
+        // Check if there's any error information in the row and prioritize them
         if (row.Errors) {
-          errorMessage = row.Errors;
-        } else if (row.error) {
-          errorMessage = row.error;
+          filteredRow.Errors = row.Errors;
+        } else if (row.errors) {
+          filteredRow.Errors = row.errors;
         } else if (row.Error) {
-          errorMessage = row.Error;
+          filteredRow.Errors = row.Error;
+        } else if (row.error) {
+          filteredRow.Errors = row.error;
         }
         
-        // Apply error standardization if we found an error
-        if (errorMessage) {
-          // Apply specific error standardization based on content
-          const errorLower = errorMessage.toLowerCase();
+        // Standardize error messages if they exist
+        if (filteredRow.Errors) {
+          const errorLower = filteredRow.Errors.toLowerCase();
           
-          // Check for ARN-specific errors first - most specific checks first
+          // Match error patterns and replace with standardized error messages
           if (errorLower.includes("arn") && errorLower.includes("not found")) {
-            filteredRow.Errors = "arn does not exists in the original file";
-          }
-          // Then check for PAN-specific errors
-          else if (errorLower.includes("pan") && errorLower.includes("not found")) {
-            filteredRow.Errors = "pan_number does not exists in the original file";
-          }
-          // Then check for general "not found in original file" pattern
-          else if (errorLower.includes("not found in original file")) {
-            filteredRow.Errors = "Record not found in the original file.";
-          }
-          // If none of the specific patterns match, keep the original error
-          else {
-            filteredRow.Errors = errorMessage;
+            filteredRow.Errors = "ARN not found in original file";
+          } else if (errorLower.includes("pan") && errorLower.includes("not found")) {
+            filteredRow.Errors = "PAN number not found in original file";
+          } else if (errorLower.includes("not found in original file")) {
+            filteredRow.Errors = "Record not found in the original file";
           }
         }
         
