@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { sonnerToast } from "@/utils/toast-utils";
@@ -56,9 +57,24 @@ export const useFileDownload = (): UseFileDownloadResult => {
           filteredRow.Errors = row.Error;
         }
         
-        // Check for "Records Not Found in Original File" error message pattern
-        if (row.Errors && row.Errors.toLowerCase().includes("not found in original file")) {
-          filteredRow.Errors = "Record not found in the original file.";
+        // Check for specific error patterns and standardize them
+        if (filteredRow.Errors) {
+          // Check for "not found in original file" pattern
+          if (filteredRow.Errors.toLowerCase().includes("not found in original file")) {
+            filteredRow.Errors = "Record not found in the original file.";
+          }
+          
+          // Check for ARN-specific errors
+          if (filteredRow.Errors.toLowerCase().includes("arn") && 
+              filteredRow.Errors.toLowerCase().includes("not found")) {
+            filteredRow.Errors = "arn does not exists in the original file";
+          }
+          
+          // Check for PAN-specific errors
+          if (filteredRow.Errors.toLowerCase().includes("pan") && 
+              filteredRow.Errors.toLowerCase().includes("not found")) {
+            filteredRow.Errors = "pan_number does not exists in the original file";
+          }
         }
         
         return filteredRow;
