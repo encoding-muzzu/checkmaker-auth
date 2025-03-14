@@ -27,17 +27,6 @@ export const ValidationResultsDialog = ({
     results.rowErrors[0].row === 0 && 
     results.rowErrors[0].error.includes("Record count mismatch");
 
-  // Determine if we have duplicate values errors
-  const hasDuplicateErrors = results.rowErrors.some(error => 
-    error.error.includes("Duplicate ARN") || error.error.includes("Duplicate PAN")
-  );
-
-  // Get first duplicate error for display in banner
-  const firstDuplicateError = hasDuplicateErrors ? 
-    results.rowErrors.find(error => 
-      error.error.includes("Duplicate ARN") || error.error.includes("Duplicate PAN")
-    ) : null;
-
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
       if (!open) onClose();
@@ -68,22 +57,16 @@ export const ValidationResultsDialog = ({
         <div className="p-6">
           {/* Status Banner */}
           <div className={`mb-6 p-3 rounded-md flex items-center gap-3 
-            ${isRecordCountMismatch || hasDuplicateErrors ? "bg-red-50 border border-red-200" : "bg-red-50 border border-red-200"}`}>
+            ${isRecordCountMismatch ? "bg-red-50 border border-red-200" : "bg-red-50 border border-red-200"}`}>
             <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0" />
             <div className="flex-1">
               <h3 className="font-medium text-red-700 text-sm mb-1">
-                {isRecordCountMismatch 
-                  ? "Record Count Mismatch" 
-                  : hasDuplicateErrors 
-                    ? "Duplicate Values Found" 
-                    : "Validation Failed"}
+                {isRecordCountMismatch ? "Record Count Mismatch" : "Validation Failed"}
               </h3>
               <p className="text-red-600 text-xs">
                 {isRecordCountMismatch 
                   ? results.rowErrors[0].error 
-                  : hasDuplicateErrors && firstDuplicateError
-                    ? `Duplicate values found. For example: ${firstDuplicateError.error} in row ${firstDuplicateError.row}.`
-                    : `Found errors in ${results.invalidRecords} of ${results.totalRecords} records.`}
+                  : `Found errors in ${results.invalidRecords} of ${results.totalRecords} records.`}
               </p>
             </div>
           </div>
