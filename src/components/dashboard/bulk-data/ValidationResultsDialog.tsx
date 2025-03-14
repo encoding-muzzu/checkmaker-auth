@@ -2,7 +2,7 @@
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, FileText, X, CheckCircle, Download } from "lucide-react";
+import { AlertTriangle, FileText, X, Download } from "lucide-react";
 import { ValidationResults } from "@/hooks/bulk-processing/useValidationDialog";
 
 interface ValidationResultsDialogProps {
@@ -51,7 +51,7 @@ export const ValidationResultsDialog = ({
       if (!open) onClose();
     }}>
       <DialogContent 
-        className="max-w-[550px] font-['Roboto'] p-0 overflow-hidden bg-white rounded-md shadow-lg"
+        className="max-w-[550px] p-0 overflow-hidden bg-white rounded-md shadow-lg font-['Roboto', 'sans-serif']"
         onPointerDownOutside={(e) => {
           e.preventDefault();
         }}
@@ -73,15 +73,15 @@ export const ValidationResultsDialog = ({
           </Button>
         </DialogHeader>
 
-        <div className="p-6">
+        <div className="p-6 font-['Roboto', 'sans-serif']">
           {/* Status Banner */}
-          <div className="mb-6 p-3 rounded-md flex items-center gap-3 bg-red-50 border border-red-200">
-            <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0" />
+          <div className="mb-6 p-4 rounded-[4px] flex items-start gap-3 bg-red-50 border border-red-200">
+            <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <h3 className="font-medium text-red-700 text-sm mb-1">
                 {errorTitle}
               </h3>
-              <p className="text-red-600 text-xs">
+              <p className="text-red-600 text-xs leading-normal">
                 {errorMessage}
               </p>
             </div>
@@ -89,32 +89,32 @@ export const ValidationResultsDialog = ({
 
           {/* Records statistics */}
           <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-gray-50 border border-[rgb(224, 224, 224)] rounded-md p-3 text-center">
-              <div className="text-[0.875rem] text-[rgba(0, 0, 0, 0.87)] font-medium mb-1">Total Records</div>
+            <div className="bg-[rgb(247, 249, 252)] border border-[rgb(224, 224, 224)] rounded-[4px] p-3 text-center">
+              <div className="text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)] font-medium mb-1">Total Records</div>
               <div className="text-xl font-semibold">{results.totalRecords}</div>
             </div>
-            <div className="bg-gray-50 border border-[rgb(224, 224, 224)] rounded-md p-3 text-center">
-              <div className="text-[0.875rem] text-[rgba(0, 0, 0, 0.87)] font-medium mb-1">Valid Records</div>
+            <div className="bg-[rgb(247, 249, 252)] border border-[rgb(224, 224, 224)] rounded-[4px] p-3 text-center">
+              <div className="text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)] font-medium mb-1">Valid Records</div>
               <div className="text-xl font-semibold text-green-600">{results.validRecords}</div>
             </div>
-            <div className="bg-gray-50 border border-[rgb(224, 224, 224)] rounded-md p-3 text-center">
-              <div className="text-[0.875rem] text-[rgba(0, 0, 0, 0.87)] font-medium mb-1">Errors Found</div>
+            <div className="bg-[rgb(247, 249, 252)] border border-[rgb(224, 224, 224)] rounded-[4px] p-3 text-center">
+              <div className="text-[0.8125rem] text-[rgba(0, 0, 0, 0.87)] font-medium mb-1">Errors Found</div>
               <div className="text-xl font-semibold text-red-600">{results.invalidRecords}</div>
             </div>
           </div>
 
           {/* Download section */}
-          <div className="bg-gray-50 border border-[rgb(224, 224, 224)] rounded-md p-4 mb-6">
+          <div className="bg-[rgb(247, 249, 252)] border border-[rgb(224, 224, 224)] rounded-[4px] p-4 mb-6">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <Download className="h-5 w-5 text-gray-700" />
-                <span className="text-[0.875rem] font-medium text-[rgba(0, 0, 0, 0.87)]">
+                <span className="text-[0.8125rem] font-medium text-[rgba(0, 0, 0, 0.87)]">
                   Download marked file to make corrections
                 </span>
               </div>
               <Button 
                 variant="link" 
-                className="text-blue-600 hover:text-blue-800 p-0 font-medium text-[0.875rem]" 
+                className="text-blue-600 hover:text-blue-800 p-0 font-medium text-[0.8125rem]" 
                 onClick={() => onDownloadValidation(results.validationFilePath)}
               >
                 Download .xlsx
@@ -123,7 +123,7 @@ export const ValidationResultsDialog = ({
           </div>
 
           {/* Note about validation */}
-          <div className="text-center text-gray-500 text-sm mt-6">
+          <div className="text-center text-[rgba(0, 0, 0, 0.6)] text-[0.8125rem] mt-6 line-height-[1.43]">
             Please download the file, correct the errors, and upload again.
           </div>
         </div>

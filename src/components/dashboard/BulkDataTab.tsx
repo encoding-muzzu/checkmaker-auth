@@ -63,7 +63,7 @@ export const BulkDataTab = () => {
   }
 
   return (
-    <div className="bg-[rgb(247, 249, 252)] p-6 rounded-lg shadow-sm">
+    <div className="bg-[rgb(247, 249, 252)] p-6 rounded-lg shadow-sm font-['Roboto', 'sans-serif']">
       <div className="flex justify-between items-center mb-6">
         <WorkflowInstructions />
         <Button
