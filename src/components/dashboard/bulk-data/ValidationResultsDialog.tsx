@@ -40,6 +40,7 @@ export const ValidationResultsDialog = ({
         </DialogHeader>
 
         <div className="p-6">
+          {/* File info section with error indicator */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center text-[0.8125rem]">
               <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
@@ -48,24 +49,6 @@ export const ValidationResultsDialog = ({
             <div className="flex items-center text-red-500 text-[0.8125rem]">
               <AlertTriangle className="h-4 w-4 mr-1" />
               <span>Errors Found in Uploaded File</span>
-            </div>
-          </div>
-
-          {/* File info section with filename and error indicator */}
-          <div className="mb-4">
-            <div className="flex items-center">
-              <div className="h-10 w-10 flex items-center justify-center rounded-full bg-green-100 mr-3">
-                <CheckCircle className="h-6 w-6 text-green-500" />
-              </div>
-              <div>
-                <p className="text-[0.8125rem] font-medium text-[rgba(0, 0, 0, 0.87)]">
-                  {results.fileName}
-                </p>
-                <div className="flex items-center text-red-500 text-[0.75rem]">
-                  <AlertTriangle className="h-3 w-3 mr-1" />
-                  <span>Errors Found in Uploaded File</span>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -114,22 +97,13 @@ export const ValidationResultsDialog = ({
               </div>
               <p className="text-[0.75rem] text-gray-500 mb-4">Drag & Drop or Browse File</p>
               
-              <div className="flex flex-col items-center w-full">
-                <Button
-                  className="bg-black text-white hover:bg-gray-800 rounded-[4px] text-[0.8125rem] h-10 px-6 mb-3 w-[140px]"
-                  onClick={onReupload}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Re-Upload
-                </Button>
-                
-                <Button
-                  className="bg-gray-300 text-gray-500 hover:bg-gray-300 hover:text-gray-500 rounded-[4px] text-[0.8125rem] h-10 w-[140px]"
-                  disabled
-                >
-                  Validate
-                </Button>
-              </div>
+              <Button
+                className="bg-black text-white hover:bg-gray-800 rounded-[4px] text-[0.8125rem] h-10 px-6 w-[140px]"
+                onClick={onReupload}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Re-Upload
+              </Button>
             </div>
           </div>
         </div>
