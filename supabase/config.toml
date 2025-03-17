@@ -9,3 +9,7 @@ verify_jwt = false
 
 [functions.process-bulk-data]
 verify_jwt = false
+
+
+[functions.validate-token]
+verify_jwt = false
