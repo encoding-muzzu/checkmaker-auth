@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const DBOPS_API_BASE_URL = 'https://hdfcprepaid-uat-workflow.m2pfintech.dev/core/api/v2/workflows'
+const DBOPS_API_BASE_URL = Deno.env.get('DBOPS_API_BASE_URL')
 const DBOPS_API_TOKEN = Deno.env.get('DBOPS_API_TOKEN')
 
 serve(async (req) => {
